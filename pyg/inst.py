@@ -1,5 +1,7 @@
+import sys
 import shutil
 import os.path
+import zipfile
 import tarfile
 import tempfile
 import cStringIO
@@ -16,28 +18,37 @@ class Installer(object):
 
     @ classmethod
     def from_ext(cls, ext, file_url):
-        MAP = {'.gz': 'from_tar_gz',
-               '.zip': 'from_zip',
-               '.bz2': 'from_bz2',
-               '.egg': 'from_egg'
-               }
         url = file_url
         if file_url.startswith('../..'):
             url = 'http://pypi.python.org/' + file_url[6:]
+        print url
         fobj = cStringIO.StringIO(request(url))
-        return getattr(cls, MAP[ext])(fobj)
+        if ext in ('.gz', '.bz2', '.zip'):
+            return Installer.from_arch(ext, fobj)
+        elif ext == '.egg':
+            return None
 
     @ staticmethod
-    def from_tar_gz(fobj):
-        with tarfile.open(fileobj=fobj, mode='r:gz') as t:
-            tempdir = tempfile.mkdtemp()
-            t.extractall(tempdir)
-            subprocess.call(['python', os.path.join(tempdir, os.listdir(tempdir)[0], 'setup.py'), 'install'])
+    def from_arch(ext, fobj):
+        if ext == '.zip':
+            arch = zipfile.ZipFile(fobj)
+        else:
+            arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
+        with arch as a:
+            tempdir = tempfile.mkdtemp('-record', 'pyg-')
+            recfile = os.path.join(tempdir, 'install_record')
+            a.extractall(tempdir)
+            fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
+            cwd = os.getcwd()
+            os.chdir(fullpath)
+            args = ['python', 'setup.py', 'install', '--single-version-externally-managed', '--record', recfile]
+            subprocess.call(args)
+            os.chdir(cwd)
             shutil.rmtree(tempdir)
 
     def install(self):
         files, links = self.f.find()
-        for ext in ('.gz', '.zip', '.bz2', '.egg'):
+        for ext in ('.zip', '.gz', '.bz2', '.egg'):
             arch = self.r.best_match(files[ext].keys())
             if arch is not None:
                 return Installer.from_ext(ext, files[ext][arch])

@@ -84,6 +84,7 @@ class Requirement(object):
                 self.version = Version(self.version)
                 break
         else:
+            self.name = self.req.split()[0]
             self.version = None
 
     @ staticmethod
