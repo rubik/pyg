@@ -1,5 +1,6 @@
 import sys
 import shutil
+import urllib2
 import os.path
 import zipfile
 import tarfile
@@ -9,6 +10,9 @@ import subprocess
 
 from .req import Requirement
 from .web import Finder, request
+
+
+__all__ = ['Installer']
 
 
 class Installer(object):
@@ -47,10 +51,17 @@ class Installer(object):
             shutil.rmtree(tempdir)
 
     def install(self):
-        files, links = self.f.find()
+        try:
+            files, links = self.f.find()
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                print '{0} not found'.format(self.r.name)
+            else:
+                print 'urllib2 returned error code: {0}'.format(e.code)
+            return
         for ext in ('.zip', '.gz', '.bz2', '.egg'):
             arch = self.r.best_match(files[ext].keys())
             if arch is not None:
                 return Installer.from_ext(ext, files[ext][arch])
         else:
-            print 'Not found'
+            print '{0} not found'.format(self.r.name)

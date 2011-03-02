@@ -1,0 +1,11 @@
+include README
+include AUTHORS
+include CHANGES
+include LICENSE
+include TODO
+
+include pyg *
+include pyg.py
+
+recursive-include doc *
+prune doc/_build

@@ -33,6 +33,7 @@ class Finder(object):
                                  }
                            )
 
+        print 'Checking: {0}'.format(self.url)
         data = request(self.url)
         f = self.file_regex.findall(data)
         links = self.link_regex.findall(data)
