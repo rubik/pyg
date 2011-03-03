@@ -5,63 +5,31 @@ import itertools
 class Version(object):
     def __init__(self, v):
         self.v = v
-        self.parts = v.split('.')
+        while self.v[-1] == 0:
+            self.v = self.v[:-2]
+
+    def __str__(self):
+        return self.v
 
     def __repr__(self):
         return 'Version({0})'.format(self.v)
 
-    def __eq__(self, other):
-        if len(self.parts) != len(other.parts):
+    def __eq__(self, other):   
+        if len(self.v) != len(other.v):
             return False
-        return all(p == p2 for p, p2 in itertools.izip(self.parts, other.parts))
+        return self.v == other.v
 
     def __ge__(self, other):
-        for p, p2 in itertools.izip_longest(self.parts, other.parts):
-            if p is None and p2 is not None:
-                return False
-            elif p2 is None:
-                return True
-            elif p >= p2:
-                return True
-            elif p < p2:
-                return False
-        return False
+        return self.v >= other.v
 
     def __gt__(self, other):
-        for p, p2 in itertools.izip_longest(self.parts, other.parts):
-            if p is None and p2 is not None:
-                return False
-            elif p2 is None:
-                return True
-            elif p > p2:
-                return True
-            elif p < p2:
-                return False
-        return False
+        return self.v > other.v
 
     def __le__(self, other):
-        for p, p2 in itertools.izip_longest(self.parts, other.parts):
-            if p is None and p2 is not None:
-                return True
-            elif p2 is None:
-                return False
-            elif p <= p2:
-                return True
-            elif p > p2:
-                return False
-        return False
+        return self.v <= other.v
 
     def __lt__(self, other):
-        for p, p2 in itertools.izip_longest(self.parts, other.parts):
-            if p is None and p2 is not None:
-                return True
-            elif p2 is None:
-                return False
-            elif p < p2:
-                return True
-            elif p > p2:
-                return False
-        return False
+        return self.v < other.v
 
 
 class Requirement(object):
@@ -86,6 +54,7 @@ class Requirement(object):
         else:
             self.name = self.req.split()[0]
             self.version = None
+            self.op = None
 
     @ staticmethod
     def find_version(s):
@@ -96,14 +65,19 @@ class Requirement(object):
             else:
                 break
         return Version(''.join(v).strip('.')) ## FIXME do we really need .strip() ?
-        
+
+    def match(self, v):
+        try:
+            return self.OPMAP[self.op](v, self.version)
+        except KeyError: ## Operator not specified, so we pick up any version
+            return True
 
     def best_match(self, reqs):
         matched = {}
         for r in reqs:
             parts = r.split('-')
             version = Requirement.find_version('-'.join(parts[1:]))
-            if self.version is None or self.OPMAP[self.op](version, self.version):
+            if self.version is None or self.match(version):
                 matched[version] = r
         if len(matched) == 0:
             return None

@@ -10,7 +10,7 @@ import cStringIO
 import subprocess
 
 from .req import Requirement
-from .web import Finder, request
+from .web import Finder, WebManager
 
 
 __all__ = ['Installer']
@@ -42,7 +42,7 @@ class Installer(object):
         url = file_url
         if file_url.startswith('../..'):
             url = 'http://pypi.python.org/' + file_url[6:]
-        fobj = cStringIO.StringIO(request(url))
+        fobj = cStringIO.StringIO(WebManager.request(url))
         if ext in ('.gz', '.bz2', '.zip'):
             return Installer.from_arch(ext, fobj)
         elif ext == '.egg':

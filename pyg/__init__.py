@@ -17,6 +17,13 @@ def _set_up():
     sub_inst.add_argument('-b', '--bundle', metavar='PATH', help='Installs the packages in the bundle file')
     sub_inst.add_argument('-f', '--file', metavar='PATH', help='Does not download the package but use the file in `PATH`')
     sub_inst.set_defaults(func=opts.install_func)
+    
+    sub_list = sub.add_parser('list')
+    sub_list.add_argument('packname')
+    sub_list.set_defaults(func=opts.list_func)
+
+    sub_search = sub.add_parser('search')
+    sub_search.add_argument('packname')
     return parser
 
 def main():
