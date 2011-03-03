@@ -1,0 +1,11 @@
+import sys; sys.__plen = len(sys.path)
+./docutils-0.7-py2.7.egg
+./Jinja2-2.5.5-py2.7.egg
+./Pygments-1.4-py2.7.egg
+./pytest-2.0.0-py2.7.egg
+./py-1.4.0-py2.7.egg
+./Fabric-0.9.3-py2.7.egg
+./paramiko-1.7.6-py2.7.egg
+./urllib3-0.3.1-py2.7.egg
+./pyg-0.1-py2.7.egg
+import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)

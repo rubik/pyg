@@ -1,4 +1,5 @@
 import sys
+import site
 import shutil
 import urllib2
 import os.path
@@ -20,17 +21,33 @@ class Installer(object):
         self.r = Requirement(req)
         self.f = Finder(self.r.name)
 
+    def install(self):
+        try:
+            files, links = self.f.find()
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                print '{0} not found'.format(self.r.name)
+            else:
+                print 'urllib2 returned error code: {0}'.format(e.code)
+            return
+        for ext in ('.egg', '.gz', '.bz2', '.zip'):
+            arch = self.r.best_match(files[ext].keys())
+            if arch is not None:
+                return Installer.from_ext(ext, files[ext][arch])
+        else:
+            print '{0} not found'.format(self.r.name)
+
     @ classmethod
     def from_ext(cls, ext, file_url):
         url = file_url
         if file_url.startswith('../..'):
             url = 'http://pypi.python.org/' + file_url[6:]
-        print url
         fobj = cStringIO.StringIO(request(url))
         if ext in ('.gz', '.bz2', '.zip'):
             return Installer.from_arch(ext, fobj)
         elif ext == '.egg':
-            return Installer.from_egg(fobj)
+            name = url.split('/')[-1].split('.egg')[0] + '.egg'
+            return Installer.from_egg(fobj, name)
         else:
             raise NotImplementedError('not implemented yet')
 
@@ -45,8 +62,23 @@ class Installer(object):
             raise NotImplementedError('not implemented yet')
 
     @ staticmethod
-    def from_egg(fobj):
-        return NotImplemented
+    def from_egg(fobj, name):
+        sitedir = site.getsitepackages()[0]
+        egg = os.path.join(sitedir, name)
+        print egg
+        if os.path.exists(egg):
+            print '{0} is already installed'.format(sys.argv[-1])
+            return
+        os.makedirs(egg)
+        with zipfile.ZipFile(fobj) as z:
+            z.extractall(egg)
+            with open(os.path.join(sitedir, 'easy-install.pth')) as f:
+                lines = f.readlines()
+            with open(os.path.join(sitedir, 'easy-install.pth'), 'w') as f:
+                last = lines[-1]
+                f.writelines(lines[:-1])
+                f.write('./' + name + '\n')
+                f.write(last)
 
     @ staticmethod
     def from_arch(ext, fobj):
@@ -69,19 +101,3 @@ class Installer(object):
     @ staticmethod
     def from_bundle(filepath):
         raise NotImplementedError('not implemented yet')
-
-    def install(self):
-        try:
-            files, links = self.f.find()
-        except urllib2.HTTPError as e:
-            if e.code == 404:
-                print '{0} not found'.format(self.r.name)
-            else:
-                print 'urllib2 returned error code: {0}'.format(e.code)
-            return
-        for ext in ('.gz', '.bz2', '.zip', '.egg'):
-            arch = self.r.best_match(files[ext].keys())
-            if arch is not None:
-                return Installer.from_ext(ext, files[ext][arch])
-        else:
-            print '{0} not found'.format(self.r.name)
