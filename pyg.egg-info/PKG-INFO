@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: pyg
+Version: 0.1
+Summary: Python Package Manager
+Home-page: UNKNOWN
+Author: Michele Lacchia
+Author-email: michelelacchia@gmail.com
+License: MIT
+Download-URL: http://pypi.python.org/pypi/pyg
+Description: 
+        Pyg is a Python package manager that is meant to be an alternative to Easy_Install.
+        
+Platform: all
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Build Tools

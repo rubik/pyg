@@ -35,7 +35,7 @@ setup(name='pyg',
       install_requires=requires,
       entry_points={
         'console_scripts': [
-            'pyg = pyg_install:main'
+            'pyg = pyg:main'
         ]
       }
       )
