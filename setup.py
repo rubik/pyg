@@ -15,7 +15,7 @@ else:
     del requires[-1]
 
 setup(name='pyg',
-      version=pyg.__version_str__,
+      version=pyg.__version__,
       download_url='http://pypi.python.org/pypi/pyg',
       license='MIT',
       author='Michele Lacchia',
