@@ -28,9 +28,16 @@ class WebManager(object):
         self.pypi = PyPI(index_url)
         self.r = Requirement(name)
         self.name = self.r.name
+        try:
+            realname = sorted(self.pypi.search({'name': self.name}),
+                              key=lambda i: i['_pypi_ordering'], reverse=True)[0]['name']
+            if self.name != realname:
+                self.name = realname
+        except (KeyError, IndexError):
+            pass
         self.versions = map(Version, self.pypi.package_releases(self.name, True))
         if not self.versions: ## Slow way: we need to search versions by ourselves
-            self.versions = WebManager.version_from_html(self.name)
+            self.versions = WebManager.versions_from_html(self.name)
 
     @ staticmethod
     def request(url):
@@ -41,7 +48,7 @@ class WebManager(object):
     def versions_from_html(name):
         _vre = re.compile(WebManager._versions_re.format(name), re.I)
         data = WebManager.request('http://pypi.python.org/simple/{0}'.format(name))
-        return map(Version, set(v.strip('.') for v in _vre.findall(data)))
+        return sorted(map(Version, set(v.strip('.') for v in _vre.findall(data))), reverse=True)
 
     def find(self):
         for version in self.versions:

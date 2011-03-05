@@ -16,6 +16,9 @@ def install_func(args):
         return Installer.from_bundle(args.bundle)
     return install_from_name(args.packname)
 
+def uninst_func(args):
+    return Installer(args.packname).uninstall()
+
 def list_func(args):
     res = []
     name = args.packname
@@ -23,7 +26,7 @@ def list_func(args):
     if not versions:
         versions = map(str, sorted(WebManager.versions_from_html(name), reverse=True))
     for v in versions:
-        if is_installed(name, v):
+        if is_installed('{0}=={1}'.format(name, v)):
             res.append(v + '\tinstalled')
         else:
             res.append(v)
