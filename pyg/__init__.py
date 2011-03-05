@@ -16,7 +16,7 @@ def _set_up():
     sub = parser.add_subparsers()
     
     sub_inst = sub.add_parser('install')
-    sub_inst.add_argument('packname')
+    sub_inst.add_argument('packname', nargs='?')
     sub_inst.add_argument('-d', '--develop', action='store_true', help='Installs the package in development mode')
     sub_inst.add_argument('-b', '--bundle', metavar='PATH', help='Installs the packages in the bundle file')
     sub_inst.add_argument('-f', '--file', metavar='PATH', help='Does not download the package but use the file in `PATH`')
@@ -29,6 +29,9 @@ def _set_up():
     sub_list = sub.add_parser('list')
     sub_list.add_argument('packname')
     sub_list.set_defaults(func=opts.list_func)
+
+    sub_fr = sub.add_parser('freeze')
+    sub_fr.set_defaults(func=opts.freeze_func)
 
     sub_search = sub.add_parser('search')
     sub_search.add_argument('packname')

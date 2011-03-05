@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 import pkg_resources
 
 
@@ -8,3 +10,16 @@ def is_installed(req):
         return False
     else:
         return True
+
+
+class TempDir(object):
+    def __init__(self, prefix='pyg-', suffix='-record'):
+        self.prefix = prefix
+        self.suffix = suffix
+
+    def __enter__(self):
+        self.tempdir = tempfile.mkdtemp(self.suffix, self.prefix)
+        return self.tempdir
+    
+    def __exit__(self, *args):
+        shutil.rmtree(self.tempdir)

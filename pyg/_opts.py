@@ -2,6 +2,7 @@ import sys
 from .web import PyPI, WebManager
 from .inst import Installer
 from .utils import is_installed
+from .freeze import freeze
 
 
 def install_from_name(name):
@@ -17,7 +18,10 @@ def install_func(args):
     return install_from_name(args.packname)
 
 def uninst_func(args):
-    return Installer(args.packname).uninstall()
+    return Installer(args.packname, mode='uninst').uninstall()
+
+def freeze_func(args):
+    return sys.stdout.write(freeze())
 
 def list_func(args):
     res = []

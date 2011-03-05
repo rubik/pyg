@@ -12,7 +12,7 @@ import subprocess
 
 from .req import Requirement
 from .web import WebManager
-from .utils import is_installed
+from .utils import is_installed, TempDir
 
 try:
     from hashlib import md5
@@ -24,14 +24,18 @@ __all__ = ['Installer']
 
 
 class Installer(object):
-    def __init__(self, req):
-        self.w = WebManager(req)
+    def __init__(self, req, mode='inst'):
+        if mode == 'inst' and is_installed(str(req)):
+            print '{0} is already installed, exiting now...'.format(req)
+            sys.exit(0)
+        try:
+            self.w = WebManager(req)
+        except urllib2.HTTPError as e:
+            print 'E: urllib2 returned error code: {0}. Message: {1}'.format(e.code, e.msg)
+            sys.exit(1)
         self.name = self.w.name
 
     def install(self):
-        if is_installed(str(self.w.r)):
-            print '{0} is already installed, exiting now...'.format(self.name)
-            sys.exit(0)
         try:
             files = self.w.find()
         except urllib2.HTTPError as e:
@@ -73,11 +77,13 @@ class Installer(object):
                 sys.exit(0)
             elif u == 'y':
                 for d in to_del:
-                    shutil.rmtree(d)
-                    print 'Deleting: {0} ...'.format(d)
+                    try:
+                        shutil.rmtree(d)
+                    except OSError: ## It is not a directory
+                        os.remove(d)
+                    print 'Deleting: {0}...'.format(d)
                 print '{0} uninstalled succesfully'.format(self.name)
                 sys.exit(0)
-                
 
     @ classmethod
     def from_ext(cls, filename, md5_hash, file_url):
@@ -102,7 +108,9 @@ class Installer(object):
         if ext in ('.gz', '.bz2', '.zip'):
             return Installer.from_arch(ext, open(filepath))
         elif ext == '.egg':
-            return Installer.from_egg(open(filepath))
+            return Installer.from_egg(open(filepath), os.path.basename(filepath))
+        elif ext == '.pybundle':
+            return Installer.from_bundle(open(filepath))
         else:
             raise NotImplementedError('not implemented yet')
 
@@ -110,7 +118,6 @@ class Installer(object):
     def from_egg(fobj, name):
         sitedir = site.getsitepackages()[0]
         egg = os.path.join(sitedir, name)
-        print egg
         if os.path.exists(egg):
             print '{0} is already installed'.format(sys.argv[-1])
             return
@@ -132,18 +139,22 @@ class Installer(object):
         else:
             arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
         with arch as a:
-            tempdir = tempfile.mkdtemp('-record', 'pyg-')
-            recfile = os.path.join(os.environ['HOME'], '.pyg', '.pyg-install-record')
-            a.extractall(tempdir)
-            fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            cwd = os.getcwd()
-            os.chdir(fullpath)
-            args = ['python', 'setup.py', 'egg_info', 'install',
-                    '--single-version-externally-managed', '--record', recfile]
-            subprocess.call(args)
-            os.chdir(cwd)
-            shutil.rmtree(tempdir)
+            with TempDir() as tempdir:
+                recfile = os.path.join(os.environ['HOME'], '.pyg', '.pyg-install-record')
+                a.extractall(tempdir)
+                fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
+                cwd = os.getcwd()
+                os.chdir(fullpath)
+                args = ['python', 'setup.py', 'egg_info', 'install',
+                        '--single-version-externally-managed', '--record', recfile]
+                subprocess.call(args)
+                os.chdir(cwd)
 
     @ staticmethod
     def from_bundle(filepath):
-        raise NotImplementedError('not implemented yet')
+        with zipfile.ZipFile(filepath) as z:
+            with TempDir() as tempdir:
+                z.extractall(tempdir)
+                location = os.path.join(tempdir, os.path.abspath(filepath))
+                manifest = os.path.join(location, 'pip-manifest.txt')
+                raise NotImplementedError('not implemented yet')
