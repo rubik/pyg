@@ -35,14 +35,11 @@ class Installer(object):
         try:
             files = self.w.find()
         except urllib2.HTTPError as e:
-            if e.code == 404:
-                print '{0} not found'.format(self.r.name)
-            else:
-                print 'urllib2 returned error code: {0}'.format(e.code)
+            print 'E: urllib2 returned error code: {0}'.format(e.code)
             return
         for version, name, md5_hash, url in files:
             if name.endswith('.egg'):
-                vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[2:])))
+                vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
                 if vcode not in name:
                     continue
             try:
@@ -50,7 +47,7 @@ class Installer(object):
             except:
                 continue
         else:
-            print '{0} not found'.format(self.r.name)
+            print '{0} not found'.format(self.name)
             sys.exit(1)
 
     def uninstall(self):
@@ -95,7 +92,6 @@ class Installer(object):
         if ext in ('.gz', '.bz2', '.zip'):
             return Installer.from_arch(ext, fobj)
         elif ext == '.egg':
-            name = url.split('/')[-1].split('.egg')[0] + '.egg'
             return Installer.from_egg(fobj, name)
         else:
             raise NotImplementedError('not implemented yet')
