@@ -1,6 +1,7 @@
 *.pyc
 *.komodoproject
 *~
+doc/_build
 build/
 dist/
 pyg.egg-info/
