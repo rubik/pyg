@@ -5,8 +5,7 @@ import argparse
 import _opts as opts
 
 
-__version__ = (0, 1)
-__version_str__ = '0.1'
+__version__ = '0.1'
 
 pyg_home = os.path.join(os.environ['HOME'], '.pyg')
 if not os.path.exists(pyg_home):
