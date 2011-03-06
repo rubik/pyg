@@ -45,6 +45,9 @@ class Requirement(object):
         self.req = req
         self.split()
 
+    def __repr__(self):
+        return 'Requirement({0})'.format(self.req)
+
     def split(self):
         for c in ('==', '>=', '>', '<=', '<'):
             if c in self.req:

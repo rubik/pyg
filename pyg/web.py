@@ -64,6 +64,7 @@ class Finder(object): ## OLD! Now we are using xmlrpclib to communicate with pyp
     link_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<name>[^\<]+)</a><br/>')
 
     def __init__(self, packname):
+        raise DeprecationWarning('pyg.web.Finder is deprecated: use pyg.web.WebManager instead')
         self.url = '{0}{1}'.format(self.base_url, packname)
 
     def find(self):

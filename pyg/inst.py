@@ -47,10 +47,7 @@ class Installer(object):
                 vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
                 if vcode not in name:
                     continue
-            try:
-                return Installer.from_ext(name, md5_hash, url)
-            except:
-                continue
+            return self.from_ext(name, md5_hash, url)
         else:
             logger.error('{0} not found'.format(self.name))
             sys.exit(1)
@@ -89,8 +86,7 @@ class Installer(object):
                 logger.notify('{0} uninstalled succesfully'.format(self.name))
                 sys.exit(0)
 
-    @ classmethod
-    def from_ext(cls, filename, md5_hash, file_url):
+    def from_ext(self, filename, md5_hash, file_url):
         url = file_url
         if file_url.startswith('../..'):
             url = 'http://pypi.python.org/' + file_url[6:]
@@ -101,26 +97,13 @@ class Installer(object):
             raise Exception('E: Cannot continue: {0} appears to be corrupted'.format(self.name))
         ext = os.path.splitext(filename)[1]
         if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(ext, fobj)
+            return self.from_arch(ext, fobj)
         elif ext == '.egg':
-            return Installer.from_egg(fobj, name)
+            return self.from_egg(fobj, name)
         else:
             raise NotImplementedError('not implemented yet')
 
-    @ staticmethod
-    def from_file(filepath):
-        ext = os.path.splitext(filepath)[1]
-        if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(ext, open(filepath))
-        elif ext == '.egg':
-            return Installer.from_egg(open(filepath), os.path.basename(filepath))
-        elif ext == '.pybundle':
-            return Installer.from_bundle(open(filepath))
-        else:
-            raise NotImplementedError('not implemented yet')
-
-    @ staticmethod
-    def from_egg(fobj, name):
+    def from_egg(self, fobj, name):
         sitedir = site.getsitepackages()[0]
         egg = os.path.join(sitedir, name)
         if os.path.exists(egg):
@@ -140,7 +123,18 @@ class Installer(object):
                 f.write(last)
 
     @ staticmethod
-    def from_arch(ext, fobj):
+    def from_file(filepath):
+        ext = os.path.splitext(filepath)[1]
+        if ext in ('.gz', '.bz2', '.zip'):
+            return Installer.from_arch(ext, open(filepath))
+        elif ext == '.egg':
+            return Installer.from_egg(open(filepath), os.path.basename(filepath))
+        elif ext == '.pybundle':
+            return Installer.from_bundle(open(filepath))
+        else:
+            raise NotImplementedError('not implemented yet')
+
+    def from_arch(self, ext, fobj):
         logger.notify('Unpacking {0}'.format(self.name))
         if ext == '.zip':
             arch = zipfile.ZipFile(fobj)
