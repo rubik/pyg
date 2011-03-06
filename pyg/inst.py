@@ -12,6 +12,7 @@ import subprocess
 
 from .req import Requirement
 from .web import WebManager
+from .log import logger
 from .utils import is_installed, home, TempDir
 
 try:
@@ -26,12 +27,12 @@ __all__ = ['Installer']
 class Installer(object):
     def __init__(self, req, mode='inst'):
         if mode == 'inst' and is_installed(str(req)):
-            print '{0} is already installed, exiting now...'.format(req)
+            logger.notify('{0} is already installed, exiting now...'.format(req))
             sys.exit(0)
         try:
             self.w = WebManager(req)
         except urllib2.HTTPError as e:
-            print 'E: urllib2 returned error code: {0}. Message: {1}'.format(e.code, e.msg)
+            logger.fatal('urllib2 returned error code: {0}. Message: {1}'.format(e.code, e.msg))
             sys.exit(1)
         self.name = self.w.name
 
@@ -39,7 +40,7 @@ class Installer(object):
         try:
             files = self.w.find()
         except urllib2.HTTPError as e:
-            print 'E: urllib2 returned error code: {0}'.format(e.code)
+            logger.fatal('E: urllib2 returned error code: {0}'.format(e.code))
             return
         for version, name, md5_hash, url in files:
             if name.endswith('.egg'):
@@ -51,7 +52,7 @@ class Installer(object):
             except:
                 continue
         else:
-            print '{0} not found'.format(self.name)
+            logger.error('{0} not found'.format(self.name))
             sys.exit(1)
 
     def uninstall(self):
@@ -66,14 +67,17 @@ class Installer(object):
             except OSError:
                 continue
         if not to_del:
-            print 'Did not find any file to delete'
+            logger.warn('Did not find any file to delete')
             sys.exit(1)
-        print 'Uninstalling {0}'.format(self.name)
-        print '\t' + '\n\t'.join(to_del)
+        logger.notify('Uninstalling {0}'.format(self.name))
+        logger.indent += 8
+        for d in to_del:
+            logger.info(d)
+        logger.indent -= 8
         while True:
             u = raw_input('Proceed? (y/[n]) ')
             if u in ('n', ''):
-                print '{0} has not been uninstalled'.format(self.name)
+                logger.info('{0} has not been uninstalled'.format(self.name))
                 sys.exit(0)
             elif u == 'y':
                 for d in to_del:
@@ -81,8 +85,8 @@ class Installer(object):
                         shutil.rmtree(d)
                     except OSError: ## It is not a directory
                         os.remove(d)
-                    print 'Deleting: {0}...'.format(d)
-                print '{0} uninstalled succesfully'.format(self.name)
+                    logger.notify('Deleting: {0}...'.format(d))
+                logger.notify('{0} uninstalled succesfully'.format(self.name))
                 sys.exit(0)
 
     @ classmethod
@@ -90,9 +94,10 @@ class Installer(object):
         url = file_url
         if file_url.startswith('../..'):
             url = 'http://pypi.python.org/' + file_url[6:]
+        logger.notify('Downloading {0}'.format(self.name))
         fobj = cStringIO.StringIO(WebManager.request(url))
         if md5(fobj.getvalue()).hexdigest() != md5_hash:
-            print '{0} appears to be corrupted'.format(self.name)
+            logger.fatal('{0} appears to be corrupted'.format(self.name))
             raise Exception('E: Cannot continue: {0} appears to be corrupted'.format(self.name))
         ext = os.path.splitext(filename)[1]
         if ext in ('.gz', '.bz2', '.zip'):
@@ -119,11 +124,13 @@ class Installer(object):
         sitedir = site.getsitepackages()[0]
         egg = os.path.join(sitedir, name)
         if os.path.exists(egg):
-            print '{0} is already installed'.format(sys.argv[-1])
+            logger.notify('{0} is already installed'.format(sys.argv[-1]))
             return
         os.makedirs(egg)
+        logger.notify('Unpacking egg for {0}'.format(self.name))
         with zipfile.ZipFile(fobj) as z:
             z.extractall(egg)
+            logger.notify('Installing {0} egg file'.format(self.name))
             with open(os.path.join(sitedir, 'easy-install.pth')) as f:
                 lines = f.readlines()
             with open(os.path.join(sitedir, 'easy-install.pth'), 'w') as f:
@@ -134,6 +141,7 @@ class Installer(object):
 
     @ staticmethod
     def from_arch(ext, fobj):
+        logger.notify('Unpacking {0}'.format(self.name))
         if ext == '.zip':
             arch = zipfile.ZipFile(fobj)
         else:
@@ -145,9 +153,10 @@ class Installer(object):
                 fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
                 cwd = os.getcwd()
                 os.chdir(fullpath)
+                logger.notify('Running setup.py for {0}'.format(self.name))
                 args = ['python', 'setup.py', 'egg_info', 'install',
                         '--single-version-externally-managed', '--record', recfile]
-                subprocess.call(args)
+                subprocess.call(args, stdout=subprocess.PIPE)
                 os.chdir(cwd)
 
     @ staticmethod
