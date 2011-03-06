@@ -12,7 +12,7 @@ import subprocess
 
 from .req import Requirement
 from .web import WebManager
-from .utils import is_installed, TempDir
+from .utils import is_installed, home, TempDir
 
 try:
     from hashlib import md5
@@ -140,7 +140,7 @@ class Installer(object):
             arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
         with arch as a:
             with TempDir() as tempdir:
-                recfile = os.path.join(os.environ['HOME'], '.pyg', '.pyg-install-record')
+                recfile = os.path.join(home(), '.pyg', '.pyg-install-record')
                 a.extractall(tempdir)
                 fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
                 cwd = os.getcwd()

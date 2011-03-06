@@ -35,3 +35,8 @@ def list_func(args):
         else:
             res.append(v)
     return sys.stdout.write('\n'.join(res) + '\n')
+
+def search_func(args):
+    res = PyPI().search({'name': args.packname})
+    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in \
+                            sorted(res, key=lambda i: i['_pypi_ordering'], reverse=True)) + '\n')

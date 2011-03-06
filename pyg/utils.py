@@ -1,3 +1,5 @@
+import os
+import pwd
 import shutil
 import tempfile
 import pkg_resources
@@ -10,6 +12,9 @@ def is_installed(req):
         return False
     else:
         return True
+
+def home():
+    return pwd.getpwnam(os.getlogin()).pw_dir
 
 
 class TempDir(object):

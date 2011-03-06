@@ -35,6 +35,7 @@ def _set_up():
 
     sub_search = sub.add_parser('search')
     sub_search.add_argument('packname')
+    sub_search.set_defaults(func=opts.search_func)
     return parser
 
 def main():
