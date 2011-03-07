@@ -37,6 +37,11 @@ def _set_up():
     sub_ln.add_argument('path')
     sub_ln.set_defaults(func=opts.link_func)
 
+    sub_uln = sub.add_parser('unlink')
+    sub_uln.add_argument('path', nargs='?')
+    sub_uln.add_argument('-a', '--all', action='store_true', help='Remove all links')
+    sub_uln.set_defaults(func=opts.unlink_func)
+
     sub_search = sub.add_parser('search')
     sub_search.add_argument('packname')
     sub_search.set_defaults(func=opts.search_func)

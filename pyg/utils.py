@@ -9,6 +9,12 @@ import pkg_resources
 from .log import logger
 
 
+def sitep():
+    return site.getusersitepackages()
+
+def pyg_links():
+    return os.path.join(sitep(), 'pyg-links.pth')
+
 def is_installed(req):
     try:
         pkg_resources.get_distribution(req)
@@ -21,7 +27,7 @@ def home():
     return pwd.getpwnam(os.getlogin()).pw_dir
 
 def link(path):
-    sitepath = os.path.join(site.getusersitepackages(), 'pyg-links.pth')
+    sitepath = pyg_links()
     if not os.path.exists(sitepath):
         open(sitepath, 'w').close()
     path = os.path.abspath(path)
@@ -32,6 +38,17 @@ def link(path):
     with open(sitepath, 'a') as f:
         f.write(path)
         f.write('\n')
+
+def unlink(path):
+    path = os.path.abspath(path)
+    with open(pyg_links()) as f:
+        lines = f.readlines()
+    with open(pyg_links(), 'w') as f:
+        for line in lines:
+            if line[:-1] == path:
+                logger.notify('Removing {0} from {1}...'.format(path, pyg_links()))
+                continue
+            f.write(line)
 
 
 class TempDir(object):

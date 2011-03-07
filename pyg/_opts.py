@@ -1,7 +1,8 @@
+import os
 import sys
 from .web import PyPI, WebManager
 from .inst import Installer
-from .utils import is_installed, link
+from .utils import sitep, pyg_links, is_installed, link, unlink
 from .freeze import freeze
 
 
@@ -22,6 +23,11 @@ def uninst_func(args):
 
 def link_func(args):
     return link(args.path)
+
+def unlink_func(args):
+    if args.all:
+        return os.remove(pyg_links())
+    return unlink(args.path)
 
 def freeze_func(args):
     return sys.stdout.write(freeze())
