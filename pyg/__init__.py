@@ -33,6 +33,10 @@ def _set_up():
     sub_fr = sub.add_parser('freeze')
     sub_fr.set_defaults(func=opts.freeze_func)
 
+    sub_ln = sub.add_parser('link')
+    sub_ln.add_argument('path')
+    sub_ln.set_defaults(func=opts.link_func)
+
     sub_search = sub.add_parser('search')
     sub_search.add_argument('packname')
     sub_search.set_defaults(func=opts.search_func)

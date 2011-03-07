@@ -114,25 +114,13 @@ class Installer(object):
         with zipfile.ZipFile(fobj) as z:
             z.extractall(egg)
             logger.notify('Installing {0} egg file'.format(self.name))
-            with open(os.path.join(sitedir, 'easy-install.pth')) as f:
+            with open(os.path.join(sitedir, 'easy-install.pth')) as f: ## TODO: Fix the opening mode to read and write simultaneously
                 lines = f.readlines()
             with open(os.path.join(sitedir, 'easy-install.pth'), 'w') as f:
                 last = lines[-1]
                 f.writelines(lines[:-1])
                 f.write('./' + name + '\n')
                 f.write(last)
-
-    @ staticmethod
-    def from_file(filepath):
-        ext = os.path.splitext(filepath)[1]
-        if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(ext, open(filepath))
-        elif ext == '.egg':
-            return Installer.from_egg(open(filepath), os.path.basename(filepath))
-        elif ext == '.pybundle':
-            return Installer.from_bundle(open(filepath))
-        else:
-            raise NotImplementedError('not implemented yet')
 
     def from_arch(self, ext, fobj):
         logger.notify('Unpacking {0}'.format(self.name))
@@ -153,11 +141,23 @@ class Installer(object):
                 subprocess.call(args, stdout=subprocess.PIPE)
                 os.chdir(cwd)
 
-    @ staticmethod
-    def from_bundle(filepath):
+    def from_file(self, filepath):
+        ext = os.path.splitext(filepath)[1]
+        if ext in ('.gz', '.bz2', '.zip'):
+            return self.from_arch(ext, open(filepath))
+        elif ext in ('.pybundle', '.pyb'):
+            return self.from_bundle(filepath)
+        elif ext == '.egg':
+            return self.from_egg(open(filepath), os.path.basename(filepath))
+        else:
+            raise NotImplementedError('not implemented yet')
+
+    def from_bundle(self, filepath):
         with zipfile.ZipFile(filepath) as z:
             with TempDir() as tempdir:
                 z.extractall(tempdir)
                 location = os.path.join(tempdir, os.path.abspath(filepath))
-                manifest = os.path.join(location, 'pip-manifest.txt')
+                pip_manifest = os.path.join(location, 'pip-manifest.txt')
+                if os.path.exists(os.path.join(location, 'MANIFEST')):
+                    manifest = os.path.join(location, 'MANIFEST')
                 raise NotImplementedError('not implemented yet')

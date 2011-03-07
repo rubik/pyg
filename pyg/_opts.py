@@ -1,7 +1,7 @@
 import sys
 from .web import PyPI, WebManager
 from .inst import Installer
-from .utils import is_installed
+from .utils import is_installed, link
 from .freeze import freeze
 
 
@@ -19,6 +19,9 @@ def install_func(args):
 
 def uninst_func(args):
     return Installer(args.packname, mode='uninst').uninstall()
+
+def link_func(args):
+    return link(args.path)
 
 def freeze_func(args):
     return sys.stdout.write(freeze())
