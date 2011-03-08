@@ -1,8 +1,8 @@
 import os
 import sys
 from .web import PyPI, WebManager
-from .inst import Installer
-from .utils import sitep, pyg_links, is_installed, link, unlink
+from .inst import Installer, Uninstaller
+from .utils import USER_SITE, PYG_LINKS, is_installed, link, unlink
 from .freeze import freeze
 
 
@@ -19,7 +19,7 @@ def install_func(args):
     return install_from_name(args.packname)
 
 def uninst_func(args):
-    return Installer(args.packname, mode='uninst').uninstall()
+    return Uninstaller(args.packname).uninstall()
 
 def link_func(args):
     return link(args.path)

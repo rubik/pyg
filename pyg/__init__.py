@@ -51,6 +51,7 @@ def main():
     parser = _set_up()
     args = parser.parse_args()
     args.func(args)
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()
