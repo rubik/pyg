@@ -13,9 +13,7 @@ def install_func(args):
     if args.develop:
         raise NotImplementedError('not implemented yet')
     if args.file:
-        return Installer.from_file(args.file)
-    if args.bundle:
-        return Installer.from_bundle(args.bundle)
+        return Installer.from_file(args.packname)
     return install_from_name(args.packname)
 
 def uninst_func(args):

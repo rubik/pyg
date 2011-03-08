@@ -16,10 +16,9 @@ def _set_up():
     sub = parser.add_subparsers()
     
     sub_inst = sub.add_parser('install')
-    sub_inst.add_argument('packname', nargs='?')
+    sub_inst.add_argument('packname')
     sub_inst.add_argument('-d', '--develop', action='store_true', help='Installs the package in development mode')
-    sub_inst.add_argument('-b', '--bundle', metavar='PATH', help='Installs the packages in the bundle file')
-    sub_inst.add_argument('-f', '--file', metavar='PATH', help='Does not download the package but use the file in `PATH`')
+    sub_inst.add_argument('-f', '--file', action='store_true', help='Does not download the package but use the local file')
     sub_inst.set_defaults(func=opts.install_func)
 
     sub_un = sub.add_parser('uninstall')
@@ -51,7 +50,6 @@ def main():
     parser = _set_up()
     args = parser.parse_args()
     args.func(args)
-    sys.exit(0)
 
 if __name__ == '__main__':
     main()

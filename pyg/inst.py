@@ -21,7 +21,7 @@ except ImportError:
     from md5 import md5
 
 
-__all__ = ['Installer']
+__all__ = ['Installer', 'Uninstaller', 'Egg', 'Archive']
 
 
 class Installer(object):
@@ -65,15 +65,14 @@ class Installer(object):
             sys.exit(1)
         ext = os.path.splitext(filename)[1]
         if ext in ('.gz', '.bz2', '.zip'):
-            raise NotImplementedError('Add a Archive class')
-            return self.from_arch(ext, fobj)
+            return Installer.from_arch(fobj, ext, self.name)
         elif ext == '.egg':
             return Installer.from_egg(fobj, name, self.name)
         else:
             raise NotImplementedError('not implemented yet')
 
     @ staticmethod
-    def from_egg(fobj, eggname, packname):
+    def from_egg(fobj, eggname, packname=None):
         e = Egg(fobj, eggname, packname)
         if e.install() != 0:
             logger.fatal('E: Egg file not installed')
@@ -82,18 +81,13 @@ class Installer(object):
         return 0
 
     @ staticmethod
-    def from_arch(name, ext, fobj):
-        logger.notify('Unpacking {0}'.format(self.name))
-        if ext == '.zip':
-            arch = zipfile.ZipFile(fobj)
-        else:
-            arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
-        with arch as a:
-            with TempDir() as tempdir:
-                a.extractall(tempdir)
-                fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-                logger.notify('Running setup.py for {0}'.format(self.name))
-                call_setup(fullpath)
+    def from_arch(fobj, ext, name):
+        a = Archive(fobj, ext, name)
+        if a.install() != 0:
+            logger.fatal('E: Package not installed')
+            sys.exit(1)
+        logger.notify('Package installed succesfully')
+        return 0
 
     @ staticmethod
     def from_file(filepath):
@@ -101,14 +95,11 @@ class Installer(object):
         path = os.path.abspath(filepath)
         packname = os.path.basename(filepath)
         if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(os.path.basename(path), ext, open(path))
+            return Installer.from_arch(open(path), ext, packname)
         elif ext in ('.pybundle', '.pyb'):
             return Installer.from_bundle(filepath)
         elif ext == '.egg':
-            e = Egg(open(filepath), path)
-            if e.install() != 0:
-                logger.fatal('E: Egg file not installed')
-                sys.exit(1)
+            Installer.from_egg(open(path), path)
         sys.exit(0)
 
     @ staticmethod
@@ -212,7 +203,26 @@ class Egg(object):
             f.writelines(lines[:-1])
             f.write('./' + self.eggname + '\n')
             f.write(lines[-1])
+        return 0
 
 
 class Archive(object):
-    pass
+    def __init__(self, fobj, ext, name):
+        self.name = name
+        if ext == '.zip':
+            self.arch = zipfile.ZipFile(fobj)
+        else:
+            self.arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
+
+    def install(self):
+        try:
+            with TempDir() as tempdir:
+                with self.arch as a:
+                    a.extractall(tempdir)
+                fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
+                logger.notify('Running setup.py for {0}'.format(self.name))
+                call_setup(fullpath)
+        except Exception as e: ## Ugly but necessary
+            return 1
+        else:
+            return 0
