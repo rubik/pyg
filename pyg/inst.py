@@ -25,10 +25,11 @@ __all__ = ['Installer', 'Uninstaller', 'Egg', 'Archive']
 
 
 class Installer(object):
-    def __init__(self, req):
+    def __init__(self, req, exit=True):
         if is_installed(str(req)):
             logger.notify('{0} is already installed, exiting now...'.format(req))
-            sys.exit(0)
+            if exit:
+                sys.exit(0)
         try:
             self.w = WebManager(req)
         except urllib2.HTTPError as e:
@@ -67,7 +68,7 @@ class Installer(object):
         if ext in ('.gz', '.bz2', '.zip'):
             return Installer.from_arch(fobj, ext, self.name)
         elif ext == '.egg':
-            return Installer.from_egg(fobj, name, self.name)
+            return Installer.from_egg(fobj, filename, self.name)
         else:
             raise NotImplementedError('not implemented yet')
 
@@ -77,7 +78,8 @@ class Installer(object):
         if e.install() != 0:
             logger.fatal('E: Egg file not installed')
             sys.exit(1)
-        logger.notify('Egg file installed successfully')
+        if e.installed:
+            logger.notify('Egg file installed successfully')
         return 0
 
     @ staticmethod
@@ -186,23 +188,37 @@ class Egg(object):
         self.eggname = os.path.basename(eggname)
         self.packname = packname or name_from_egg(eggname)
         self.idir = INSTALL_DIR
-        print self.eggname, self.packname, self.idir
+        self.installed = False
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
         if os.path.exists(eggpath):
-            print eggpath
             logger.notify('{0} is already installed'.format(self.packname))
             return 0
         logger.notify('Installing {0} egg file'.format(self.packname))
         with zipfile.ZipFile(self.fobj) as z:
             z.extractall(os.path.join(self.idir, self.eggname))
+        try:
+            logger.enabled = False
+            logger.notify('Processing dependencies for {0}:'.format(self.packname), force=True)
+            logger.indent += 8
+            with open(os.path.join(self.idir, self.eggname, 'EGG-INFO/requires.txt')) as f:
+                for req in f:
+                    logger.notify('Installing {0}...'.format(req), force=True, addn=False)
+                    logger.enabled= 1
+                    Installer(req, exit=False).install()
+                    logger.notify('DONE')
+        except IOError:
+            pass
+        logger.indent -= 8
+        logger.enabled = True
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
             lines = f.readlines()
         with open(EASY_INSTALL, 'w') as f:
             f.writelines(lines[:-1])
             f.write('./' + self.eggname + '\n')
             f.write(lines[-1])
+        self.installed = True
         return 0
 
 

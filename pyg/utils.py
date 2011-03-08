@@ -57,7 +57,7 @@ def call_setup(path, opts=[], base_opts=['egg_info', 'install', '--single-versio
     args =  ['python', 'setup.py'] + base_opts + [rfile if rfile is not None else RECFILE] + opts
     cwd = os.getcwd()
     os.chdir(path)
-    subprocess.call(args)#, stdout=subprocess.PIPE)
+    subprocess.call(args, stdout=subprocess.PIPE)
     os.chdir(cwd)
 
 

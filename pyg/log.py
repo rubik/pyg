@@ -14,35 +14,38 @@ class Logger(object):
 
     def __init__(self):
         self.indent = 0
+        self.enabled = True
         self.level = Logger.DEBUG
 
-    def verbose(self, msg):
-        return self.log(self.VERBOSE, msg)
+    def verbose(self, msg, **kw):
+        return self.log(self.VERBOSE, msg, **kw)
 
-    def debug(self, msg):
-        return self.log(self.DEBUG, msg)
+    def debug(self, msg, **kw):
+        return self.log(self.DEBUG, msg, **kw)
 
-    def info(self, msg):
-        return self.log(self.INFO, msg)
+    def info(self, msg, **kw):
+        return self.log(self.INFO, msg, **kw)
 
-    def notify(self, msg):
-        return self.log(self.NOTIFY, msg)
+    def notify(self, msg, **kw):
+        return self.log(self.NOTIFY, msg, **kw)
 
-    def warn(self, msg):
-        return self.log(self.WARN, msg)
+    def warn(self, msg, **kw):
+        return self.log(self.WARN, msg, **kw)
 
-    def error(self, msg):
-        return self.log(self.ERROR, msg)
+    def error(self, msg, **kw):
+        return self.log(self.ERROR, msg, **kw)
 
-    def fatal(self, msg):
-        return self.log(self.FATAL, msg)
+    def fatal(self, msg, **kw):
+        return self.log(self.FATAL, msg, **kw)
 
-    def log(self, level, msg):
+    def log(self, level, msg, **kw):
         if level >= self.level:
-            sys.stdout.write(' ' * self.indent + msg)
-            sys.stdout.write('\n')
-            sys.stdout.flush()
-            #logging.log(level, msg)
+            if self.enabled or kw.get('force', None):
+                sys.stdout.write(' ' * self.indent + msg)
+                if kw.get('addn', True):
+                    sys.stdout.write('\n')
+                sys.stdout.flush()
+                #logging.log(level, msg)
 
 
 logger = Logger()

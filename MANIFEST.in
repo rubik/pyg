@@ -4,8 +4,7 @@ include CHANGES
 include LICENSE
 include TODO
 
-include pyg *
-include pyg.py
+recursive-include pyg *
 
-recursive-include doc *
-prune doc/_build
+recursive-include docs *
+prune docs/_build
