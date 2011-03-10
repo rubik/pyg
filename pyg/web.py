@@ -24,10 +24,9 @@ class WebManager(object):
 
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
-    def __init__(self, name, index_url='http://pypi.python.org/pypi'):
+    def __init__(self, req, index_url='http://pypi.python.org/pypi'):
         self.pypi = PyPI(index_url)
-        self.r = Requirement(name)
-        self.name = self.r.name
+        self.name = self.req.name
         try:
             realname = sorted(self.pypi.search({'name': self.name}),
                               key=lambda i: i['_pypi_ordering'], reverse=True)[0]['name']
@@ -52,32 +51,13 @@ class WebManager(object):
 
     def find(self):
         for version in self.versions:
-            if self.r.match(version):
+            if self.req.match(version):
                 for res in self.pypi.release_urls(self.name, str(version)):
                     yield version, res['filename'], res['md5_digest'], res['url']
 
 
-class Finder(object): ## OLD! Now we are using xmlrpclib to communicate with pypi
+class LinkFinder(object): ## OLD! Now we are using xmlrpclib to communicate with pypi
 
     base_url = 'http://pypi.python.org/simple/'
     file_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)">(?P<name>[^\<]+)</a><br/>')
     link_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<name>[^\<]+)</a><br/>')
-
-    def __init__(self, packname):
-        raise DeprecationWarning('pyg.web.Finder is deprecated: use pyg.web.WebManager instead')
-        self.url = '{0}{1}'.format(self.base_url, packname)
-
-    def find(self):
-        files = _FileMapper(list, {'.gz': {}, '.bz2': {}, '.zip': {},
-                                  '.egg': {}, 'others': {}
-                                 }
-                           )
-
-        print 'Checking: {0}'.format(self.url)
-        data = request(self.url)
-        f = self.file_regex.findall(data)
-        links = self.link_regex.findall(data)
-        for l, file in f:
-            ext = os.path.splitext(file)[1]
-            files[ext][file] = l
-        return files, links

@@ -182,46 +182,6 @@ class Uninstaller(object):
                 sys.exit(0)
 
 
-class Egg(object):
-    def __init__(self, fobj, eggname, packname=None):
-        self.fobj = fobj
-        self.eggname = os.path.basename(eggname)
-        self.packname = packname or name_from_egg(eggname)
-        self.idir = INSTALL_DIR
-        self.installed = False
-
-    def install(self):
-        eggpath = os.path.join(self.idir, self.eggname)
-        if os.path.exists(eggpath):
-            logger.notify('{0} is already installed'.format(self.packname))
-            return 0
-        logger.notify('Installing {0} egg file'.format(self.packname))
-        with zipfile.ZipFile(self.fobj) as z:
-            z.extractall(os.path.join(self.idir, self.eggname))
-        try:
-            logger.enabled = False
-            logger.notify('Processing dependencies for {0}:'.format(self.packname), force=True)
-            logger.indent += 8
-            with open(os.path.join(self.idir, self.eggname, 'EGG-INFO/requires.txt')) as f:
-                for req in f:
-                    logger.notify('Installing {0}...'.format(req), force=True, addn=False)
-                    logger.enabled= 1
-                    Installer(req, exit=False).install()
-                    logger.notify('DONE')
-        except IOError:
-            pass
-        logger.indent -= 8
-        logger.enabled = True
-        with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
-            lines = f.readlines()
-        with open(EASY_INSTALL, 'w') as f:
-            f.writelines(lines[:-1])
-            f.write('./' + self.eggname + '\n')
-            f.write(lines[-1])
-        self.installed = True
-        return 0
-
-
 class Archive(object):
     def __init__(self, fobj, ext, name):
         self.name = name

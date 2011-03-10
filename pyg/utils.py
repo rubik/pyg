@@ -53,7 +53,7 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_setup(path, opts=[], base_opts=['egg_info', 'install', '--single-version-externally-managed', '--record'], rfile=None):
+def call_setup(path, opts=[], base_opts=['install', '--single-version-externally-managed', '--record'], rfile=None):
     args =  ['python', 'setup.py'] + base_opts + [rfile if rfile is not None else RECFILE] + opts
     cwd = os.getcwd()
     os.chdir(path)

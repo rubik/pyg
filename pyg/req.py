@@ -75,16 +75,25 @@ class Requirement(object):
         except KeyError: ## Operator not specified, so we pick up any version
             return True
 
-    def best_match(self, reqs):
-        matched = {}
-        for r in reqs:
-            parts = r.split('-')
-            version = Requirement.find_version('-'.join(parts[1:]))
-            if self.version is None or self.match(version):
-                matched[version] = r
-        if len(matched) == 0:
-            return None
-        elif len(matched) == 1:
-            return matched[matched.keys()[0]]
-        ## The highest version possible
-        return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
+    #def best_match(self, reqs):
+    #    matched = {}
+    #    for r in reqs:
+    #        parts = r.split('-')
+    #        version = Requirement.find_version('-'.join(parts[1:]))
+    #        if self.version is None or self.match(version):
+    #            matched[version] = r
+    #    if len(matched) == 0:
+    #        return None
+    #    elif len(matched) == 1:
+    #        return matched[matched.keys()[0]]
+    #    ## The highest version possible
+    #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
+
+    def install(self):
+        w = WebManager(self)
+        try:
+            for v, name, hash, url in w.find():
+                pass
+        except Exception:
+            pass
+        raise NotImplementedError('not implemented yet')
