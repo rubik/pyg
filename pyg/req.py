@@ -1,35 +1,11 @@
+import os
+import sys
 import operator
-import itertools
 
+from .web import WebManager
+from .types import Version, Egg, Archive
+from .log import logger
 
-class Version(object):
-    def __init__(self, v):
-        self.v = v
-        while self.v[-1] == 0:
-            self.v = self.v[:-2]
-
-    def __str__(self):
-        return self.v
-
-    def __repr__(self):
-        return 'Version({0})'.format(self.v)
-
-    def __eq__(self, other):   
-        if len(self.v) != len(other.v):
-            return False
-        return self.v == other.v
-
-    def __ge__(self, other):
-        return self.v >= other.v
-
-    def __gt__(self, other):
-        return self.v > other.v
-
-    def __le__(self, other):
-        return self.v <= other.v
-
-    def __lt__(self, other):
-        return self.v < other.v
 
 
 class Requirement(object):
@@ -93,7 +69,32 @@ class Requirement(object):
         w = WebManager(self)
         try:
             for v, name, hash, url in w.find():
-                pass
-        except Exception:
-            pass
-        raise NotImplementedError('not implemented yet')
+                if name.endswith('.egg'):
+                    vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
+                    if vcode not in name:
+                        continue
+                logger.notify('Downloading {0}'.format(self.name))
+                fobj = cStringIO.StringIO(WebManager.request(url))
+                logger.notify('Checking md5 sum')
+                if md5(fobj.getvalue()).hexdigest() != md5_hash:
+                    logger.fatal('E: {0} appears to be corrupted'.format(self.name))
+                    return
+                ext = os.path.splitext(name)
+                if ext in ('.gz', '.bz2', '.zip'):
+                    a = Archive(fobj, ext, w.name)
+                    try:
+                        a.install()
+                        break
+                    except Exception as err:
+                        logger.error('E: {0}'.format(err))
+                elif ext == '.egg':
+                    e = Egg(fobj, name, w.name)
+                    try:
+                        e.install()
+                        break
+                    except Exception as err:
+                        logger.error('E: {0}'.format(err))
+            else:
+                logger.fatal('E: Did not find files to install')
+        except:
+            logger.fatal('E: An error occurred while installing {0}'.format(w.name))

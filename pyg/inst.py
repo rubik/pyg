@@ -180,25 +180,3 @@ class Uninstaller(object):
                             f.write(line)
                 logger.notify('{0} uninstalled succesfully'.format(self.name))
                 sys.exit(0)
-
-
-class Archive(object):
-    def __init__(self, fobj, ext, name):
-        self.name = name
-        if ext == '.zip':
-            self.arch = zipfile.ZipFile(fobj)
-        else:
-            self.arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
-
-    def install(self):
-        try:
-            with TempDir() as tempdir:
-                with self.arch as a:
-                    a.extractall(tempdir)
-                fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-                logger.notify('Running setup.py for {0}'.format(self.name))
-                call_setup(fullpath)
-        except Exception as e: ## Ugly but necessary
-            return 1
-        else:
-            return 0

@@ -1,19 +1,11 @@
 import re
-import os.path
 import urllib2
 import xmlrpclib
-import collections
 
-from .req import Requirement, Version
-
-
-__all__ = ['WebManager', 'PyPI', 'Finder']
+from .types import Version
 
 
-class _FileMapper(collections.defaultdict):
-
-    def __missing__(self, key):
-        return self['others']
+__all__ = ['WebManager', 'PyPI']
 
 
 def PyPI(index_url='http://pypi.python.org/pypi'):

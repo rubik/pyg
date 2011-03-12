@@ -53,8 +53,11 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_setup(path, opts=[], base_opts=['install', '--single-version-externally-managed', '--record'], rfile=None):
-    args =  ['python', 'setup.py'] + base_opts + [rfile if rfile is not None else RECFILE] + opts
+def call_setup(path):
+    code = '''
+    __file__={0};execfile(__file__)
+    '''.format(path)
+    args =  ['python', '-c', code, 'install', '--egg-info']
     cwd = os.getcwd()
     os.chdir(path)
     subprocess.call(args, stdout=subprocess.PIPE)
