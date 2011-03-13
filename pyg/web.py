@@ -18,6 +18,7 @@ class WebManager(object):
 
     def __init__(self, req, index_url='http://pypi.python.org/pypi'):
         self.pypi = PyPI(index_url)
+        self.req = req
         self.name = self.req.name
         try:
             realname = sorted(self.pypi.search({'name': self.name}),

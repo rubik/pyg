@@ -1,13 +1,14 @@
 import os
 import sys
 from .web import PyPI, WebManager
+from .req import Requirement
 from .inst import Installer, Uninstaller
 from .utils import USER_SITE, PYG_LINKS, is_installed, link, unlink
 from .freeze import freeze
 
 
 def install_from_name(name):
-    return Installer(name).install()
+    return Requirement(name).install()
 
 def install_func(args):
     if args.develop:

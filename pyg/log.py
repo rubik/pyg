@@ -13,6 +13,10 @@ class Logger(object):
     FATAL = logging.FATAL
 
     def __init__(self):
+        import os, pwd
+        self._logger = logging.basicConfig(filename=os.path.join(pwd.getpwnam(os.getlogin()).pw_dir,
+                                                                 '.pyg', 'pyg.log'),
+                                           level=logging.DEBUG)
         self.indent = 0
         self.enabled = True
         self.level = Logger.DEBUG
@@ -41,11 +45,12 @@ class Logger(object):
     def log(self, level, msg, **kw):
         if level >= self.level:
             if self.enabled or kw.get('force', None):
-                sys.stdout.write(' ' * self.indent + msg)
+                msg = ' ' * self.indent + msg
+                sys.stdout.write(msg)
                 if kw.get('addn', True):
                     sys.stdout.write('\n')
                 sys.stdout.flush()
-                #logging.log(level, msg)
+                logging.log(level, msg)
 
 
 logger = Logger()

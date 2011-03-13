@@ -31,6 +31,10 @@ def name_from_egg(eggname):
     return egg.search(eggname).group(1)
 
 def link(path):
+    path = os.path.abspath(path)
+    if not os.path.exists(path):
+        logger.error('{0} does not exist'.format(path))
+        sys.exit(1)
     if not os.path.exists(PYG_LINKS):
         open(PYG_LINKS, 'w').close()
     path = os.path.abspath(path)
@@ -54,10 +58,8 @@ def unlink(path):
             f.write(line)
 
 def call_setup(path):
-    code = '''
-    __file__={0};execfile(__file__)
-    '''.format(path)
-    args =  ['python', '-c', code, 'install', '--egg-info']
+    code = '__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
+    args =  ['python', '-c', code, 'install', 'egg_info']
     cwd = os.getcwd()
     os.chdir(path)
     subprocess.call(args, stdout=subprocess.PIPE)

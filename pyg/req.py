@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import operator
+import cStringIO
 import pkg_resources
 
 try:
@@ -73,7 +74,9 @@ class Requirement(object):
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
     def install_hook(r):
-        raise NotImplementedError
+        _name_re = re.compile(r'^([^\(]+)')
+        name, version = _name_re.search(r).group().strip().split()
+        Requirement('{0}=={1}'.format(name, version)).install()
 
     def install(self):
         w = WebManager(self)
@@ -86,23 +89,26 @@ class Requirement(object):
                 logger.notify('Downloading {0}'.format(self.name))
                 fobj = cStringIO.StringIO(WebManager.request(url))
                 logger.notify('Checking md5 sum')
-                if md5(fobj.getvalue()).hexdigest() != md5_hash:
+                if md5(fobj.getvalue()).hexdigest() != hash:
                     logger.fatal('E: {0} appears to be corrupted'.format(self.name))
                     return
-                ext = os.path.splitext(name)
+                ext = os.path.splitext(name)[1]
                 if ext in ('.gz', '.bz2', '.zip'):
                     installer = Archive(fobj, ext, w.name)
                 elif ext == '.egg':
                     installer = Egg(fobj, name, w.name)
+                else:
+                    continue
                 try:
                     installer.install()
-                    break
                 except Exception as err:
                     logger.error('E: {0}'.format(err))
                 # Now let's install dependencies
                 pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse(str(self)),),
                                                     installer=Requirement.install_hook)
+                break
             else:
                 logger.fatal('E: Did not find files to install')
-        except:
+        except Exception as e:
+            print e
             logger.fatal('E: An error occurred while installing {0}'.format(w.name))
