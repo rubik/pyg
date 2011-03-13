@@ -16,7 +16,8 @@ USER_SITE = site.getusersitepackages()
 EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
 HOME = pwd.getpwnam(os.getlogin()).pw_dir
-RECFILE = os.path.join(HOME, '.pyg', '.pyg-install-record')
+PYG_HOME = os.path.join(HOME, '.pyg')
+RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
 
 def is_installed(req):
     try:
@@ -59,7 +60,7 @@ def unlink(path):
 
 def call_setup(path):
     code = '__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
-    args =  ['python', '-c', code, 'install', 'egg_info']
+    args =  ['python', '-c', code, 'install', 'egg_info', '--egg-base', PYG_HOME]
     cwd = os.getcwd()
     os.chdir(path)
     subprocess.call(args, stdout=subprocess.PIPE)

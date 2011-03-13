@@ -32,6 +32,9 @@ class Requirement(object):
     def __repr__(self):
         return 'Requirement({0})'.format(self.req)
 
+    def __str__(self):
+        return str(self.req)
+
     def split(self):
         for c in ('==', '>=', '>', '<=', '<'):
             if c in self.req:
@@ -104,11 +107,10 @@ class Requirement(object):
                 except Exception as err:
                     logger.error('E: {0}'.format(err))
                 # Now let's install dependencies
-                pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse(str(self)),),
+                pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(self, v)),),
                                                     installer=Requirement.install_hook)
                 break
             else:
                 logger.fatal('E: Did not find files to install')
         except Exception as e:
-            print e
             logger.fatal('E: An error occurred while installing {0}'.format(w.name))

@@ -2,7 +2,7 @@ import os
 import tarfile
 import zipfile
 
-from .utils import INSTALL_DIR, TempDir, call_setup
+from .utils import EASY_INSTALL, INSTALL_DIR, TempDir, call_setup
 from .log import logger
 
 class Version(object):
