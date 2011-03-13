@@ -1,6 +1,13 @@
 import os
+import re
 import sys
 import operator
+import pkg_resources
+
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
 
 from .web import WebManager
 from .types import Version, Egg, Archive
@@ -65,6 +72,9 @@ class Requirement(object):
     #    ## The highest version possible
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
+    def install_hook(r):
+        raise NotImplementedError
+
     def install(self):
         w = WebManager(self)
         try:
@@ -81,19 +91,17 @@ class Requirement(object):
                     return
                 ext = os.path.splitext(name)
                 if ext in ('.gz', '.bz2', '.zip'):
-                    a = Archive(fobj, ext, w.name)
-                    try:
-                        a.install()
-                        break
-                    except Exception as err:
-                        logger.error('E: {0}'.format(err))
+                    installer = Archive(fobj, ext, w.name)
                 elif ext == '.egg':
-                    e = Egg(fobj, name, w.name)
-                    try:
-                        e.install()
-                        break
-                    except Exception as err:
-                        logger.error('E: {0}'.format(err))
+                    installer = Egg(fobj, name, w.name)
+                try:
+                    installer.install()
+                    break
+                except Exception as err:
+                    logger.error('E: {0}'.format(err))
+                # Now let's install dependencies
+                pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse(str(self)),),
+                                                    installer=Requirement.install_hook)
             else:
                 logger.fatal('E: Did not find files to install')
         except:

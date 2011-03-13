@@ -13,12 +13,6 @@ import subprocess
 from .req import Requirement
 from .web import WebManager
 from .log import logger
-from .utils import is_installed, name_from_egg, call_setup, TempDir, INSTALL_DIR, EASY_INSTALL
-
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
 
 
 __all__ = ['Installer', 'Uninstaller', 'Egg', 'Archive']
@@ -38,58 +32,7 @@ class Installer(object):
         self.name = self.w.name
 
     def install(self):
-        try:
-            files = self.w.find()
-        except urllib2.HTTPError as e:
-            logger.fatal('E: urllib2 returned error code: {0}. Message: {1}'.format(e.code, e.msg))
-            return
-        for version, name, md5_hash, url in files:
-            if name.endswith('.egg'):
-                vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
-                if vcode not in name:
-                    continue
-            if self.from_ext(name, md5_hash, url) == 0:
-                return 0
-        else:
-            ## TODO: We have to check downloads links before throwing error
-            logger.error('{0} not found'.format(self.name))
-            sys.exit(1)
-
-    def from_ext(self, filename, md5_hash, file_url):
-        url = file_url
-        if file_url.startswith('../..'):
-            url = 'http://pypi.python.org/' + file_url[6:]
-        logger.notify('Downloading {0}'.format(self.name))
-        fobj = cStringIO.StringIO(WebManager.request(url))
-        if md5(fobj.getvalue()).hexdigest() != md5_hash:
-            logger.fatal('E: {0} appears to be corrupted'.format(self.name))
-            sys.exit(1)
-        ext = os.path.splitext(filename)[1]
-        if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(fobj, ext, self.name)
-        elif ext == '.egg':
-            return Installer.from_egg(fobj, filename, self.name)
-        else:
-            raise NotImplementedError('not implemented yet')
-
-    @ staticmethod
-    def from_egg(fobj, eggname, packname=None):
-        e = Egg(fobj, eggname, packname)
-        if e.install() != 0:
-            logger.fatal('E: Egg file not installed')
-            sys.exit(1)
-        if e.installed:
-            logger.notify('Egg file installed successfully')
-        return 0
-
-    @ staticmethod
-    def from_arch(fobj, ext, name):
-        a = Archive(fobj, ext, name)
-        if a.install() != 0:
-            logger.fatal('E: Package not installed')
-            sys.exit(1)
-        logger.notify('Package installed succesfully')
-        return 0
+        pass
 
     @ staticmethod
     def from_file(filepath):

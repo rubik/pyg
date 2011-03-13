@@ -6,32 +6,27 @@
 Welcome to pyg's documentation!
 ===============================
 
-pyg is a Python Package Manager.
+pyg is a Python Package Manager. It can install, remove and bundle packages.
 
-Pyg's features
---------------
+.. toctree::
+   :maxdepth: 1
 
-pyg can:
+    quickstart
 
-    * install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundles`
-    * uninstall packages
-    * define fixed sets of requirement
-    * perform searches on PyPI
+Overview
+--------
 
-Currently pyg cannot:
-    * install from binaries (e.g. from :file:`.exe` or :file:`.msi`)
-    * install packages in editable mode from VCS (GitHub, Bitbucket, Bazaar, Svn)
+.. toctree::
+   :maxdepth: 1
 
+   features
 
-Uninstall
+Using Pyg
 ---------
-
-pyg can uninstall most installed packages with ``pyg uninstall packname``.
-
-It tries to detect the directory where the packages have been installed and delete them.
-pyg can uninstall almost all packages, except those that have been installed in editable mode. 
-
 
 .. toctree::
    :maxdepth: 2
+
+   cmdline
+   library
 
