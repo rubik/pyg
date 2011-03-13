@@ -11,7 +11,7 @@ pyg is a Python Package Manager. It can install, remove and bundle packages.
 .. toctree::
    :maxdepth: 1
 
-    quickstart
+   quickstart
 
 Overview
 --------
