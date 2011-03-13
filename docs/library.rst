@@ -1,4 +1,4 @@
-.. _lib::
+.. _lib:
 
 Using Pyg as a Python library
 =============================

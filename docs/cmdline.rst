@@ -1,4 +1,4 @@
-.. _cmdline::
+.. _cmdline:
 
 Using Pyg from the command line
 ===============================
