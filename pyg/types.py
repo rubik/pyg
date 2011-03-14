@@ -53,7 +53,7 @@ class Egg(object):
         eggpath = os.path.join(self.idir, self.eggname)
         if os.path.exists(eggpath):
             logger.notify('{0} is already installed'.format(self.packname))
-            return
+            raise AlreadyInstalled('ciapuccca ia lredy insalled')
         logger.notify('Installing {0} egg file'.format(self.packname))
         with zipfile.ZipFile(self.fobj) as z:
             z.extractall(os.path.join(self.idir, self.eggname))

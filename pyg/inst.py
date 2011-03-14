@@ -32,8 +32,16 @@ class Installer(object):
         r.install()
 
         # Now let's install dependencies
-        pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(r, str(r.version))),),
-                                            installer=self._install_hook)
+        if r.op:
+            req = pkg_resources.Requirement.parse(str(r))
+        else:
+            req = pkg_resources.Requirement.parse('{0}=={1}'.format(r, str(r.version)))
+        try:
+            pkg_resources.WorkingSet().resolve((req,),
+                                           installer=self._install_hook)
+        except pkg_resources.VersionConflict as e:
+            print e.message
+            logger.warn('W: Version conflict: {0}'.format(r))
 
     @ staticmethod
     def from_req_file(filepath):

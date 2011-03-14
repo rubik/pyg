@@ -11,7 +11,7 @@ except ImportError:
     from md5 import md5
 
 from .web import WebManager
-from .types import Version, Egg, Archive, InstallationError
+from .types import Version, Egg, Archive, InstallationError, AlreadyInstalled
 from .log import logger
 
 
@@ -102,6 +102,8 @@ class Requirement(object):
                     if not self.version:
                         self.version = v
                 except Exception as err:
+                    if err is AlreadyInstalled:
+                        raise
                     logger.error('E: {0}'.format(err))
                     raise InstallationError
                 break
@@ -109,5 +111,7 @@ class Requirement(object):
                 logger.fatal('E: Did not find files to install')
                 raise InstallationError
         except Exception as e:
+            if e is AlreadyInstalled:
+                raise
             logger.fatal('E: An error occurred while installing {0}'.format(w.name))
             raise InstallationError

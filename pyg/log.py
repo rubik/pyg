@@ -14,7 +14,11 @@ class Logger(object):
 
     def __init__(self):
         import os, pwd
-        self._logger = logging.basicConfig(filename=os.path.join(pwd.getpwnam(os.getlogin()).pw_dir,
+        try:
+            home = pwd.getpwnam(os.getlogin()).pw_dir
+        except OSError:
+            hoem = pwd.getpwuid(os.getuid()).pw_dir
+        self._logger = logging.basicConfig(filename=os.path.join(home,
                                                                  '.pyg', 'pyg.log'),
                                            level=logging.DEBUG)
         self.indent = 0
