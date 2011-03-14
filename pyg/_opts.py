@@ -1,20 +1,21 @@
 import os
 import sys
 from .web import PyPI, WebManager
-from .req import Requirement
 from .inst import Installer, Uninstaller
 from .utils import USER_SITE, PYG_LINKS, is_installed, link, unlink
 from .freeze import freeze
 
 
 def install_from_name(name):
-    return Requirement(name).install()
+    return Installer(name).install()
 
 def install_func(args):
     if args.develop:
         raise NotImplementedError('not implemented yet')
     if args.file:
         return Installer.from_file(args.packname)
+    if args.req_file:
+        return Installer.from_req_file(args.packname)
     return install_from_name(args.packname)
 
 def uninst_func(args):

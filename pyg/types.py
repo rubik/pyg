@@ -2,8 +2,16 @@ import os
 import tarfile
 import zipfile
 
-from .utils import EASY_INSTALL, INSTALL_DIR, TempDir, call_setup
+from .utils import EASY_INSTALL, INSTALL_DIR, TempDir, call_setup, name_from_egg
 from .log import logger
+
+
+class InstallationError(Exception):
+    pass
+
+
+class AlreadyInstalled(InstallationError):
+    pass
 
 class Version(object):
     def __init__(self, v):
@@ -72,3 +80,39 @@ class Archive(object):
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
             logger.notify('Running setup.py for {0}'.format(self.name))
             call_setup(fullpath)
+
+
+class Bundle(object):
+    def __init__(self, filepath):
+        self.path = os.path.abspath(filepath)
+
+    def install(self):
+        with TempDir() as tempdir:
+            with zipfile.ZipFile(self.path) as z:
+                z.extractall(tempdir)
+            location = os.path.join(tempdir, 'build')
+            pip_manifest = os.path.join(tempdir, 'pip-manifest.txt')
+            with open(pip_manifest) as pf:
+                lines = pf.readlines()[4:]
+                main_pack, deps = [], []
+                current = main_pack
+                for line in lines:
+                    if line.startswith('#'):
+                        current = deps
+                        continue
+                    current.append(line.split('==')[0])
+            logger.notify('Installing dependencies')
+            logger.indent += 8
+            for d in deps:
+                l = os.path.join(location, d)
+                logger.notify('Calling setup.py for {0}'.format(d))
+                call_setup(l)
+                logger.notify('{0}: installed'.format(d))
+            logger.indent = 0
+            logger.notify('Finished processing dependencies')
+            logger.notify('Installing main package')
+            for p in main_pack:
+                l = os.path.join(location, p)
+                logger.notify('Calling setup.py for {0}'.format(p))
+                call_setup(l)
+            logger.info('Bundle installed successfully')

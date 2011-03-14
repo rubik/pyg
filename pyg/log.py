@@ -18,7 +18,6 @@ class Logger(object):
                                                                  '.pyg', 'pyg.log'),
                                            level=logging.DEBUG)
         self.indent = 0
-        self.enabled = True
         self.level = Logger.DEBUG
 
     def verbose(self, msg, **kw):
@@ -44,13 +43,12 @@ class Logger(object):
 
     def log(self, level, msg, **kw):
         if level >= self.level:
-            if self.enabled or kw.get('force', None):
-                msg = ' ' * self.indent + msg
-                sys.stdout.write(msg)
-                if kw.get('addn', True):
-                    sys.stdout.write('\n')
-                sys.stdout.flush()
-                logging.log(level, msg)
+            msg = ' ' * self.indent + msg
+            sys.stdout.write(msg)
+            if kw.get('addn', True):
+                sys.stdout.write('\n')
+            sys.stdout.flush()
+            logging.log(level, msg)
 
 
 logger = Logger()

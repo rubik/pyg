@@ -1,81 +1,78 @@
 import re
+import os
 import sys
 import site
 import shutil
-import urllib2
-import os.path
 import zipfile
-import tarfile
-import tempfile
-import cStringIO
-import subprocess
 
 from .req import Requirement
-from .web import WebManager
+from .utils import TempDir, EASY_INSTALL, is_installed
+from .types import Archive, Egg, Bundle, InstallationError, AlreadyInstalled
 from .log import logger
 
 
-__all__ = ['Installer', 'Uninstaller', 'Egg', 'Archive']
+__all__ = ['Installer', 'Uninstaller']
 
 
 class Installer(object):
-    def __init__(self, req, exit=True):
-        if is_installed(str(req)):
+    def __init__(self, req):
+        if is_installed(req):
             logger.notify('{0} is already installed, exiting now...'.format(req))
-            if exit:
-                sys.exit(0)
-        try:
-            self.w = WebManager(req)
-        except urllib2.HTTPError as e:
-            logger.fatal('E: urllib2 returned error code: {0}. Message: {1}'.format(e.code, e.msg))
-            sys.exit(1)
-        self.name = self.w.name
+            raise AlreadyInstalled
+        self.req = req
+
+    def _install_hook(req):
+        _name_re = re.compile(r'^([^\(]+)')
+        name, version = _name_re.search(r).group().strip().split()
+        Installer('{0}=={1}'.format(name, version)).install()
 
     def install(self):
-        pass
+        r = Requirement(self.req)
+        r.install()
+
+        # Now let's install dependencies
+        pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(r, r.version)),),
+                                            installer=self.install_hook)
+
+    @ staticmethod
+    def from_req_file(filepath):
+        path = os.path.abspath(filepath)
+        not_installed = set()
+        with open(path) as f:
+            for line in f:
+                try:
+                    Installer(line.strip()).install()
+                except AlreadyInstalled:
+                    continue
+                except InstallationError:
+                    not_installed.add(line.strip())
+        if not_installed:
+            logger.warn('These packages have not been installed:')
+            logger.indent = 8
+            for req in not_installed:
+                logger.info(req)
+            logger.indent = 0
+            raise InstallationError
 
     @ staticmethod
     def from_file(filepath):
         ext = os.path.splitext(filepath)[1]
         path = os.path.abspath(filepath)
-        packname = os.path.basename(filepath)
+        packname = os.path.basename(filepath).split('-')[0]
         if ext in ('.gz', '.bz2', '.zip'):
-            return Installer.from_arch(open(path), ext, packname)
+            installer = Archive(open(path), ext, packname)
         elif ext in ('.pybundle', '.pyb'):
-            return Installer.from_bundle(filepath)
+            installer = Bundle(filepath)
         elif ext == '.egg':
-            Installer.from_egg(open(path), path)
-        sys.exit(0)
-
-    @ staticmethod
-    def from_bundle(filepath):
-        path = os.path.abspath(filepath)
-        with TempDir() as tempdir:
-            with zipfile.ZipFile(path) as z:
-                z.extractall(tempdir)
-            location = os.path.join(tempdir, 'build')
-            pip_manifest = os.path.join(tempdir, 'pip-manifest.txt')
-            with open(pip_manifest) as pf:
-                lines = pf.readlines()[4:]
-                main_pack, deps = [], []
-                current = main_pack
-                for line in lines:
-                    if line.startswith('#'):
-                        current = deps
-                        continue
-                    current.append(line.split('==')[0])
-            for d in deps:
-                l = os.path.join(location, d)
-                logger.notify('Calling setup.py for {0}'.format(d))
-                call_setup(l)
-                logger.notify('{0}: installed'.format(d))
-            logger.notify('Finished processing dependencies')
-            logger.notify('Installing main package')
-            for p in main_pack:
-                l = os.path.join(location, p)
-                logger.notify('Calling setup.py for {0}'.format(p))
-                call_setup(l)
-            logger.info('Bundle installed successfully')
+            installer = Egg(open(path), path)
+        else:
+            logger.fatal('E: Cannot install {0}'.format(path))
+            sys.exit(1)
+        try:
+            installer.install()
+        except Exception as e:
+            logger.fatal('E: {0}'.format(e))
+            sys.exit(1)
 
 
 class Uninstaller(object):
@@ -103,7 +100,7 @@ class Uninstaller(object):
             logger.info(d)
         logger.indent -= 8
         while True:
-            u = raw_input('Proceed? (y/[n]) ')
+            u = raw_input('Proceed? (y/[n]) ').lower()
             if u in ('n', ''):
                 logger.info('{0} has not been uninstalled'.format(self.name))
                 sys.exit(0)

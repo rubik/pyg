@@ -11,7 +11,7 @@ except ImportError:
     from md5 import md5
 
 from .web import WebManager
-from .types import Version, Egg, Archive
+from .types import Version, Egg, Archive, InstallationError
 from .log import logger
 
 
@@ -76,11 +76,6 @@ class Requirement(object):
     #    ## The highest version possible
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
-    def install_hook(r):
-        _name_re = re.compile(r'^([^\(]+)')
-        name, version = _name_re.search(r).group().strip().split()
-        Requirement('{0}=={1}'.format(name, version)).install()
-
     def install(self):
         w = WebManager(self)
         try:
@@ -104,13 +99,13 @@ class Requirement(object):
                     continue
                 try:
                     installer.install()
+                    self.version = Version(v)
                 except Exception as err:
                     logger.error('E: {0}'.format(err))
-                # Now let's install dependencies
-                pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(self, v)),),
-                                                    installer=Requirement.install_hook)
                 break
             else:
                 logger.fatal('E: Did not find files to install')
+                raise InstallationError
         except Exception as e:
             logger.fatal('E: An error occurred while installing {0}'.format(w.name))
+            raise InstallationError
