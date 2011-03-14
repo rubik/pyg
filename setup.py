@@ -6,7 +6,7 @@ long_desc = '''
 Pyg is a Python package manager that is meant to be an alternative to Easy_Install.
 '''
 
-requires = ['argparse']
+requires = ['setuptools', 'argparse']
 try:
     import argparse
 except ImportError:
@@ -16,6 +16,7 @@ else:
 
 setup(name='pyg',
       version=pyg.__version__,
+      url='http://pyg.readthedocs.org',
       download_url='http://pypi.python.org/pypi/pyg',
       license='MIT',
       author='Michele Lacchia',
@@ -30,7 +31,7 @@ setup(name='pyg',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Build Tools'
       ],
-      platforms='all',
+      platforms='any',
       packages=find_packages(),
       install_requires=requires,
       entry_points={
