@@ -17,7 +17,7 @@ class Logger(object):
         try:
             home = pwd.getpwnam(os.getlogin()).pw_dir
         except OSError:
-            hoem = pwd.getpwuid(os.getuid()).pw_dir
+            home = pwd.getpwuid(os.getuid()).pw_dir
         self._logger = logging.basicConfig(filename=os.path.join(home,
                                                                  '.pyg', 'pyg.log'),
                                            level=logging.DEBUG)
