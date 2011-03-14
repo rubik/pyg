@@ -99,9 +99,11 @@ class Requirement(object):
                     continue
                 try:
                     installer.install()
-                    self.version = Version(v)
+                    if not self.version:
+                        self.version = v
                 except Exception as err:
                     logger.error('E: {0}'.format(err))
+                    raise InstallationError
                 break
             else:
                 logger.fatal('E: Did not find files to install')

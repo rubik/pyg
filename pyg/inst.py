@@ -4,6 +4,7 @@ import sys
 import site
 import shutil
 import zipfile
+import pkg_resources
 
 from .req import Requirement
 from .utils import TempDir, EASY_INSTALL, is_installed
@@ -31,8 +32,8 @@ class Installer(object):
         r.install()
 
         # Now let's install dependencies
-        pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(r, r.version)),),
-                                            installer=self.install_hook)
+        pkg_resources.WorkingSet().resolve((pkg_resources.Requirement.parse('{0}=={1}'.format(r, str(r.version))),),
+                                            installer=self._install_hook)
 
     @ staticmethod
     def from_req_file(filepath):
