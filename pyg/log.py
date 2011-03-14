@@ -13,18 +13,14 @@ class Logger(object):
     FATAL = logging.FATAL
 
     def __init__(self):
-        import os, pwd
-        try:
-            home = pwd.getpwnam(os.getlogin()).pw_dir
-        except OSError:
-            home = pwd.getpwuid(os.getuid()).pw_dir
-        if not os.path.exists(home):
-            os.makedirs(home)
-        self._logger = logging.basicConfig(filename=os.path.join(home,
-                                                                 '.pyg', 'pyg.log'),
-                                           level=logging.DEBUG)
         self.indent = 0
         self.level = Logger.DEBUG
+
+    def activate(self):
+        import os, pwd
+        self._logger = logging.basicConfig(filename=os.path.join(pwd.getpwnam(os.getlogin()).pw_dir,
+                                                                 '.pyg', 'pyg.log'),
+                                           level=logging.DEBUG)
 
     def verbose(self, msg, **kw):
         return self.log(self.VERBOSE, msg, **kw)
