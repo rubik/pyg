@@ -10,14 +10,15 @@ import pkg_resources
 
 from .log import logger
 
-
-INSTALL_DIR = site.getsitepackages()[0]
-USER_SITE = site.getusersitepackages()
-EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
-PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
-HOME = pwd.getpwnam(os.getlogin()).pw_dir
-PYG_HOME = os.path.join(HOME, '.pyg')
-RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
+## Lame hack entirely for readthedocs.org
+if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg'):
+    INSTALL_DIR = site.getsitepackages()[0]
+    USER_SITE = site.getusersitepackages()
+    EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
+    PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
+    HOME = pwd.getpwnam(os.getlogin()).pw_dir
+    PYG_HOME = os.path.join(HOME, '.pyg')
+    RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
 
 def is_installed(req):
     try:
