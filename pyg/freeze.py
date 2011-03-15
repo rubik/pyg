@@ -14,4 +14,4 @@ def freeze():
                     except ValueError:
                         continue
                     packages.append('{0}=={1}'.format(name, version))
-    return '\n'.join(sorted(packages)) + '\n'
+    return sorted(packages)

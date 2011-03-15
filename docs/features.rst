@@ -20,3 +20,6 @@ Pyg can uninstall most installed packages with ``Pyg uninstall packname``.
 
 It tries to detect the directory where the packages have been installed and delete them.
 Pyg can uninstall all packages, except those that have been installed in editable mode.
+
+.. seealso::
+    :ref:`uninst`

@@ -4,13 +4,13 @@ import argparse
 
 import _opts as opts
 from .types import InstallationError, AlreadyInstalled
+from .utils import PYG_HOME
 
 
 __version__ = '0.1'
 
-pyg_home = os.path.join(os.environ['HOME'], '.pyg')
-if not os.path.exists(pyg_home):
-    os.makedirs(pyg_home)
+if not os.path.exists(PYG_HOME):
+    os.makedirs(PYG_HOME)
 
 def _set_up():
     parser = argparse.ArgumentParser(prog='pyg', version='0.1')
@@ -26,12 +26,18 @@ def _set_up():
     sub_un = sub.add_parser('uninstall')
     sub_un.add_argument('packname')
     sub_un.set_defaults(func=opts.uninst_func)
+
+    sub_rm = sub.add_parser('rm')
+    sub_rm.add_argument('packname')
+    sub_rm.set_defaults(func=opts.uninst_func)
     
     sub_list = sub.add_parser('list')
     sub_list.add_argument('packname')
     sub_list.set_defaults(func=opts.list_func)
 
     sub_fr = sub.add_parser('freeze')
+    sub_fr.add_argument('-c', '--count', action='store_true', help='only returns requirements count')
+    sub_fr.add_argument('-f', '--file', metavar='<path>', help='writes requirements into the specified file')
     sub_fr.set_defaults(func=opts.freeze_func)
 
     sub_ln = sub.add_parser('link')

@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+Thanks to: `Free Domain Name <http://www.freedomain.co.nr/>`_
+
 Welcome to pyg's documentation!
 ===============================
 
@@ -29,6 +31,3 @@ Using Pyg
 
    cmdline
    library
-
-
-Thanks to: `Free Domain Name <http://www.freedomain.co.nr/>`_

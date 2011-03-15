@@ -22,10 +22,11 @@ class Installer(object):
             raise AlreadyInstalled
         self.req = req
 
-    def _install_hook(req):
+    def _install_hook(self, req):
         _name_re = re.compile(r'^([^\(]+)')
-        name, version = _name_re.search(r).group().strip().split()
-        Installer('{0}=={1}'.format(name, version)).install()
+        print _name_re.search(str(req)).group().strip().split()
+        r = Requirement(_name_re.search(str(req)).group().strip().split())
+        Installer('{0}=={1}'.format(r.name, r.version)).install()
 
     def install(self):
         r = Requirement(self.req)
@@ -38,7 +39,7 @@ class Installer(object):
             req = pkg_resources.Requirement.parse('{0}=={1}'.format(r, str(r.version)))
         try:
             pkg_resources.WorkingSet().resolve((req,),
-                                           installer=self._install_hook)
+                                                installer=self._install_hook)
         except pkg_resources.VersionConflict as e:
             print e.message
             logger.warn('W: Version conflict: {0}'.format(r))
@@ -120,7 +121,7 @@ class Uninstaller(object):
                     except OSError: ## It is not a directory
                         os.remove(d)
                     logger.notify('Deleting: {0}...'.format(d))
-                logger.notify('Removing eggs from easy_install.pth...')
+                logger.notify('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
                 with open(EASY_INSTALL, 'w') as f:

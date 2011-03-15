@@ -30,7 +30,15 @@ def unlink_func(args):
     return unlink(args.path)
 
 def freeze_func(args):
-    return sys.stdout.write(freeze())
+    f = freeze()
+    if args.count:
+        sys.stdout.write(str(len(freeze())) + '\n')
+        return
+    f = '\n'.join(f) + '\n'
+    if args.file:
+        with open(os.path.abspath(args.file), 'w') as req_file:
+            req_file.write(f)
+    return sys.stdout.write(f)
 
 def list_func(args):
     res = []

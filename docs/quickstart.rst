@@ -1,11 +1,8 @@
 Quickstart
 ==========
 
-Installation
-------------
-
 Installing Pyg
-++++++++++++++
+--------------
 
 To install Pyg it only takes one simple command::
 
@@ -19,7 +16,7 @@ And then you should no longer need them.
 
 
 Getting the Source
-++++++++++++++++++
+------------------
 
 You can also install Pyg from the source. The lastest release is avaiable on GitHub:
 
