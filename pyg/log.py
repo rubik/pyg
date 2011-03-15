@@ -55,3 +55,5 @@ class Logger(object):
 import os
 if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg'):
     logger = Logger()
+else:
+    logger = None
