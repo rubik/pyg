@@ -13,14 +13,12 @@ class Logger(object):
     FATAL = logging.FATAL
 
     def __init__(self):
-        self.indent = 0
-        self.level = Logger.DEBUG
-
-    def activate(self):
         import os, pwd
         self._logger = logging.basicConfig(filename=os.path.join(pwd.getpwnam(os.getlogin()).pw_dir,
                                                                  '.pyg', 'pyg.log'),
                                            level=logging.DEBUG)
+        self.indent = 0
+        self.level = Logger.DEBUG
 
     def verbose(self, msg, **kw):
         return self.log(self.VERBOSE, msg, **kw)
@@ -53,4 +51,7 @@ class Logger(object):
             logging.log(level, msg)
 
 
-logger = Logger()
+## Lame hack entirely for readthedocs.org
+import os
+if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg'):
+    logger = Logger()
