@@ -1,6 +1,7 @@
 import os
 import tarfile
 import zipfile
+import pkg_resources
 
 from .utils import EASY_INSTALL, INSTALL_DIR, TempDir, call_setup, name_from_egg
 from .log import logger
@@ -13,34 +14,62 @@ class InstallationError(Exception):
 class AlreadyInstalled(InstallationError):
     pass
 
+#class Version(object): ## OLD!! Does not work properly!
+#    def __init__(self, v):
+#        self.v = v
+#        while self.v[-1] == 0:
+#            self.v = self.v[:-2]
+#
+#    def __str__(self):
+#        return self.v
+#
+#    def __repr__(self):
+#        return 'Version({0})'.format(self.v)
+#
+#    def __eq__(self, other):
+#        if len(self.v) != len(other.v):
+#            return False
+#        return self.v == other.v
+#
+#    def __ge__(self, other):
+#        return self.v >= other.v
+#
+#    def __gt__(self, other):
+#        return self.v > other.v
+#
+#    def __le__(self, other):
+#        return self.v <= other.v
+#
+#    def __lt__(self, other):
+#        return self.v < other.v
+
+
 class Version(object):
     def __init__(self, v):
-        self.v = v
-        while self.v[-1] == 0:
-            self.v = self.v[:-2]
-
-    def __str__(self):
-        return self.v
+        self._v = v
+        self.v = pkg_resources.parse_version(v)
 
     def __repr__(self):
-        return 'Version({0})'.format(self.v)
+        return 'Version({0})'.format(self._v)
 
-    def __eq__(self, other):   
-        if len(self.v) != len(other.v):
-            return False
-        return self.v == other.v
+    def __str__(self):
+        return self._v
 
-    def __ge__(self, other):
-        return self.v >= other.v
+    def __eq__(self, o):
+        return self.v == o.v
 
-    def __gt__(self, other):
-        return self.v > other.v
+    def __ge__(self, o):
+        return self.v >= o.v
 
-    def __le__(self, other):
-        return self.v <= other.v
+    def __gt__(self, o):
+        return self.v > o.v
 
-    def __lt__(self, other):
-        return self.v < other.v
+    def __le__(self, o):
+        return self.v <= o.v
+
+    def __lt__(self, o):
+        return self.v < o.v
+
 
 class Egg(object):
     def __init__(self, fobj, eggname, packname=None):

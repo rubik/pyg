@@ -22,7 +22,8 @@ class Requirement(object):
              '>=': operator.ge,
              '>': operator.gt,
              '<=': operator.le,
-             '<': operator.lt
+             '<': operator.lt,
+             None: lambda a,b: True
              }
 
     def __init__(self, req):
@@ -57,10 +58,7 @@ class Requirement(object):
         return Version(''.join(v).strip('.')) ## FIXME do we really need .strip() ?
 
     def match(self, v):
-        try:
-            return self.OPMAP[self.op](v, self.version)
-        except KeyError: ## Operator not specified, so we pick up any version
-            return True
+        return self.OPMAP[self.op](v, self.version)
 
     #def best_match(self, reqs):
     #    matched = {}
@@ -84,6 +82,7 @@ class Requirement(object):
                     vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
                     if vcode not in name:
                         continue
+                logger.notify('Best match: {0}=={1}'.format(self.name, v))
                 logger.notify('Downloading {0}'.format(self.name))
                 fobj = cStringIO.StringIO(WebManager.request(url))
                 logger.notify('Checking md5 sum')
@@ -101,9 +100,9 @@ class Requirement(object):
                     installer.install()
                     if not self.version:
                         self.version = v
+                except AlreadyInstalled:
+                    raise
                 except Exception as err:
-                    if err is AlreadyInstalled:
-                        raise
                     logger.error('E: {0}'.format(err))
                     raise InstallationError
                 break

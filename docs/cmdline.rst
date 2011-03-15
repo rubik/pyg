@@ -79,7 +79,7 @@ If *packname* is a module and not a package, Pyg will automatically detect it::
             /usr/local/lib/python2.7/dist-packages/roman.py
     Proceed? (y/[n])
 
-If your answer is *yes* the files will be deleted and this operation is **not undoable**::
+If your answer is *yes* the files will be deleted. This operation is **not undoable**::
 
     $ pyg uninstall itertools_recipes
     Uninstalling itertools_recipes

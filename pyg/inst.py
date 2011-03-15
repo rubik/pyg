@@ -90,7 +90,7 @@ class Uninstaller(object):
         self.name = packname
 
     def uninstall(self):
-        uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?'.format(self.name), re.I)
+        uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
         path_re = re.compile('./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name))
         guesses = site.getsitepackages() + [site.getusersitepackages()]
         to_del = []

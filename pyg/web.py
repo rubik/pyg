@@ -27,7 +27,7 @@ class WebManager(object):
                 self.name = realname
         except (KeyError, IndexError):
             pass
-        self.versions = map(Version, self.pypi.package_releases(self.name, True))
+        self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
         if not self.versions: ## Slow way: we need to search versions by ourselves
             self.versions = WebManager.versions_from_html(self.name)
 
