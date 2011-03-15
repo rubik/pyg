@@ -31,5 +31,4 @@ Using Pyg
    library
 
 
-Thanks to:
-`Free Domain Name <http://www.freedomain.co.nr/>`_
+Thanks to: `Free Domain Name <http://www.freedomain.co.nr/>`_
