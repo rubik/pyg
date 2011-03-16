@@ -41,8 +41,8 @@ class Installer(object):
             pkg_resources.WorkingSet().resolve((req,),
                                                 installer=self._install_hook)
         except pkg_resources.VersionConflict as e:
-            print e.message
-            logger.warn('W: Version conflict: {0}'.format(r))
+            logger.warn('W: Version conflict for {0}: {1}'.format(r, e.message))
+        logger.notify('{0} installed successfully'.format(r.name))
 
     @ staticmethod
     def from_req_file(filepath):

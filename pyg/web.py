@@ -16,20 +16,24 @@ class WebManager(object):
 
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
-    def __init__(self, req, index_url='http://pypi.python.org/pypi'):
+    def __init__(self, req, fast=True, index_url='http://pypi.python.org/pypi'):
         self.pypi = PyPI(index_url)
         self.req = req
         self.name = self.req.name
+        self.versions = None
         try:
             realname = sorted(self.pypi.search({'name': self.name}),
                               key=lambda i: i['_pypi_ordering'], reverse=True)[0]['name']
-            if self.name != realname:
+            if self.name.lower() == realname.lower():
                 self.name = realname
         except (KeyError, IndexError):
             pass
-        self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
-        if not self.versions: ## Slow way: we need to search versions by ourselves
-            self.versions = WebManager.versions_from_html(self.name)
+        if fast:
+            self.versions = sorted(map(Version, self.pypi.package_releases(self.name)))
+        if not self.versions:
+            self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
+            if not self.versions: ## Slow way: we need to search versions by ourselves
+                self.versions = WebManager.versions_from_html(self.name)
 
     @ staticmethod
     def request(url):
@@ -49,7 +53,7 @@ class WebManager(object):
                     yield version, res['filename'], res['md5_digest'], res['url']
 
 
-class LinkFinder(object): ## OLD! Now we are using xmlrpclib to communicate with pypi
+class LinkFinder(object): ## OLD! We are using xmlrpclib to communicate with pypi
 
     base_url = 'http://pypi.python.org/simple/'
     file_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)">(?P<name>[^\<]+)</a><br/>')

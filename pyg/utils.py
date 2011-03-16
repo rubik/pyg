@@ -56,7 +56,7 @@ def unlink(path):
         lines = f.readlines()
     with open(PYG_LINKS, 'w') as f:
         for line in lines:
-            if line[:-1] == path:
+            if line.strip() == path:
                 logger.notify('Removing {0} from {1}...'.format(path, PYG_LINKS))
                 continue
             f.write(line)
@@ -66,7 +66,7 @@ def call_setup(path):
     args =  ['python', '-c', code, 'install', 'egg_info', '--egg-base', PYG_HOME]
     cwd = os.getcwd()
     os.chdir(path)
-    subprocess.call(args, stdout=subprocess.PIPE)
+    subprocess.call(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     os.chdir(cwd)
 
 

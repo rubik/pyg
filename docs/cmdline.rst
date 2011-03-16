@@ -157,7 +157,52 @@ Pyg tries to detect all installed packages and prints requirements on Standard O
 Linking directories
 -------------------
 
-If you want to add a directory to PYTHONPATH permanently the ``link`` command is what do you need::
+If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` command is what do you need::
 
     $ pyg link dirname
 
+When you link a directory Pyg add in a :file:`.pth` file the dir's path.
+
+
+Unlinking
+---------
+
+If you want to remove a directory from :envvar:`PYTHONPATH` you can use the ``unlink`` command.
+Pyg can remove a directory from :envvar:`PYTHONPATH` only if that directory has been added previously.
+
+.. program:: unlink
+
+.. option:: -a, --all
+
+    Remove all links in the :file:`.pth` file.
+
+
+The ``list`` command
+--------------------
+
+You can use this command to list all package's avaiable versions::
+
+    $ pyg list pypol_
+    0.5	installed
+    0.4
+    0.3
+    0.2
+
+    $ pyg list itertools_recipes
+    0.1
+
+If that package is installed, Pyg will add ``installed`` after the current version.
+
+
+Searching PyPI
+--------------
+
+Pyg can perform searches on PyPI with the ``search`` command::
+
+    $ pyg search pypol_
+    pypol_  0.5 - Python polynomial library
+    pypolkit  0.1 - Python bindings for polkit-grant
+
+    $ pyg search distribute
+    distribute  0.6.15 - Easily download, build, install, upgrade, and uninstall Python packages
+    virtualenv-distribute  1.3.4.4 - Virtual Python Environment builder
