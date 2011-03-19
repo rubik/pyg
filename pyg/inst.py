@@ -93,7 +93,8 @@ class Uninstaller(object):
 
     def uninstall(self):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
-        path_re = re.compile('./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name))
+        path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
+        path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
         guesses = site.getsitepackages() + [site.getusersitepackages()]
         to_del = []
         for d in guesses:
@@ -128,7 +129,8 @@ class Uninstaller(object):
                     lines = f.readlines()
                 with open(EASY_INSTALL, 'w') as f:
                     for line in lines:
-                        if not path_re.match(line):
-                            f.write(line)
+                        if path_re.match(line) or path_re2.match(line):
+                            continue
+                        f.write(line)
                 logger.notify('{0} uninstalled succesfully'.format(self.name))
                 sys.exit(0)
