@@ -25,3 +25,23 @@ Also, you can download the source and after unpacking the archive::
 
 
 **Note:** You may need root privileges to install.
+
+Documentation
+------------
+
+If you need further informations you can check out the documentation at: http://pyg-installer.co.nr
+
+Building the documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can build the documentation locally. In order to build the html documentation you need to install `Sphinx <http://sphinx.pocoo.org`_. Simply run::
+
+    $ pyg install sphinx
+
+Again, you may need root privileges.
+Now you can build the docs. If you haven't already downloaded the source download it and open your terminal::
+
+    $ cd docs
+    $ make html
+
+The docs are now in ``_build/html/``
