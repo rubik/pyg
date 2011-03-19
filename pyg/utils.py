@@ -10,13 +10,14 @@ import glob as glob_mod
 
 from .log import logger
 
-if sys.version_info[:2] < (2, 7):
-    import _site._site as site
-else:
-    import site
 
 ## Lame hack entirely for readthedocs.org
 if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg/'):
+    if sys.version_info[:2] < (2, 7):
+        import _site._site as site
+    else:
+        import site
+
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
     EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
