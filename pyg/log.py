@@ -14,9 +14,12 @@ class Logger(object):
 
     def __init__(self):
         import os, pwd
-        self._logger = logging.basicConfig(filename=os.path.join(pwd.getpwnam(os.getlogin()).pw_dir,
-                                                                 '.pyg', 'pyg.log'),
-                                           level=logging.DEBUG)
+        dir = os.path.join(pwd.getpwnam(os.getlogin()).pw_dir, '.pyg')
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        self._logger = logging.basicConfig(filename=os.path.join(dir, 'pyg.log'),
+                                           level=logging.DEBUG,
+                                           filemode='w')
         self.indent = 0
         self.level = Logger.DEBUG
 

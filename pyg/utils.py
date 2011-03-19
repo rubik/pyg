@@ -7,20 +7,18 @@ import shutil
 import tempfile
 import subprocess
 import pkg_resources
+import glob as glob_mod
 
 from .log import logger
 
-## Lame hack entirely for readthedocs.org
-if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg'):
-    INSTALL_DIR = site.getsitepackages()[0]
-    USER_SITE = site.getusersitepackages()
-    EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
-    PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
-    HOME = pwd.getpwnam(os.getlogin()).pw_dir
-    PYG_HOME = os.path.join(HOME, '.pyg')
-    RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
-else:
-    INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE = [None] * 7
+
+INSTALL_DIR = site.getsitepackages()[0]
+USER_SITE = site.getusersitepackages()
+EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
+PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
+HOME = pwd.getpwnam(os.getlogin()).pw_dir
+PYG_HOME = os.path.join(HOME, '.pyg')
+RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
 
 def is_installed(req):
     try:
@@ -61,13 +59,18 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_setup(path):
-    code = '__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
-    args =  ['python', '-c', code, 'install', 'egg_info', '--egg-base', PYG_HOME]
+def call_setup(path, a, stdout=None, stderr=None):
+    stdout, stderr = stdout or subprocess.PIPE, stderr or subprocess.PIPE
+    code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
+    args =  [sys.executable, '-c', code]
     cwd = os.getcwd()
-    os.chdir(path)
-    subprocess.call(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    os.chdir(cwd)
+    with ChDir(path):
+        rcode = subprocess.call(args + a, stdout=stdout, stderr=stderr)
+    return rcode
+
+def glob(dir, pattern):
+    with ChDir(dir):
+        return glob_mod.glob(pattern)
 
 
 class TempDir(object):
@@ -81,3 +84,16 @@ class TempDir(object):
     
     def __exit__(self, *args):
         shutil.rmtree(self.tempdir)
+
+
+class ChDir(object):
+    def __init__(self, dir):
+        self.cwd = os.getcwd()
+        self.dir = dir
+
+    def __enter__(self):
+        os.chdir(self.dir)
+        return self.dir
+
+    def __exit__(self, *args):
+        os.chdir(self.cwd)

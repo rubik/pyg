@@ -16,7 +16,7 @@ else:
 
 setup(name='pyg',
       version=pyg.__version__,
-      url='http://pyg.readthedocs.org',
+      url='http://pyg-installer.co.nr',
       download_url='http://pypi.python.org/pypi/pyg',
       license='MIT',
       author='Michele Lacchia',
@@ -27,7 +27,7 @@ setup(name='pyg',
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Build Tools'
       ],

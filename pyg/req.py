@@ -11,7 +11,7 @@ except ImportError:
     from md5 import md5
 
 from .web import WebManager
-from .types import Version, Egg, Archive, InstallationError, AlreadyInstalled
+from .types import Version, Egg, Archive, ReqSet, InstallationError, AlreadyInstalled
 from .log import logger
 
 
@@ -28,6 +28,7 @@ class Requirement(object):
 
     def __init__(self, req):
         self.req = req
+        self.reqset = ReqSet()
         self.split()
 
     def __repr__(self):
@@ -91,9 +92,9 @@ class Requirement(object):
                     return
                 ext = os.path.splitext(name)[1]
                 if ext in ('.gz', '.bz2', '.zip'):
-                    installer = Archive(fobj, ext, w.name)
+                    installer = Archive(fobj, ext, w.name, self.reqset)
                 elif ext == '.egg':
-                    installer = Egg(fobj, name, w.name)
+                    installer = Egg(fobj, name, self.reqset, w.name)
                 else:
                     continue
                 try:
@@ -106,11 +107,9 @@ class Requirement(object):
                     logger.error('E: {0}'.format(err))
                     raise InstallationError
                 break
-            else:
-                logger.fatal('E: Did not find files to install')
-                raise InstallationError
+        except AlreadyInstalled:
+            raise
         except Exception as e:
-            if e is AlreadyInstalled:
-                raise
+            print e
             logger.fatal('E: An error occurred while installing {0}'.format(w.name))
             raise InstallationError

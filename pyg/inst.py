@@ -8,7 +8,7 @@ import pkg_resources
 
 from .req import Requirement
 from .utils import TempDir, EASY_INSTALL, is_installed
-from .types import Archive, Egg, Bundle, InstallationError, AlreadyInstalled
+from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled
 from .log import logger
 
 
@@ -18,30 +18,29 @@ __all__ = ['Installer', 'Uninstaller']
 class Installer(object):
     def __init__(self, req):
         if is_installed(req):
-            logger.notify('{0} is already installed, exiting now...'.format(req))
+            logger.notify('{0} is already installed'.format(req))
             raise AlreadyInstalled
         self.req = req
 
-    def _install_hook(self, req):
-        _name_re = re.compile(r'^([^\(]+)')
-        print _name_re.search(str(req)).group().strip().split()
-        r = Requirement(_name_re.search(str(req)).group().strip().split())
-        Installer('{0}=={1}'.format(r.name, r.version)).install()
+    def _install_deps(self, rs):
+        logger.notify('Installing dependencies...')
+        logger.indent += 8
+        for req in rs:
+            try:
+                Installer(req).install()
+            except AlreadyInstalled:
+                continue
+        logger.indent = 0
 
     def install(self):
         r = Requirement(self.req)
         r.install()
+        if not r.reqset:
+            logger.notify('{0} installed successfully'.format(r.name))
+            return
 
         # Now let's install dependencies
-        if r.op:
-            req = pkg_resources.Requirement.parse(str(r))
-        else:
-            req = pkg_resources.Requirement.parse('{0}=={1}'.format(r, str(r.version)))
-        try:
-            pkg_resources.WorkingSet().resolve((req,),
-                                                installer=self._install_hook)
-        except pkg_resources.VersionConflict as e:
-            logger.warn('W: Version conflict for {0}: {1}'.format(r, e.message))
+        self._install_deps(r.reqset)
         logger.notify('{0} installed successfully'.format(r.name))
 
     @ staticmethod
@@ -69,12 +68,13 @@ class Installer(object):
         ext = os.path.splitext(filepath)[1]
         path = os.path.abspath(filepath)
         packname = os.path.basename(filepath).split('-')[0]
+        reqset = ReqSet()
         if ext in ('.gz', '.bz2', '.zip'):
-            installer = Archive(open(path), ext, packname)
+            installer = Archive(open(path), ext, packname, reqset)
         elif ext in ('.pybundle', '.pyb'):
             installer = Bundle(filepath)
         elif ext == '.egg':
-            installer = Egg(open(path), path)
+            installer = Egg(open(path), path, reqset)
         else:
             logger.fatal('E: Cannot install {0}'.format(path))
             sys.exit(1)
@@ -83,6 +83,8 @@ class Installer(object):
         except Exception as e:
             logger.fatal('E: {0}'.format(e))
             sys.exit(1)
+        self._install_deps(reqset)
+        logger.notify('{0} installed successfully'.format(packname))
 
 
 class Uninstaller(object):
