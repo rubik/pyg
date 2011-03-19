@@ -34,7 +34,7 @@ If you need further informations you can check out the documentation at: http://
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can build the documentation locally. In order to build the html documentation you need to install `sphinx`_. Simply run::
+You can build the documentation locally. In order to build the html documentation you need to install `Sphinx`_. Simply run::
 
     $ pyg install sphinx
 
@@ -47,4 +47,4 @@ Now you can build the docs. If you haven't already downloaded the source downloa
 The docs are now in ``_build/html/``
 
 
-.. _sphinx: http://sphinx.pocoo.org
+.. _Sphinx: http://sphinx.pocoo.org
