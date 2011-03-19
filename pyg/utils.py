@@ -15,14 +15,17 @@ if sys.version_info[:2] < (2, 7):
 else:
     import site
 
-
-INSTALL_DIR = site.getsitepackages()[0]
-USER_SITE = site.getusersitepackages()
-EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
-PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
-HOME = pwd.getpwnam(os.getlogin()).pw_dir
-PYG_HOME = os.path.join(HOME, '.pyg')
-RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
+## Lame hack entirely for readthedocs.org
+if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg/'):
+    INSTALL_DIR = site.getsitepackages()[0]
+    USER_SITE = site.getusersitepackages()
+    EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
+    PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
+    HOME = pwd.getpwnam(os.getlogin()).pw_dir
+    PYG_HOME = os.path.join(HOME, '.pyg')
+    RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
+else:
+    INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE = [None] * 7
 
 def is_installed(req):
     try:
