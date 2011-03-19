@@ -2,7 +2,6 @@ import re
 import os
 import pwd
 import sys
-import site
 import shutil
 import tempfile
 import subprocess
@@ -10,6 +9,11 @@ import pkg_resources
 import glob as glob_mod
 
 from .log import logger
+
+if sys.version_info[:2] < (2, 7):
+    import _site._site as site
+else:
+    import site
 
 
 INSTALL_DIR = site.getsitepackages()[0]
