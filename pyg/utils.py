@@ -31,7 +31,7 @@ if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readth
         if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
             BIN = '/usr/local/bin'
 else:
-    INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE = [None] * 7
+    INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE, BIN = [None] * 8
 
 def is_installed(req):
     try:
