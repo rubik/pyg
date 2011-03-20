@@ -3,16 +3,8 @@ from setuptools import setup, find_packages
 
 
 long_desc = '''
-Pyg is a Python package manager that is meant to be an alternative to Easy_Install.
+Pyg is a Python package manager that is meant to be an alternative to easy_install.
 '''
-
-requires = ['setuptools', 'argparse']
-try:
-    import argparse
-except ImportError:
-    pass
-else:
-    del requires[-1]
 
 setup(name='pyg',
       version=pyg.__version__,
@@ -32,8 +24,9 @@ setup(name='pyg',
         'Topic :: Software Development :: Build Tools'
       ],
       platforms='any',
-      packages=find_packages(),
-      install_requires=requires,
+      packages=['pyg'],
+      keywords=['python', 'easy_install', 'setuptools', 'package manager'],
+      install_requires=['setuptools'],
       entry_points={
         'console_scripts': [
             'pyg = pyg:main'

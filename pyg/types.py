@@ -157,12 +157,6 @@ class Archive(object):
                                      '--record', RECFILE]) != 0:
                 logger.fatal('E: setup.py did not installed {0}'.format(self.name))
                 raise InstallationError
-            with open(EASY_INSTALL) as f:
-                lines = f.readlines()
-            with open(EASY_INSTALL, 'w') as f:
-                f.writelines(lines[:-1])
-                f.write('./' + self.name + '\n')
-                f.write(lines[-1])
 
 
 class Bundle(object):

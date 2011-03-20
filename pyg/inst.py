@@ -4,10 +4,11 @@ import sys
 import site
 import shutil
 import zipfile
+import ConfigParser
 import pkg_resources
 
 from .req import Requirement
-from .utils import TempDir, EASY_INSTALL, is_installed
+from .utils import TempDir, EASY_INSTALL, BIN, File, is_installed
 from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled
 from .log import logger
 
@@ -96,14 +97,31 @@ class Uninstaller(object):
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
         guesses = site.getsitepackages() + [site.getusersitepackages()]
-        to_del = []
+        to_del = set()
         for d in guesses:
             try:
                 for file in os.listdir(d):
                     if uninstall_re.match(file):
-                        to_del.append(os.path.join(d, file))
+                        to_del.add(os.path.join(d, file))
             except OSError: ## os.listdir
                 continue
+        dist = pkg_resources.get_distribution(self.name)
+        if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
+            for s in dist.metadata_listdir('scripts'):
+                to_del.add(os.path.join(BIN, script))
+                if sys.platform == 'win32':
+                    to_del.add(os.path.join(BIN, script) + '.bat')
+        if dist.has_metadata('entry_points.txt'):
+            config = ConfigParser.ConfigParser()
+            config.readfp(File(dist.get_metadata_lines('entry_points.txt')))
+            if config.has_section('console_scripts'):
+                for name, value in config.items('console_scripts'):
+                    n = os.path.join(BIN, name)
+                    to_del.add(n)
+                    if sys.platform == 'win32':
+                        to_del.add(n + '.exe')
+                        to_del.add(n + '.exe.manifest')
+                        to_del.add(n + '-script.py')
         if not to_del:
             logger.warn('Did not find any file to delete')
             sys.exit(1)

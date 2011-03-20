@@ -2,6 +2,7 @@ import re
 import os
 import pwd
 import sys
+import site
 import shutil
 import tempfile
 import subprocess
@@ -13,11 +14,6 @@ from .log import logger
 
 ## Lame hack entirely for readthedocs.org
 if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg/'):
-    if sys.version_info[:2] < (2, 7):
-        import _site._site as site
-    else:
-        import site
-
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
     EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
@@ -25,6 +21,15 @@ if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readth
     HOME = pwd.getpwnam(os.getlogin()).pw_dir
     PYG_HOME = os.path.join(HOME, '.pyg')
     RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
+    if sys.platform == 'win32':
+        BIN = os.path.join(sys.prefix, 'Scripts')
+        if not os.path.exists(BIN):
+            BIN = os.path.join(sys.prefix, 'bin')
+    else:
+        BIN = os.path.join(sys.prefix, 'bin')
+        ## Forcing to use /usr/local/bin on standard Mac OS X
+        if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
+            BIN = '/usr/local/bin'
 else:
     INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE = [None] * 7
 
@@ -105,3 +110,17 @@ class ChDir(object):
 
     def __exit__(self, *args):
         os.chdir(self.cwd)
+
+
+class File(object):
+    def __init__(self, lines):
+        self._i = (l for l in lines)
+
+    def __iter__(self):
+        return self._i
+
+    def readline(self):
+        try:
+            return next(self._i)
+        except StopIteration:
+            return ''
