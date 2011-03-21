@@ -1,9 +1,12 @@
 import os
+import re
+import sys
 import tarfile
 import zipfile
 import pkg_resources
 
-from .utils import EASY_INSTALL, INSTALL_DIR, RECFILE, TempDir, call_setup, name_from_egg, glob
+from .utils import EASY_INSTALL, INSTALL_DIR, RECFILE, BIN, TempDir, call_setup, name_from_egg, glob
+from .scripts import script_args
 from .log import logger
 
 
@@ -121,6 +124,13 @@ class Egg(object):
                     self.reqset.add(line.strip())
         except IOError:
             pass
+        dist = pkg_resources.get_distribution(self.packname)
+        for name, content, mode in script_args(dist):
+            logger.notify('Installing {0} script to {1}'.format(name, BIN))
+            target = os.path.join(BIN, name)
+            with open(target, 'w' + mode) as f:
+                f.write(content)
+                os.chmod(target, 0755)
 
 
 class Archive(object):

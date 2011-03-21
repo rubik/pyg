@@ -23,7 +23,8 @@ class Installer(object):
             raise AlreadyInstalled
         self.req = req
 
-    def _install_deps(self, rs):
+    @ staticmethod
+    def _install_deps(rs):
         logger.notify('Installing dependencies...')
         logger.indent += 8
         for req in rs:
@@ -41,7 +42,7 @@ class Installer(object):
             return
 
         # Now let's install dependencies
-        self._install_deps(r.reqset)
+        Installer._install_deps(r.reqset)
         logger.notify('{0} installed successfully'.format(r.name))
 
     @ staticmethod
@@ -84,7 +85,7 @@ class Installer(object):
         except Exception as e:
             logger.fatal('E: {0}'.format(e))
             sys.exit(1)
-        self._install_deps(reqset)
+        Installer._install_deps(reqset)
         logger.notify('{0} installed successfully'.format(packname))
 
 
@@ -117,6 +118,8 @@ class Uninstaller(object):
             if config.has_section('console_scripts'):
                 for name, value in config.items('console_scripts'):
                     n = os.path.join(BIN, name)
+                    if not os.path.exists(n) and n.startswith('/usr/bin'): ## Searches in the local path
+                        n = os.path.join('/usr/local/bin', name)
                     to_del.add(n)
                     if sys.platform == 'win32':
                         to_del.add(n + '.exe')
@@ -140,7 +143,10 @@ class Uninstaller(object):
                     try:
                         shutil.rmtree(d)
                     except OSError: ## It is not a directory
-                        os.remove(d)
+                        try:
+                            os.remove(d)
+                        except OSError:
+                            logger.error('E: Cannot delete: {0}'.format(d))
                     logger.notify('Deleting: {0}...'.format(d))
                 logger.notify('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
