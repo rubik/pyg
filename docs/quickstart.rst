@@ -14,6 +14,7 @@ or if you must::
 
 And then you should no longer need them.
 
+.. _get:
 
 Getting the Source
 ------------------
@@ -26,6 +27,21 @@ You can also install Pyg from the source. The lastest release is avaiable on Git
 Once you have unpacked the archive you can install it easily::
 
     $ python setup.py install
+
+
+Building the documentation
+--------------------------
+
+In order to build Pyg's documentation locally you have to install `Sphinx <http://sphinx.pocoo.org>`_::
+
+    $ pyg install sphinx
+
+Download the source (see :ref:`get`) and go to :file:`docs/` and run `make`::
+
+    $ cd docs/
+    $ make html
+
+Now Pyg's documentation is in :file:`_build/html`.
 
 
 Now that Pyg is installed you may want to read:
