@@ -2,10 +2,9 @@ import os
 import re
 import sys
 import tarfile
-import zipfile
 import pkg_resources
 
-from .utils import EASY_INSTALL, INSTALL_DIR, RECFILE, BIN, TempDir, call_setup, name_from_egg, glob
+from .utils import EASY_INSTALL, INSTALL_DIR, RECFILE, BIN, TempDir, ZipFile, call_setup, name_from_egg, glob
 from .scripts import script_args
 from .log import logger
 
@@ -110,7 +109,7 @@ class Egg(object):
             logger.notify('{0} is already installed'.format(self.packname))
             raise AlreadyInstalled
         logger.notify('Installing {0} egg file'.format(self.packname))
-        with zipfile.ZipFile(self.fobj) as z:
+        with ZipFile(self.fobj) as z:
             z.extractall(eggpath)
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
             lines = f.readlines()
@@ -137,7 +136,7 @@ class Archive(object):
     def __init__(self, fobj, ext, name, reqset):
         self.name = name
         if ext == '.zip':
-            self.arch = zipfile.ZipFile(fobj)
+            self.arch = ZipFile(fobj)
         else:
             self.arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
         self.reqset = reqset
@@ -175,7 +174,7 @@ class Bundle(object):
 
     def install(self):
         with TempDir() as tempdir:
-            with zipfile.ZipFile(self.path) as z:
+            with ZipFile(self.path) as z:
                 z.extractall(tempdir)
             location = os.path.join(tempdir, 'build')
             pip_manifest = os.path.join(tempdir, 'pip-manifest.txt')

@@ -66,8 +66,10 @@ Pyg tries to detect the package's folder and delete it::
 
     $ pyg uninstall sphinx
     Uninstalling sphinx
-            /usr/local/lib/python2.7/dist-packages/sphinx
-            /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7.egg-info
+            /usr/bin/sphinx-build
+            /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7-py2.7.egg
+            /usr/bin/sphinx-quickstart
+            /usr/bin/sphinx-autogen
     Proceed? (y/[n]) 
 
 

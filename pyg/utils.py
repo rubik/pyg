@@ -4,6 +4,7 @@ import pwd
 import sys
 import site
 import shutil
+import zipfile
 import tempfile
 import subprocess
 import pkg_resources
@@ -11,27 +12,40 @@ import glob as glob_mod
 
 from .log import logger
 
+if sys.version_info[:2] < (2, 7):
+    USER_SITE = site.USER_SITE
+    INSTALL_DIR = sorted([p for p in sys.path if p.endswith('dist-packages')],
+                        key=lambda i: 'local' in i, reverse=True)[0]
+    if not INSTALL_DIR: ## Are we on Windows?
+        INSTALL_DIR = sorted([p for p in sys.path if p.endswith('site-packages')],
+                        key=lambda i: 'local' in i, reverse=True)[0]
+    if not INSTALL_DIR: ## We have to use /usr/lib/pythonx.y/dist-packages or something similar
+        from distutils.sysconfig import get_python_lib
+        INSTALL_DIR = get_python_lib()
 
-## Lame hack entirely for readthedocs.org
-if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg/'):
+else:
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
-    EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
-    PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
-    HOME = pwd.getpwnam(os.getlogin()).pw_dir
-    PYG_HOME = os.path.join(HOME, '.pyg')
-    RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
-    if sys.platform == 'win32':
-        BIN = os.path.join(sys.prefix, 'Scripts')
-        if not os.path.exists(BIN):
-            BIN = os.path.join(sys.prefix, 'bin')
-    else:
+
+EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
+if not os.path.exists(EASY_INSTALL):
+    d = os.path.dirname(EASY_INSTALL)
+    if not os.path.exists(d):
+        os.makedirs(d)
+    open(EASY_INSTALL, 'w').close()
+PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
+HOME = pwd.getpwnam(os.getlogin()).pw_dir
+PYG_HOME = os.path.join(HOME, '.pyg')
+RECFILE = os.path.join(PYG_HOME, '.pyg-install-record')
+if sys.platform == 'win32':
+    BIN = os.path.join(sys.prefix, 'Scripts')
+    if not os.path.exists(BIN):
         BIN = os.path.join(sys.prefix, 'bin')
-        ## Forcing to use /usr/local/bin on standard Mac OS X
-        if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
-            BIN = '/usr/local/bin'
 else:
-    INSTALL_DIR, USER_SITE, EASY_INSTALL, PYG_LINKS, HOME, PYG_HOME, RECFILE, BIN = [None] * 8
+    BIN = os.path.join(sys.prefix, 'bin')
+    ## Forcing to use /usr/local/bin on standard Mac OS X
+    if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
+        BIN = '/usr/local/bin'
 
 def is_installed(req):
     try:
@@ -110,6 +124,13 @@ class ChDir(object):
 
     def __exit__(self, *args):
         os.chdir(self.cwd)
+
+class ZipFile(zipfile.ZipFile):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 
 
 class File(object):

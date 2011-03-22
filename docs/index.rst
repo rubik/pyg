@@ -5,8 +5,15 @@
 
 Thanks to: `Free Domain Name <http://www.freedomain.co.nr/>`_
 
-Welcome to pyg's documentation!
+Welcome to Pyg's documentation!
 ===============================
+
+:Author: Michele Lacchia <michelelacchia@gmail.com>
+:Version: |version|
+:Source code: http://github.com/rubik/pyg
+:Download: http://pypi.python.org/pypi/pyg
+:Keywords: python, easy_install, packages, pypi
+:Date: |today|
 
 pyg is a Python Package Manager. It can install, remove and bundle packages.
 

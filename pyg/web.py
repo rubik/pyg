@@ -26,9 +26,9 @@ class WebManager(object):
                               key=lambda i: i['_pypi_ordering'], reverse=True)[0]['name']
             if self.name.lower() == realname.lower():
                 self.name = realname
+                req.name = realname
         except (KeyError, IndexError):
             pass
-        req.name = realname
         if fast:
             self.versions = sorted(map(Version, self.pypi.package_releases(self.name)))
         if not self.versions:

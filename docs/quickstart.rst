@@ -36,7 +36,7 @@ In order to build Pyg's documentation locally you have to install `Sphinx <http:
 
     $ pyg install sphinx
 
-Download the source (see :ref:`get`) and go to :file:`docs/` and run `make`::
+Download the source (see :ref:`get`) and go to :file:`docs/` and run :command:`make`::
 
     $ cd docs/
     $ make html

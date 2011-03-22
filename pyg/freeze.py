@@ -1,17 +1,9 @@
 import os
-import site
+import pkg_resources
 
 
 def freeze():
     packages = []
-    for packages_dir in site.getsitepackages() + [site.getusersitepackages()]:
-        for dir in os.listdir(packages_dir):
-            if '.egg' in dir:
-                if dir.endswith('.egg-info') or dir.endswith('.egg'):
-                    dir = dir.split('.egg-info')[0]
-                    try:
-                        name, version = dir.split('-')[:2]
-                    except ValueError:
-                        continue
-                    packages.append('{0}=={1}'.format(name, version))
+    for dist in pkg_resources.working_set:
+        packages.append('{0.project_name}=={0.version}'.format(dist))
     return sorted(packages)
