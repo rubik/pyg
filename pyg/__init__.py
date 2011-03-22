@@ -1,6 +1,10 @@
 import os
 import sys
-import argparse
+
+try:
+    import argparse
+except ImportError:
+    import _back.argparse as argparse
 
 import _opts as opts
 from .types import InstallationError, AlreadyInstalled
