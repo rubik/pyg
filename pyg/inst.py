@@ -97,8 +97,13 @@ class Uninstaller(object):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        guesses = site.getsitepackages() + [site.getusersitepackages()]
+        dist = pkg_resources.get_distribution(self.name)
         to_del = set()
+
+        if sys.version_info[:2] < (2, 7):
+            guesses = [os.path.dirname(dist.location)]
+        else:
+            guesses = site.getsitepackages() + [site.getusersitepackages()]
         for d in guesses:
             try:
                 for file in os.listdir(d):
@@ -106,7 +111,6 @@ class Uninstaller(object):
                         to_del.add(os.path.join(d, file))
             except OSError: ## os.listdir
                 continue
-        dist = pkg_resources.get_distribution(self.name)
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
             for s in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
@@ -137,7 +141,7 @@ class Uninstaller(object):
             u = raw_input('Proceed? (y/[n]) ').lower()
             if u in ('n', ''):
                 logger.info('{0} has not been uninstalled'.format(self.name))
-                sys.exit(0)
+                break
             elif u == 'y':
                 for d in to_del:
                     try:
@@ -157,4 +161,4 @@ class Uninstaller(object):
                             continue
                         f.write(line)
                 logger.notify('{0} uninstalled succesfully'.format(self.name))
-                sys.exit(0)
+                break

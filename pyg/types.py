@@ -114,9 +114,13 @@ class Egg(object):
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
             lines = f.readlines()
         with open(EASY_INSTALL, 'w') as f:
-            f.writelines(lines[:-1])
-            f.write('./' + self.eggname + '\n')
-            f.write(lines[-1])
+            try:
+                f.writelines(lines[:-1])
+                f.write('./' + self.eggname + '\n')
+                f.write(lines[-1])
+            ## When using this file for the first time
+            except IndexError:
+                pass
         try:
             with open(os.path.join(eggpath, 'EGG-INFO', 'requires.txt')) as f:
                 for line in f:

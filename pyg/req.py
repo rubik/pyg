@@ -97,19 +97,12 @@ class Requirement(object):
                     installer = Egg(fobj, name, self.reqset, w.name)
                 else:
                     continue
-                try:
-                    installer.install()
-                    if not self.version:
-                        self.version = v
-                except AlreadyInstalled:
-                    raise
-                except Exception as err:
-                    logger.error('E: {0}'.format(err))
-                    raise InstallationError
+                installer.install()
+                if not self.version:
+                    self.version = v
                 break
         except AlreadyInstalled:
             raise
         except Exception as e:
-            print e
-            logger.fatal('E: An error occurred while installing {0}'.format(w.name))
+            logger.fatal('E: {0}'.format(e))
             raise InstallationError
