@@ -13,13 +13,6 @@ class Logger(object):
     FATAL = logging.FATAL
 
     def __init__(self):
-        import os, pwd
-        dir = os.path.join(pwd.getpwnam(os.getlogin()).pw_dir, '.pyg')
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        self._logger = logging.basicConfig(filename=os.path.join(dir, 'pyg.log'),
-                                           level=logging.DEBUG,
-                                           filemode='w')
         self.indent = 0
         self.level = Logger.DEBUG
 
@@ -51,12 +44,6 @@ class Logger(object):
             if kw.get('addn', True):
                 sys.stdout.write('\n')
             sys.stdout.flush()
-            logging.log(level, msg)
 
 
-## Lame hack entirely for readthedocs.org
-import os
-if not os.getcwd().startswith('/home/docs/sites/readthedocs.org/checkouts/readthedocs.org/user_builds/pyg'):
-    logger = Logger()
-else:
-    logger = None
+logger = Logger()
