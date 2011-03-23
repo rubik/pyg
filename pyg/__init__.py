@@ -3,14 +3,11 @@ import sys
 import argparse
 
 import _opts as opts
-from .types import InstallationError, AlreadyInstalled
-from .utils import PYG_HOME
+from .types import PygError, InstallationError, AlreadyInstalled
 
 
 __version__ = '0.1'
 
-if not os.path.exists(PYG_HOME):
-    os.makedirs(PYG_HOME)
 
 def _set_up():
     parser = argparse.ArgumentParser(prog='pyg', version='0.1')

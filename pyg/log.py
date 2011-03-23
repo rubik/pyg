@@ -7,7 +7,6 @@ class Logger(object):
     VERBOSE = logging.DEBUG - 1
     DEBUG = logging.DEBUG
     INFO = logging.INFO
-    NOTIFY = (logging.INFO + logging.WARNING) / 2
     WARN = logging.WARNING
     ERROR = logging.ERROR
     FATAL = logging.FATAL
@@ -17,25 +16,26 @@ class Logger(object):
         self.level = Logger.DEBUG
 
     def verbose(self, msg, **kw):
-        return self.log(self.VERBOSE, msg, **kw)
+        self.log(self.VERBOSE, msg, **kw)
 
     def debug(self, msg, **kw):
-        return self.log(self.DEBUG, msg, **kw)
+        self.log(self.DEBUG, msg, **kw)
 
     def info(self, msg, **kw):
-        return self.log(self.INFO, msg, **kw)
-
-    def notify(self, msg, **kw):
-        return self.log(self.NOTIFY, msg, **kw)
+        self.log(self.INFO, msg, **kw)
 
     def warn(self, msg, **kw):
-        return self.log(self.WARN, msg, **kw)
+        self.log(self.WARN, msg, **kw)
 
-    def error(self, msg, **kw):
-        return self.log(self.ERROR, msg, **kw)
+    def error(self, msg, exc=None, **kw):
+        self.log(self.ERROR, msg, **kw)
+        if exc is not None:
+            raise exc(msg)
 
-    def fatal(self, msg, **kw):
-        return self.log(self.FATAL, msg, **kw)
+    def fatal(self, msg, exc=None, **kw):
+        self.log(self.FATAL, msg, **kw)
+        if exc is not None:
+            raise exc(msg)
 
     def log(self, level, msg, **kw):
         if level >= self.level:

@@ -83,10 +83,10 @@ class Requirement(object):
                     vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
                     if vcode not in name:
                         continue
-                logger.notify('Best match: {0}=={1}'.format(self.name, v))
-                logger.notify('Downloading {0}'.format(self.name))
+                logger.info('Best match: {0}=={1}'.format(self.name, v))
+                logger.info('Downloading {0}'.format(self.name))
                 fobj = cStringIO.StringIO(WebManager.request(url))
-                logger.notify('Checking md5 sum')
+                logger.info('Checking md5 sum')
                 if md5(fobj.getvalue()).hexdigest() != hash:
                     logger.fatal('E: {0} appears to be corrupted'.format(self.name))
                     return

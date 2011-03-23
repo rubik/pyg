@@ -61,14 +61,12 @@ def link(path):
     path = os.path.abspath(path)
     if not os.path.exists(path):
         logger.error('{0} does not exist'.format(path))
-        sys.exit(1)
     if not os.path.exists(PYG_LINKS):
         open(PYG_LINKS, 'w').close()
     path = os.path.abspath(path)
-    logger.notify('Linking {0} in {1}...'.format(path, PYG_LINKS))
+    logger.info('Linking {0} in {1}...'.format(path, PYG_LINKS))
     if path in open(PYG_LINKS, 'r').read():
         logger.warn('{0} is already linked, exiting now...'.format(path))
-        sys.exit(0)
     with open(PYG_LINKS, 'a') as f:
         f.write(path)
         f.write('\n')
@@ -80,7 +78,7 @@ def unlink(path):
     with open(PYG_LINKS, 'w') as f:
         for line in lines:
             if line.strip() == path:
-                logger.notify('Removing {0} from {1}...'.format(path, PYG_LINKS))
+                logger.info('Removing {0} from {1}...'.format(path, PYG_LINKS))
                 continue
             f.write(line)
 

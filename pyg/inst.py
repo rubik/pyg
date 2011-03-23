@@ -19,13 +19,13 @@ __all__ = ['Installer', 'Uninstaller']
 class Installer(object):
     def __init__(self, req):
         if is_installed(req):
-            logger.notify('{0} is already installed'.format(req))
+            logger.info('{0} is already installed'.format(req))
             raise AlreadyInstalled
         self.req = req
 
     @ staticmethod
     def _install_deps(rs):
-        logger.notify('Installing dependencies...')
+        logger.info('Installing dependencies...')
         logger.indent += 8
         for req in rs:
             try:
@@ -38,12 +38,12 @@ class Installer(object):
         r = Requirement(self.req)
         r.install()
         if not r.reqset:
-            logger.notify('{0} installed successfully'.format(r.name))
+            logger.info('{0} installed successfully'.format(r.name))
             return
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset)
-        logger.notify('{0} installed successfully'.format(r.name))
+        logger.info('{0} installed successfully'.format(r.name))
 
     @ staticmethod
     def from_req_file(filepath):
@@ -86,7 +86,7 @@ class Installer(object):
             logger.fatal('E: {0}'.format(e))
             sys.exit(1)
         Installer._install_deps(reqset)
-        logger.notify('{0} installed successfully'.format(packname))
+        logger.info('{0} installed successfully'.format(packname))
 
 
 class Uninstaller(object):
@@ -132,7 +132,7 @@ class Uninstaller(object):
         if not to_del:
             logger.warn('Did not find any file to delete')
             sys.exit(1)
-        logger.notify('Uninstalling {0}'.format(self.name))
+        logger.info('Uninstalling {0}'.format(self.name))
         logger.indent += 8
         for d in to_del:
             logger.info(d)
@@ -151,8 +151,8 @@ class Uninstaller(object):
                             os.remove(d)
                         except OSError:
                             logger.error('E: Cannot delete: {0}'.format(d))
-                    logger.notify('Deleting: {0}...'.format(d))
-                logger.notify('Removing egg path from easy_install.pth...')
+                    logger.info('Deleting: {0}...'.format(d))
+                logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
                 with open(EASY_INSTALL, 'w') as f:
@@ -160,5 +160,5 @@ class Uninstaller(object):
                         if path_re.match(line) or path_re2.match(line):
                             continue
                         f.write(line)
-                logger.notify('{0} uninstalled succesfully'.format(self.name))
+                logger.info('{0} uninstalled succesfully'.format(self.name))
                 break
