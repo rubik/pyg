@@ -38,3 +38,12 @@ Using Pyg
 
    cmdline
    library
+
+
+Development
+-----------
+
+.. toctree::
+
+   changes
+   todo

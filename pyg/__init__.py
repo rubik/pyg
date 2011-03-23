@@ -3,7 +3,7 @@ import sys
 import argparse
 
 import _opts as opts
-from .types import PygError, InstallationError, AlreadyInstalled
+from .types import InstallationError, AlreadyInstalled
 
 
 __version__ = '0.1'
