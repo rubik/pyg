@@ -167,7 +167,7 @@ class Archive(object):
                 pass
             logger.notify('Running setup.py install for {0}'.format(self.name))
             if call_setup(fullpath, ['install', '--single-version-externally-managed',
-                                     '--record', RECFILE]) != 0:
+                                     '--record', '.pyg-install-record']) != 0:
                 logger.fatal('E: setup.py did not installed {0}'.format(self.name))
                 raise InstallationError
 
