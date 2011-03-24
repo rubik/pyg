@@ -38,9 +38,14 @@ else:
 EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
 if not os.path.exists(EASY_INSTALL):
     d = os.path.dirname(EASY_INSTALL)
-    if not os.path.exists(d):
-        os.makedirs(d)
-    open(EASY_INSTALL, 'w').close()
+    try:
+        if not os.path.exists(d):
+            os.makedirs(d)
+        open(EASY_INSTALL, 'w').close()
+    ## We have not root permissions...
+    except IOError:
+        ## So we do not create the file!
+        pass
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
 HOME = pwd.getpwnam(os.getlogin()).pw_dir
 if sys.platform == 'win32':
