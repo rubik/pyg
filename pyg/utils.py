@@ -47,7 +47,6 @@ if not os.path.exists(EASY_INSTALL):
         ## So we do not create the file!
         pass
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
-HOME = pwd.getpwnam(os.getlogin()).pw_dir
 if sys.platform == 'win32':
     BIN = os.path.join(sys.prefix, 'Scripts')
     if not os.path.exists(BIN):
