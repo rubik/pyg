@@ -134,6 +134,10 @@ class ChDir(object):
         os.chdir(self.cwd)
 
 
+## Archives subclasses for Python < 2.7
+## In Python 2.6 zipfile.ZipFile and tarfile.TarFile do not have __enter__ and
+## __exit__ methods
+
 class ZipFile(zipfile.ZipFile):
     def __enter__(self):
         return self
@@ -149,6 +153,9 @@ class TarFile(tarfile.TarFile):
     def __exit__(self, type, value, traceback):
         self.close()
 
+
+## This is a generic file object needed for ConfigParser.ConfigParser
+## It implements only a readline() method plus an __iter__ method
 
 class File(object):
     def __init__(self, lines):

@@ -110,13 +110,20 @@ class Uninstaller(object):
                 for file in os.listdir(d):
                     if uninstall_re.match(file):
                         to_del.add(os.path.join(d, file))
-            except OSError: ## os.listdir
+            ## When os.listdir fails
+            except OSError:
                 continue
+        ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
             for s in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
+
+                ## If we are on Win we have to remove *.bat files too
                 if sys.platform == 'win32':
                     to_del.add(os.path.join(BIN, script) + '.bat')
+
+        ## Very important!
+        ## We want to remove all files: even console scripts!
         if dist.has_metadata('entry_points.txt'):
             config = ConfigParser.ConfigParser()
             config.readfp(File(dist.get_metadata_lines('entry_points.txt')))
