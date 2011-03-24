@@ -217,8 +217,10 @@ If you only need to download a package you can use the ``download`` command::
 
     $ pyg download packname
 
-If the requirement is not satisfied Pyg will download nothing::
+If the requirement is not satisfied Pyg won't download anything::
 
+    $ pyg download pyg==1024
+    E: Did not find files to download
 
 .. program:: download
 
