@@ -15,7 +15,7 @@ Welcome to Pyg's documentation!
 :Keywords: python, easy_install, packages, pypi
 :Date: |today|
 
-pyg is a Python Package Manager. It can install, remove and bundle packages.
+Pyg is a Python Package Manager. It can install, remove and bundle packages.
 
 .. toctree::
    :maxdepth: 1
