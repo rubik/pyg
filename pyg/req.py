@@ -11,6 +11,7 @@ except ImportError:
     from md5 import md5
 
 from .web import WebManager
+from .utils import ext
 from .types import Version, Egg, Archive, ReqSet, InstallationError, AlreadyInstalled
 from .log import logger
 
@@ -90,9 +91,9 @@ class Requirement(object):
                 if md5(fobj.getvalue()).hexdigest() != hash:
                     logger.fatal('E: {0} appears to be corrupted'.format(self.name))
                     return
-                ext = os.path.splitext(name)[1]
-                if ext in ('.gz', '.bz2', '.zip'):
-                    installer = Archive(fobj, ext, w.name, self.reqset)
+                e = ext(name)
+                if e in ('.gz', '.bz2', '.zip'):
+                    installer = Archive(fobj, e, w.name, self.reqset)
                 elif ext == '.egg':
                     installer = Egg(fobj, name, self.reqset, w.name)
                 else:

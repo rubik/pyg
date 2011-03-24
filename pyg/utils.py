@@ -8,6 +8,7 @@ import tarfile
 import zipfile
 import tempfile
 import subprocess
+import collections
 import pkg_resources
 import glob as glob_mod
 
@@ -106,6 +107,21 @@ def call_setup(path, a, stdout=None, stderr=None):
 def glob(dir, pattern):
     with ChDir(dir):
         return glob_mod.glob(pattern)
+
+def ext(path):
+    p, e = os.path.splitext(path)
+    if p.endswith('.tar'):
+        return '.tar' + e
+    return e
+
+
+class FileMapper(collections.defaultdict):
+    def __missing__(self, key):
+        if key in self.pref:
+            if key not in self:
+                self[key] = self.default_factory()
+            return self[key]
+        return self.default_factory()
 
 
 class TempDir(object):

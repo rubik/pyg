@@ -68,24 +68,24 @@ class Installer(object):
 
     @ staticmethod
     def from_file(filepath):
-        ext = os.path.splitext(filepath)[1]
+        e = ext(filepath)
         path = os.path.abspath(filepath)
         packname = os.path.basename(filepath).split('-')[0]
         reqset = ReqSet()
-        if ext in ('.gz', '.bz2', '.zip'):
-            installer = Archive(open(path), ext, packname, reqset)
-        elif ext in ('.pybundle', '.pyb'):
+        if e in ('.gz', '.bz2', '.zip'):
+            installer = Archive(open(path), e, packname, reqset)
+        elif e in ('.pybundle', '.pyb'):
             installer = Bundle(filepath)
-        elif ext == '.egg':
+        elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         else:
             logger.fatal('E: Cannot install {0}'.format(path))
-            sys.exit(1)
+            raise InstallationError
         try:
             installer.install()
         except Exception as e:
             logger.fatal('E: {0}'.format(e))
-            sys.exit(1)
+            raise InstallationError
         Installer._install_deps(reqset)
         logger.info('{0} installed successfully'.format(packname))
 

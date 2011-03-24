@@ -208,3 +208,40 @@ Pyg can perform searches on PyPI with the ``search`` command::
     $ pyg search distribute
     distribute  0.6.15 - Easily download, build, install, upgrade, and uninstall Python packages
     virtualenv-distribute  1.3.4.4 - Virtual Python Environment builder
+
+
+Downloading packages
+--------------------
+
+If you only need to download a package you can use the ``download`` command::
+
+    $ pyg download packname
+
+.. program:: download
+
+.. option:: -d <path>, --download-dir <path>
+
+    Where to download the package, default to :file:`.` (current working directory)::
+
+        $ pyg download -d /downloads/python_downloads/ pyg
+
+    If the path does not exist, Pyg will create it.
+
+.. option:: -p <ext>, --prefer <ext>
+
+    This option lets you to specify the preferred file type for the download. Pyg looks for that file type and, if it does not exists, will download another package::
+
+        $ pyg download -p .tar.gz pyg
+        Retrieving data for pyg
+        Writing data into pyg-0.1.tar.gz
+        pyg downloaded successfully
+
+        $ pyg download -p .egg pyg
+        Retrieving data for pyg
+        Writing data into pyg-0.1-py2.7.egg
+        pyg downloaded successfully
+
+        $ pyg download -p .myawesomeext pyg
+        Retrieving data for pyg
+        Writing data into pyg-0.1-py2.7.egg
+        pyg downloaded successfully

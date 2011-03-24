@@ -50,6 +50,12 @@ def _set_up():
     sub_search = sub.add_parser('search')
     sub_search.add_argument('packname')
     sub_search.set_defaults(func=opts.search_func)
+
+    sub_down = sub.add_parser('download')
+    sub_down.add_argument('packname')
+    sub_down.add_argument('-d', '--download-dir', default='.', metavar='PATH', help='the destination directory')
+    sub_down.add_argument('-p', '--prefer', metavar='EXT', help='the preferred file type for the download')
+    sub_down.set_defaults(func=opts.download_func)
     return parser
 
 def main():

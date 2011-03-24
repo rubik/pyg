@@ -3,9 +3,14 @@ import urllib2
 import xmlrpclib
 
 from .types import Version
+from .utils import FileMapper, ext
 
 
-__all__ = ['WebManager', 'PyPI']
+__all__ = ['WebManager', 'Downloader', 'PyPI', 'PREFERENCES']
+
+
+## This constants holds files priority
+PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
 
 
 def PyPI(index_url='http://pypi.python.org/pypi'):
@@ -54,7 +59,31 @@ class WebManager(object):
                     yield version, res['filename'], res['md5_digest'], res['url']
 
 
-class LinkFinder(object): ## OLD! We are using xmlrpclib to communicate with pypi
+class PackageManager(object):
+    def __init__(self, req, pref=None):
+        if pref is None:
+            pref = PREFERENCES
+        if len(pref) < 4:
+            for p in PREFERENCES:
+                if p not in pref:
+                    pref.append(p)
+
+        ## For now fast=True and index_url=DEFAULT
+        self.w = WebManager(req)
+        self.pref = pref
+        self.files = FileMapper(list)
+        self.files.pref = self.pref
+
+    def arrange_files(self):
+        for p in self.w.find():
+            e = ext(p[3])
+            self.files[e].append(p)
+        return self.files
+
+
+## OLD! We are using xmlrpclib to communicate with pypi
+## Maybe we can use it in the future
+class LinkFinder(object):
 
     base_url = 'http://pypi.python.org/simple/'
     file_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)">(?P<name>[^\<]+)</a><br/>')
