@@ -5,7 +5,7 @@ import _opts as opts
 from .types import InstallationError, AlreadyInstalled
 
 
-__version__ = '0.1'
+__version__ = '0.1.2'
 
 
 def _set_up():

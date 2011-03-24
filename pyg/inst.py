@@ -8,7 +8,7 @@ import ConfigParser
 import pkg_resources
 
 from .req import Requirement
-from .utils import TempDir, EASY_INSTALL, BIN, File, is_installed
+from .utils import TempDir, EASY_INSTALL, BIN, File, ext, is_installed
 from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled
 from .log import logger
 
@@ -37,7 +37,13 @@ class Installer(object):
 
     def install(self):
         r = Requirement(self.req)
-        r.install()
+        try:
+            r.install()
+        except AlreadyInstalled:
+            logger.info('{0} is already installed'.format(r.name))
+        except InstallationError:
+            logger.fatal('E: an error occurred while installing {0}'.format(r.name))
+            raise
         if not r.reqset:
             logger.info('{0} installed successfully'.format(r.name))
             return
@@ -72,7 +78,12 @@ class Installer(object):
         path = os.path.abspath(filepath)
         packname = os.path.basename(filepath).split('-')[0]
         reqset = ReqSet()
-        if e in ('.gz', '.bz2', '.zip'):
+
+        if is_installed(packname):
+            logger.info('{0} is already installed'.format(packname))
+            raise AlreadyInstalled
+
+        if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(open(path), e, packname, reqset)
         elif e in ('.pybundle', '.pyb'):
             installer = Bundle(filepath)

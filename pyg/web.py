@@ -6,7 +6,7 @@ from .types import Version
 from .utils import FileMapper, ext
 
 
-__all__ = ['WebManager', 'Downloader', 'PyPI', 'PREFERENCES']
+__all__ = ['WebManager', 'PackageManager', 'PyPI', 'PREFERENCES']
 
 
 ## This constants holds files priority
@@ -34,12 +34,17 @@ class WebManager(object):
                 req.name = realname
         except (KeyError, IndexError):
             pass
-        if fast:
-            self.versions = sorted(map(Version, self.pypi.package_releases(self.name)))
+
+        self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
         if not self.versions:
+            self.name, old = self.name.capitalize(), self.name
             self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
-            if not self.versions: ## Slow way: we need to search versions by ourselves
-                self.versions = WebManager.versions_from_html(self.name)
+        ## Slow way: we need to search versions by ourselves
+        if not self.versions:
+            self.name = old
+            self.versions = WebManager.versions_from_html(self.name)
+        if fast:
+            self.versions = [self.versions[0]]
 
     @ staticmethod
     def request(url):

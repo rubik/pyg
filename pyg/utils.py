@@ -4,7 +4,6 @@ import pwd
 import sys
 import site
 import shutil
-import tarfile
 import zipfile
 import tempfile
 import subprocess
@@ -150,19 +149,12 @@ class ChDir(object):
         os.chdir(self.cwd)
 
 
-## Archives subclasses for Python < 2.7
+## ZipFile subclass for Python < 2.7
 ## In Python 2.6 zipfile.ZipFile and tarfile.TarFile do not have __enter__ and
 ## __exit__ methods
+## EDIT: Removed TarFile since it causes problems
 
 class ZipFile(zipfile.ZipFile):
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.close()
-
-
-class TarFile(tarfile.TarFile):
     def __enter__(self):
         return self
 

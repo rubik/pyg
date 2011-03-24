@@ -42,9 +42,9 @@ class Logger(object):
         if level >= self.level:
             msg = ' ' * self.indent + msg
             sys.stdout.write(msg)
-            ## Use the `addn` keyword arg to add a newline character
-            if kw.get('addn', True):
-                sys.stdout.write('\n')
+
+            ## Automatically adds a newline character
+            sys.stdout.write('\n')
 
             ## flush() makes the log immediately readable
             sys.stdout.flush()

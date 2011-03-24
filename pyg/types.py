@@ -1,9 +1,10 @@
 import os
 import re
 import sys
+import tarfile
 import pkg_resources
 
-from .utils import EASY_INSTALL, INSTALL_DIR, BIN, TempDir, TarFile, ZipFile, call_setup, name_from_egg, glob
+from .utils import EASY_INSTALL, INSTALL_DIR, BIN, TempDir, ZipFile, call_setup, name_from_egg, glob
 from .scripts import script_args
 from .log import logger
 
@@ -136,18 +137,19 @@ class Egg(object):
 
 
 class Archive(object):
-    def __init__(self, fobj, ext, name, reqset):
+    def __init__(self, fobj, e, name, reqset):
         self.name = name
-        if ext == '.zip':
+        if e == '.zip':
             self.arch = ZipFile(fobj)
         else:
-            self.arch = TarFile(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
+            m = 'r:{0}'.format(e.split('.')[2])
+            self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 
     def install(self):
         with TempDir() as tempdir:
-            with self.arch as a:
-                a.extractall(tempdir)
+            self.arch.extractall(tempdir)
+            self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
             logger.info('Running setup.py egg_info for {0}'.format(self.name))
             if call_setup(fullpath, ['egg_info', '--egg-base', tempdir]) != 0:

@@ -12,7 +12,7 @@ except ImportError:
 
 from .web import WebManager
 from .utils import ext
-from .types import Version, Egg, Archive, ReqSet, InstallationError, AlreadyInstalled
+from .types import Version, Egg, Archive, ReqSet
 from .log import logger
 
 
@@ -78,32 +78,27 @@ class Requirement(object):
 
     def install(self):
         w = WebManager(self)
-        try:
-            for v, name, hash, url in w.find():
-                if name.endswith('.egg'):
-                    vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
-                    if vcode not in name:
-                        continue
-                logger.info('Best match: {0}=={1}'.format(self.name, v))
-                logger.info('Downloading {0}'.format(self.name))
-                fobj = cStringIO.StringIO(WebManager.request(url))
-                logger.info('Checking md5 sum')
-                if md5(fobj.getvalue()).hexdigest() != hash:
-                    logger.fatal('E: {0} appears to be corrupted'.format(self.name))
-                    return
-                e = ext(name)
-                if e in ('.gz', '.bz2', '.zip'):
-                    installer = Archive(fobj, e, w.name, self.reqset)
-                elif ext == '.egg':
-                    installer = Egg(fobj, name, self.reqset, w.name)
-                else:
+        for v, name, hash, url in w.find():
+            if name.endswith('.egg'):
+                vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
+                if vcode not in name:
                     continue
-                installer.install()
-                if not self.version:
-                    self.version = v
-                break
-        except AlreadyInstalled:
-            raise
-        except Exception as e:
-            logger.fatal('E: {0}'.format(e))
-            raise InstallationError
+            logger.info('Best match: {0}=={1}'.format(self.name, v))
+            logger.info('Downloading {0}'.format(self.name))
+            fobj = cStringIO.StringIO(WebManager.request(url))
+            logger.info('Checking md5 sum')
+            if md5(fobj.getvalue()).hexdigest() != hash:
+                logger.fatal('E: {0} appears to be corrupted'.format(self.name))
+                return
+            e = ext(name)
+            if e in ('.tar.gz', '.tar.bz2', '.zip'):
+                installer = Archive(fobj, e, w.name, self.reqset)
+            elif ext == '.egg':
+                installer = Egg(fobj, name, self.reqset, w.name)
+            else:
+                logger.error('E: an error occurred while installing {0}. Trying another file...'.format(self.name))
+                continue
+            installer.install()
+            if not self.version:
+                self.version = v
+            break
