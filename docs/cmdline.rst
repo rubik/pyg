@@ -217,6 +217,9 @@ If you only need to download a package you can use the ``download`` command::
 
     $ pyg download packname
 
+If the requirement is not satisfied Pyg will download nothing::
+
+
 .. program:: download
 
 .. option:: -d <path>, --download-dir <path>
