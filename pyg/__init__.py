@@ -1,6 +1,5 @@
 import os
 import sys
-import argparse
 
 import _opts as opts
 from .types import InstallationError, AlreadyInstalled
@@ -10,7 +9,9 @@ __version__ = '0.1'
 
 
 def _set_up():
-    parser = argparse.ArgumentParser(prog='pyg', version='0.1')
+    import argparse
+    parser = argparse.ArgumentParser(prog='pyg')
+    parser.add_argument('-v', '--version', action='version', version=__version__)
     sub = parser.add_subparsers()
     
     sub_inst = sub.add_parser('install')

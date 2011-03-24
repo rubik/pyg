@@ -27,6 +27,7 @@ class Logger(object):
     def warn(self, msg, **kw):
         self.log(self.WARN, msg, **kw)
 
+    ## For error and fatal we can raise exceptions after the log
     def error(self, msg, exc=None, **kw):
         self.log(self.ERROR, msg, **kw)
         if exc is not None:
@@ -41,8 +42,11 @@ class Logger(object):
         if level >= self.level:
             msg = ' ' * self.indent + msg
             sys.stdout.write(msg)
+            ## Use the `addn` keyword arg to add a newline character
             if kw.get('addn', True):
                 sys.stdout.write('\n')
+
+            ## flush() makes the log immediately readable
             sys.stdout.flush()
 
 

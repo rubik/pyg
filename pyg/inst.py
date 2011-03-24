@@ -33,6 +33,7 @@ class Installer(object):
             except AlreadyInstalled:
                 continue
         logger.indent = 0
+        logger.info('Finished installing dependencies')
 
     def install(self):
         r = Requirement(self.req)

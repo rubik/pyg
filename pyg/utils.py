@@ -4,6 +4,7 @@ import pwd
 import sys
 import site
 import shutil
+import tarfile
 import zipfile
 import tempfile
 import subprocess
@@ -14,11 +15,18 @@ from .log import logger
 
 if sys.version_info[:2] < (2, 7):
     USER_SITE = site.USER_SITE
-    INSTALL_DIR = sorted([p for p in sys.path if p.endswith('dist-packages')],
-                        key=lambda i: 'local' in i, reverse=True)[0]
+    INSTALL_DIR = None
+    try:
+        INSTALL_DIR = sorted([p for p in sys.path if p.endswith('dist-packages')],
+                            key=lambda i: 'local' in i, reverse=True)[0]
+    except IndexError:
+        pass
     if not INSTALL_DIR: ## Are we on Windows?
-        INSTALL_DIR = sorted([p for p in sys.path if p.endswith('site-packages')],
-                        key=lambda i: 'local' in i, reverse=True)[0]
+        try:
+            INSTALL_DIR = sorted([p for p in sys.path if p.endswith('site-packages')],
+                            key=lambda i: 'local' in i, reverse=True)[0]
+        except IndexError:
+            pass
     if not INSTALL_DIR: ## We have to use /usr/lib/pythonx.y/dist-packages or something similar
         from distutils.sysconfig import get_python_lib
         INSTALL_DIR = get_python_lib()
@@ -121,7 +129,16 @@ class ChDir(object):
     def __exit__(self, *args):
         os.chdir(self.cwd)
 
+
 class ZipFile(zipfile.ZipFile):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+
+class TarFile(tarfile.TarFile):
     def __enter__(self):
         return self
 

@@ -1,10 +1,9 @@
 import os
 import re
 import sys
-import tarfile
 import pkg_resources
 
-from .utils import EASY_INSTALL, INSTALL_DIR, BIN, TempDir, ZipFile, call_setup, name_from_egg, glob
+from .utils import EASY_INSTALL, INSTALL_DIR, BIN, TempDir, TarFile, ZipFile, call_setup, name_from_egg, glob
 from .scripts import script_args
 from .log import logger
 
@@ -142,7 +141,7 @@ class Archive(object):
         if ext == '.zip':
             self.arch = ZipFile(fobj)
         else:
-            self.arch = tarfile.open(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
+            self.arch = TarFile(fileobj=fobj, mode='r:{0}'.format(ext[1:]))
         self.reqset = reqset
 
     def install(self):
