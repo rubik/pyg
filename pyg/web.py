@@ -35,14 +35,15 @@ class WebManager(object):
         except (KeyError, IndexError):
             pass
 
-        self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
+        self.versions = map(Version, self.pypi.package_releases(self.name, True))
         if not self.versions:
             self.name, old = self.name.capitalize(), self.name
-            self.versions = sorted(map(Version, self.pypi.package_releases(self.name, True)), reverse=True)
+            self.versions = map(Version, self.pypi.package_releases(self.name, True))
         ## Slow way: we need to search versions by ourselves
         if not self.versions:
             self.name = old
             self.versions = WebManager.versions_from_html(self.name)
+        self.versions = sorted((v for v in self.versions if req.match(v)), reverse=True)
 
     @ staticmethod
     def request(url):
@@ -53,13 +54,12 @@ class WebManager(object):
     def versions_from_html(name):
         _vre = re.compile(WebManager._versions_re.format(name), re.I)
         data = WebManager.request('http://pypi.python.org/simple/{0}'.format(name))
-        return sorted(map(Version, set(v.strip('.') for v in _vre.findall(data))), reverse=True)
+        return map(Version, set(v.strip('.') for v in _vre.findall(data)))
 
     def find(self):
         for version in self.versions:
-            if self.req.match(version):
-                for res in self.pypi.release_urls(self.name, str(version)):
-                    yield version, res['filename'], res['md5_digest'], res['url']
+            for res in self.pypi.release_urls(self.name, str(version)):
+                yield version, res['filename'], res['md5_digest'], res['url']
 
 
 class PackageManager(object):

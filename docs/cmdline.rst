@@ -50,33 +50,32 @@ where *packname* is the name of the package you want to install.
 
         $ pyg install pypol_==0.4
         Best match: pypol_==0.4
-        Downloading pypol\_
+        Downloading pypol_
         Checking md5 sum
-        Running setup.py egg_info for pypol\_
-        Running setup.py install for pypol\_
-        pypol\_ installed successfully
+        Running setup.py egg_info for pypol_
+        Running setup.py install for pypol_
+        pypol_ installed successfully
 
     And then run ``list``::
 
-        $ pyg list pypol\_
+        $ pyg list pypol_
         0.5
         0.4	installed
         0.3
         0.2
-        >>> assert 1 in [1, 2]
 
     You may want to re-install the package. Instead of running ``uninstall`` and then ``install``, you can use the :option:`-u` option::
 
-        $ pyg install -u pypol\_
+        $ pyg install -u pypol_
         Best match: pypol_==0.5
-        Downloading pypol\_
+        Downloading pypol_
         Checking md5 sum
-        Installing pypol\_ egg file
-        pypol\_ installed successfully
+        Installing pypol_ egg file
+        pypol_ installed successfully
 
     And now::
 
-        $ pyg list pypol\_
+        $ pyg list pypol_
         0.5	installed
         0.4
         0.3
