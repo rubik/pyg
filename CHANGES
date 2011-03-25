@@ -1,8 +1,21 @@
 CHANGELOG
 =========
 
+0.1.2 (Mar 26, 2011)
+--------------------
+
++ #6: Added a :command:`download` command.
++ Added several options to the command-line parser.
++ Fixed some strange behavior of :meth:`pyg.req.Requirement.install`.
+
+0.1.1
+-----
+
++ #2: :class:`pyg.inst.Installer` now download dependencies.
++ #4: Make :class:`pyg.types.Egg` installing entry points.
++ #5: Fixed :class:`pyg.inst.Uninstaller`.
 
 0.1 (Mar 24, 2011)
 ------------------
 
- + First release
++ First release

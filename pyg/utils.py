@@ -30,7 +30,6 @@ if sys.version_info[:2] < (2, 7):
     if not INSTALL_DIR: ## We have to use /usr/lib/pythonx.y/dist-packages or something similar
         from distutils.sysconfig import get_python_lib
         INSTALL_DIR = get_python_lib()
-
 else:
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
@@ -42,11 +41,13 @@ if not os.path.exists(EASY_INSTALL):
         if not os.path.exists(d):
             os.makedirs(d)
         open(EASY_INSTALL, 'w').close()
-    ## We have not root permissions...
+    ## We do not have root permissions...
     except IOError:
         ## So we do not create the file!
         pass
+
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
+
 if sys.platform == 'win32':
     BIN = os.path.join(sys.prefix, 'Scripts')
     if not os.path.exists(BIN):

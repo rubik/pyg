@@ -6,3 +6,7 @@
 
 .. moduleauthor:: Michele Lacchia <michelelacchia@gmail.com>
 .. sectionauthor:: Michele Lacchia <michelelacchia@gmail.com>
+
+.. class:: Installer(req)
+
+    This object installs packages.   

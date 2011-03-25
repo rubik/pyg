@@ -1,3 +1,5 @@
+.. highlight:: python
+
 :mod:`pyg.web` --- Web resources
 ================================
 
