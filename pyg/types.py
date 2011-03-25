@@ -101,7 +101,7 @@ class Egg(object):
         self.eggname = os.path.basename(eggname)
         self.reqset = reqset
         self.packname = packname or name_from_egg(eggname)
-        self.idir = INSTALL_DIR
+        self.idir = args_manager['egg_install_dir']
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
@@ -143,6 +143,10 @@ class Archive(object):
             self.arch = ZipFile(fobj)
         else:
             m = 'r:{0}'.format(e.split('.')[2])
+
+            ## A package should not be a tar file but we don't know
+            if e.endswith('.tar'):
+                m = 'r'
             self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 
@@ -207,3 +211,26 @@ class Bundle(object):
                 logger.info('Calling setup.py for {0}'.format(p))
                 call_setup(l)
             logger.info('Bundle installed successfully')
+
+
+class ArgsManager(object):
+
+    _OPTS = {## Install dependencies?
+            'deps': True,
+            ## Package Index url
+            'index_url': 'http://pypi.python.org/pypi',
+            ## Force installation?
+            'upgrade': False,
+            ## Install to user-site or to site-packages?
+            'egg_install_dir': INSTALL_DIR,
+            ## Ask confirmation of uninstall deletions?
+            'yes': False,
+            }
+
+    def __getitem__(self, item):
+        return ArgsManager._OPTS[item]
+
+    def __setitem__(self, item, v):
+        ArgsManager._OPTS[item] = v
+
+args_manager = ArgsManager()

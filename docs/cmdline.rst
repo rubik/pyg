@@ -18,7 +18,7 @@ where *packname* is the name of the package you want to install.
 
 .. option:: -r <path>, --req-file <path>
 
-    Installs packages from the specified requirement file::
+    Install packages from the specified requirement file::
 
         $ pyg install -r requirements.txt
 
@@ -26,7 +26,7 @@ where *packname* is the name of the package you want to install.
 
 .. option:: -f <path>, --file <path>
 
-    Does not download the package, but uses the one specified::
+    Do not download the package, but use the one specified::
 
         $ pyg install -f Sphinx-1.0.7.tar.gz
 
@@ -41,12 +41,35 @@ where *packname* is the name of the package you want to install.
     * :file:`.zip`
     * :file:`.egg`
     * :file:`.pybundle`
-    * :file:`.pyb` (an abbreviation for pip bundle files)
+    * :file:`.pyb` (an abbreviation of pip's bundle files)
 
+.. option:: -u, --upgrade
+
+    If the package is already installed, install it again.
+
+    TODO: ADD EXAMPLE
+
+.. option:: -n, --no-deps
+
+    Do not install package's dependencies.
+
+    TODO: ADD EXAMPLE
+
+.. option:: -i <url>, --index-url <url>
+
+    Specify the base URL of Python Package Index (default to ``http://pypi.python.org/pypi``).
+
+    TODO: ADD EXAMPLE
+
+.. option:: --user
+
+    Install the package in the user site-packages.
+
+    TODO: ADD EXAMPLE
 
 .. option:: -d, --develop
 
-    Installs the package in development mode.
+    Install the package in development mode.
 
     .. warning::
 
@@ -91,17 +114,34 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
     Removing egg path from easy_install.pth...
     itertools_recipes uninstalled succesfully
 
+.. program:: uninstall
+
+.. option:: -y, --yes
+
+    Do not ask confirmation of uninstall deletions.
+
+    TODO: ADD EXAMPLE
+
+.. option:: -r <path>, --req-file <path>
+
+    Uninstall all the packages listed in the given requirement file.
+
+    TODO: ADD EXAMPLE
+
 
 The ``rm`` command
 ------------------
 
 Since package uninstallation is very common the ``rm`` command is an alias for the :ref:`uninstall <uninst>` command::
 
-    $ pyg rm sphinx
+    $ sudo pyg rm sphinx
     Uninstalling sphinx
-            /usr/local/lib/python2.7/dist-packages/sphinx
-            /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7.egg-info
+            /usr/bin/sphinx-build
+            /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7-py2.7.egg
+            /usr/bin/sphinx-quickstart
+            /usr/bin/sphinx-autogen
     Proceed? (y/[n]) 
+    sphinx has not been uninstalled
 
 
 .. _reqs:
@@ -150,7 +190,7 @@ Pyg tries to detect all installed packages and prints requirements on Standard O
 
 .. option:: -c, --count
 
-    Returns the number of installed packages::
+    Return the number of installed packages::
 
         $ pyg freeze -c
         55
@@ -164,6 +204,8 @@ If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` 
     $ pyg link dirname
 
 When you link a directory Pyg add in a :file:`.pth` file the dir's path.
+
+TODO: ADD EXAMPLE
 
 
 Unlinking
@@ -234,7 +276,7 @@ If the requirement is not satisfied Pyg won't download anything::
 
 .. option:: -p <ext>, --prefer <ext>
 
-    This option lets you to specify the preferred file type for the download. Pyg looks for that file type and, if it does not exists, will download another package::
+    The preferred file type for the download. Pyg looks for that file type and, if it does not exists, will try another extension::
 
         $ pyg download -p .tar.gz pyg
         Retrieving data for pyg

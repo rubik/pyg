@@ -8,8 +8,8 @@ import ConfigParser
 import pkg_resources
 
 from .req import Requirement
-from .utils import TempDir, EASY_INSTALL, BIN, File, ext, is_installed
-from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled
+from .utils import TempDir, EASY_INSTALL, USER_SITE, BIN, File, ext, is_installed
+from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled, args_manager
 from .log import logger
 
 
@@ -18,7 +18,7 @@ __all__ = ['Installer', 'Uninstaller']
 
 class Installer(object):
     def __init__(self, req):
-        if is_installed(req):
+        if is_installed(req) and not args_manager['upgrade']:
             logger.info('{0} is already installed'.format(req))
             raise AlreadyInstalled
         self.req = req
@@ -49,6 +49,9 @@ class Installer(object):
             return
 
         # Now let's install dependencies
+        if not args_manager['deps']:
+            logger.info('Skipping dependencies for {0}'.format(r.name))
+            return
         Installer._install_deps(r.reqset)
         logger.info('{0} installed successfully'.format(r.name))
 
@@ -107,10 +110,24 @@ class Uninstaller(object):
 
     def uninstall(self):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
+        uninstall_re2 = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        dist = pkg_resources.get_distribution(self.name)
+
         to_del = set()
+        try:
+            dist = pkg_resources.get_distribution(self.name)
+        except pkg_resources.DistributionNotFound:
+            logger.debug('debug: dist not found: {0}'.format(self.name))
+
+            ## Create a fake distribution
+            ## In Python2.6 we can only use site.USER_SITE
+            class FakeDist(object):
+                def __getattribute__(self, a):
+                    if a == 'location':
+                        return USER_SITE
+                    return (lambda *a: False)
+            dist = FakeDist()
 
         if sys.version_info[:2] < (2, 7):
             guesses = [os.path.dirname(dist.location)]
@@ -119,11 +136,12 @@ class Uninstaller(object):
         for d in guesses:
             try:
                 for file in os.listdir(d):
-                    if uninstall_re.match(file):
+                    if uninstall_re.match(file) or uninstall_re2.match(file):
                         to_del.add(os.path.join(d, file))
             ## When os.listdir fails
             except OSError:
                 continue
+
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
             for s in dist.metadata_listdir('scripts'):
@@ -157,7 +175,10 @@ class Uninstaller(object):
             logger.info(d)
         logger.indent -= 8
         while True:
-            u = raw_input('Proceed? (y/[n]) ').lower()
+            if args_manager['yes']:
+                u = 'y'
+            else:
+                u = raw_input('Proceed? (y/[n]) ').lower()
             if u in ('n', ''):
                 logger.info('{0} has not been uninstalled'.format(self.name))
                 break

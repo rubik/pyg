@@ -2,7 +2,7 @@ import re
 import urllib2
 import xmlrpclib
 
-from .types import Version
+from .types import Version, args_manager
 from .utils import FileMapper, ext
 
 
@@ -21,8 +21,8 @@ class WebManager(object):
 
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
-    def __init__(self, req, fast=True, index_url='http://pypi.python.org/pypi'):
-        self.pypi = PyPI(index_url)
+    def __init__(self, req, fast=True):
+        self.pypi = PyPI(args_manager['index_url'])
         self.req = req
         self.name = self.req.name
         self.versions = None
@@ -79,7 +79,7 @@ class PackageManager(object):
         self.files = FileMapper(list)
         self.files.pref = self.pref
 
-    def arrange_files(self):
+    def arrange_items(self):
         for p in self.w.find():
             e = ext(p[3])
             self.files[e].append(p)

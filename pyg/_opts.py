@@ -5,6 +5,7 @@ import urllib2
 from .log import logger
 from .freeze import freeze
 from .req import Requirement
+from .types import args_manager
 from .inst import Installer, Uninstaller
 from .web import PREFERENCES, PyPI, WebManager, PackageManager
 from .utils import USER_SITE, PYG_LINKS, is_installed, link, unlink
@@ -14,6 +15,13 @@ def install_from_name(name):
     return Installer(name).install()
 
 def install_func(args):
+    if args.no_deps:
+        args_manager['deps'] = False
+    if args.upgrade:
+        args_manager['upgrade'] = True
+    if args.user:
+        args_manager['egg_install_dir'] = USER_SITE
+    args_manager['index_url'] = args.index_url
     if args.develop:
         raise NotImplementedError('not implemented yet')
     if args.file:
@@ -23,7 +31,14 @@ def install_func(args):
     return install_from_name(args.packname)
 
 def uninst_func(args):
-    return Uninstaller(args.packname).uninstall()
+    if args.yes:
+        args_manager['yes'] = True
+    if args.req_file:
+        with open(os.path.abspath(req_file)) as f:
+            for line in f:
+                Uninstaller(line.strip()).uninstall()
+    if args.packname:
+        return Uninstaller(args.packname).uninstall()
 
 def link_func(args):
     return link(args.path)
@@ -74,7 +89,7 @@ def download_func(args):
     except urllib2.HTTPError as e:
         logger.fatal('E: {0}'.format(e.msg))
         sys.exit(1)
-    files = pman.arrange_files()
+    files = pman.arrange_items()
 
     if not files:
         logger.error('E: Did not find files to download')
