@@ -18,9 +18,12 @@ __all__ = ['Installer', 'Uninstaller']
 
 class Installer(object):
     def __init__(self, req):
-        if is_installed(req) and not args_manager['upgrade']:
-            logger.info('{0} is already installed'.format(req))
-            raise AlreadyInstalled
+        if is_installed(req):
+            if not args_manager['upgrade']:
+                logger.info('{0} is already installed'.format(req))
+                raise AlreadyInstalled
+            else:
+                logger.info('{0} is already installed, upgrading...'.format(req))
         self.req = req
 
     @ staticmethod

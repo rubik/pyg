@@ -21,7 +21,7 @@ class WebManager(object):
 
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
-    def __init__(self, req, fast=True):
+    def __init__(self, req):
         self.pypi = PyPI(args_manager['index_url'])
         self.req = req
         self.name = self.req.name
@@ -43,8 +43,6 @@ class WebManager(object):
         if not self.versions:
             self.name = old
             self.versions = WebManager.versions_from_html(self.name)
-        if fast:
-            self.versions = [self.versions[0]]
 
     @ staticmethod
     def request(url):

@@ -46,8 +46,25 @@ where *packname* is the name of the package you want to install.
 .. option:: -u, --upgrade
 
     If the package is already installed, install it again.
+    For example, if we install ``pypol_``::
 
-    TODO: ADD EXAMPLE
+        $ pyg install pypol_==0.4
+        Best match: pypol_==0.4
+        Downloading pypol_
+        Checking md5 sum
+        Running setup.py egg_info for pypol_
+        Running setup.py install for pypol_
+        pypol_ installed successfully
+
+    And then run ``list``::
+
+        $ sudo pyg install pypol_==0.4
+Best match: pypol_==0.4
+Downloading pypol_
+Checking md5 sum
+Running setup.py egg_info for pypol_
+Running setup.py install for pypol_
+pypol_ installed successfully
 
 .. option:: -n, --no-deps
 

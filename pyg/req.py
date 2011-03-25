@@ -78,11 +78,15 @@ class Requirement(object):
 
     def install(self):
         w = WebManager(self)
+        success = False
         for v, name, hash, url in w.find():
             if name.endswith('.egg'):
                 vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
                 if vcode not in name:
                     continue
+            e = ext(name)
+            if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+                continue
             logger.info('Best match: {0}=={1}'.format(self.name, v))
             logger.info('Downloading {0}'.format(self.name))
             fobj = cStringIO.StringIO(WebManager.request(url))
@@ -90,15 +94,16 @@ class Requirement(object):
             if md5(fobj.getvalue()).hexdigest() != hash:
                 logger.fatal('E: {0} appears to be corrupted'.format(self.name))
                 return
-            e = ext(name)
             if e in ('.tar.gz', '.tar.bz2', '.zip'):
                 installer = Archive(fobj, e, w.name, self.reqset)
-            elif ext == '.egg':
+            elif e == '.egg':
                 installer = Egg(fobj, name, self.reqset, w.name)
-            else:
-                logger.error('E: an error occurred while installing {0}. Trying another file...'.format(self.name))
-                continue
+
+            ## There is no need to catch the exceptions now, this will be done by `pyg.inst.Installer.install`
             installer.install()
             if not self.version:
                 self.version = v
+            success = True
             break
+        if not success:
+            raise InstallationError
