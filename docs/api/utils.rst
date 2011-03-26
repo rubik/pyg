@@ -8,5 +8,3 @@
 
 .. moduleauthor:: Michele Lacchia <michelelacchia@gmail.com>
 .. sectionauthor:: Michele Lacchia <michelelacchia@gmail.com>
-
-
