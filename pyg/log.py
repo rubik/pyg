@@ -13,7 +13,7 @@ class Logger(object):
 
     def __init__(self):
         self.indent = 0
-        self.level = Logger.DEBUG
+        self.level = Logger.INFO
 
     def verbose(self, msg, **kw):
         self.log(self.VERBOSE, msg, **kw)

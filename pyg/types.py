@@ -4,15 +4,20 @@ import sys
 import tarfile
 import pkg_resources
 
-from .utils import EASY_INSTALL, INSTALL_DIR, BIN, TempDir, ZipFile, call_setup, name_from_egg, glob
 from .scripts import script_args
+from .locations import EASY_INSTALL, INSTALL_DIR, BIN
+from .utils import TempDir, ZipFile, call_setup, name_from_egg, glob
 from .log import logger
 
 
-
-class InstallationError(Exception):
+## A generic error thrown by Pyg
+class PygError(Exception):
     pass
 
+class InstallationError(PygError):
+    pass
+
+## This isn't really an error but it is useful when Pyg is used as a library
 class AlreadyInstalled(InstallationError):
     pass
 

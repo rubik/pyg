@@ -1,9 +1,11 @@
 import re
+import os
 import urllib2
 import xmlrpclib
 
-from .types import Version, args_manager
-from .utils import FileMapper, ext
+from .types import PygError, Version, args_manager
+from .utils import FileMapper, ext, right_egg, version_egg
+from .log import logger
 
 
 __all__ = ['WebManager', 'PackageManager', 'PyPI', 'PREFERENCES']
@@ -73,6 +75,7 @@ class PackageManager(object):
 
         ## For now fast=True and index_url=DEFAULT
         self.w = WebManager(req)
+        self.name = self.w.name
         self.pref = pref
         self.files = FileMapper(list)
         self.files.pref = self.pref
@@ -81,7 +84,62 @@ class PackageManager(object):
         for p in self.w.find():
             e = ext(p[3])
             self.files[e].append(p)
+        ## FIXME: We have to consider the preferences!
         return self.files
+
+
+class Downloader(object):
+    def __init__(self, req, pref=None):
+        try:
+            self.pman = PackageManager(req, pref)
+            self.name = self.pman.name
+        except urllib2.HTTPError as e:
+            logger.fatal('E: {0}'.format(e.msg))
+            raise PygError
+
+        self.files = self.pman.arrange_items()
+        if not self.files:
+            logger.error('E: Did not find files to download')
+            raise PygError
+
+    def download(self, dest):
+        dest = os.path.abspath(dest)
+
+        ## We need a placeholder because of the nested for loops
+        success = False
+
+        for p in self.pman.pref:
+            if success:
+                break
+            if not self.files[p]:
+                logger.error('{0} files not found. Continue searching...'.format(p))
+                continue
+            for v, name, hash, url in self.files[p]:
+                if success:
+                    break
+                if p == '.egg' and not right_egg(name):
+                    logger.info('Found egg file for another Python version: {0}. Continue searching...'.format(version_egg(name)))
+                    continue
+                try:
+                    data = WebManager.request(url)
+                except (urllib2.URLError, urllib2.HTTPError) as e:
+                    logger.debug('urllib2 error: {0}'.format(e.args))
+                    continue
+                if not data:
+                    logger.debug('request failed')
+                    continue
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                logger.info('Retrieving data for {0}'.format(self.name))
+                try:
+                    logger.info('Writing data into {0}'.format(name))
+                    with open(os.path.join(dest, name), 'w') as f:
+                        f.write(data)
+                except (IOError, OSError):
+                    logger.debug('error while writing data')
+                    continue
+                logger.info('{0} downloaded successfully'.format(self.name))
+                success = True
 
 
 ## OLD! We are using xmlrpclib to communicate with pypi

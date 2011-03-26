@@ -8,7 +8,8 @@ import ConfigParser
 import pkg_resources
 
 from .req import Requirement
-from .utils import TempDir, EASY_INSTALL, USER_SITE, BIN, File, ext, is_installed
+from .locations import EASY_INSTALL, USER_SITE, BIN
+from .utils import TempDir, File, ext, is_installed
 from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled, args_manager
 from .log import logger
 

@@ -10,8 +10,8 @@ try:
 except ImportError:
     from md5 import md5
 
-from .web import WebManager
-from .utils import ext
+from .utils import ext, right_egg
+from .web import WebManager, PackageManager
 from .types import Version, Egg, Archive, ReqSet
 from .log import logger
 
@@ -77,33 +77,34 @@ class Requirement(object):
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
     def install(self):
-        w = WebManager(self)
+        p = PackageManager(self)
         success = False
-        for v, name, hash, url in w.find():
-            if name.endswith('.egg'):
-                vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
-                if vcode not in name:
+        for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+            for v, name, hash, url in p.arrange_items()[pext]:
+                if pext == '.egg' and not right_egg(name):
                     continue
-            e = ext(name)
-            if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-                continue
-            logger.info('Best match: {0}=={1}'.format(self.name, v))
-            logger.info('Downloading {0}'.format(self.name))
-            fobj = cStringIO.StringIO(WebManager.request(url))
-            logger.info('Checking md5 sum')
-            if md5(fobj.getvalue()).hexdigest() != hash:
-                logger.fatal('E: {0} appears to be corrupted'.format(self.name))
-                return
-            if e in ('.tar.gz', '.tar.bz2', '.zip'):
-                installer = Archive(fobj, e, w.name, self.reqset)
-            elif e == '.egg':
-                installer = Egg(fobj, name, self.reqset, w.name)
-
-            ## There is no need to catch the exceptions now, this will be done by `pyg.inst.Installer.install`
-            installer.install()
-            if not self.version:
-                self.version = v
-            success = True
-            break
+                e = ext(name)
+                if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+                    continue
+                logger.info('Best match: {0}=={1}'.format(self.name, v))
+                logger.info('Downloading {0}'.format(self.name))
+                fobj = cStringIO.StringIO(WebManager.request(url))
+                logger.info('Checking md5 sum')
+                if md5(fobj.getvalue()).hexdigest() != hash:
+                    logger.fatal('E: {0} appears to be corrupted'.format(self.name))
+                    return
+                if e in ('.tar.gz', '.tar.bz2', '.zip'):
+                    installer = Archive(fobj, e, p.name, self.reqset)
+                elif e == '.egg':
+                    installer = Egg(fobj, name, self.reqset, p.name)
+    
+                ## There is no need to catch the exceptions now, this will be done by `pyg.inst.Installer.install`
+                installer.install()
+                if not self.version:
+                    self.version = v
+                success = True
+                break
+            if success:
+                break
         if not success:
             raise InstallationError
