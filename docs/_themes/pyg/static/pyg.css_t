@@ -169,7 +169,7 @@ a {
     font-family: 'Georgia';
     font-size: 105%;
     font-style: italic;
-    color: #0B506D;
+    color: #185F6D;
     background-color: transparent;
     text-decoration: underline;
 }
