@@ -15,32 +15,27 @@ class Logger(object):
         self.indent = 0
         self.level = Logger.INFO
 
-    def verbose(self, msg, **kw):
+    def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, **kw)
 
-    def debug(self, msg, **kw):
+    def debug(self, msg, *a, **kw):
         self.log(self.DEBUG, msg, **kw)
 
-    def info(self, msg, **kw):
+    def info(self, msg, *a, **kw):
         self.log(self.INFO, msg, **kw)
 
-    def warn(self, msg, **kw):
+    def warn(self, msg, *a, **kw):
         self.log(self.WARN, msg, **kw)
 
-    ## For error and fatal we can raise exceptions after the log
-    def error(self, msg, exc=None, **kw):
+    def error(self, msg, *a, **kw):
         self.log(self.ERROR, msg, **kw)
-        if exc is not None:
-            raise exc(msg)
 
-    def fatal(self, msg, exc=None, **kw):
+    def fatal(self, msg, *a, **kw):
         self.log(self.FATAL, msg, **kw)
-        if exc is not None:
-            raise exc(msg)
 
-    def log(self, level, msg, **kw):
+    def log(self, level, msg, *a, **kw):
         if level >= self.level:
-            msg = ' ' * self.indent + msg
+            msg = ' ' * self.indent + msg.format(*a)
             sys.stdout.write(msg)
 
             ## Automatically adds a newline character

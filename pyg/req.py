@@ -86,12 +86,12 @@ class Requirement(object):
                 e = ext(name)
                 if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
                     continue
-                logger.info('Best match: {0}=={1}'.format(self.name, v))
-                logger.info('Downloading {0}'.format(self.name))
+                logger.info('Best match: {0}=={1}', self.name, v)
+                logger.info('Downloading {0}', self.name)
                 fobj = cStringIO.StringIO(WebManager.request(url))
                 logger.info('Checking md5 sum')
                 if md5(fobj.getvalue()).hexdigest() != hash:
-                    logger.fatal('E: {0} appears to be corrupted'.format(self.name))
+                    logger.fatal('E: {0} appears to be corrupted', self.name)
                     return
                 if e in ('.tar.gz', '.tar.bz2', '.zip'):
                     installer = Archive(fobj, e, p.name, self.reqset)

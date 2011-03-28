@@ -94,7 +94,7 @@ class Downloader(object):
             self.pman = PackageManager(req, pref)
             self.name = self.pman.name
         except urllib2.HTTPError as e:
-            logger.fatal('E: {0}'.format(e.msg))
+            logger.fatal('E: {0}', e.msg)
             raise PygError
 
         self.files = self.pman.arrange_items()
@@ -112,33 +112,33 @@ class Downloader(object):
             if success:
                 break
             if not self.files[p]:
-                logger.error('{0} files not found. Continue searching...'.format(p))
+                logger.error('{0} files not found. Continue searching...', p)
                 continue
             for v, name, hash, url in self.files[p]:
                 if success:
                     break
                 if p == '.egg' and not right_egg(name):
-                    logger.info('Found egg file for another Python version: {0}. Continue searching...'.format(version_egg(name)))
+                    logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
                     continue
                 try:
                     data = WebManager.request(url)
                 except (urllib2.URLError, urllib2.HTTPError) as e:
-                    logger.debug('urllib2 error: {0}'.format(e.args))
+                    logger.debug('urllib2 error: {0}', e.args)
                     continue
                 if not data:
                     logger.debug('request failed')
                     continue
                 if not os.path.exists(dest):
                     os.makedirs(dest)
-                logger.info('Retrieving data for {0}'.format(self.name))
+                logger.info('Retrieving data for {0}', self.name)
                 try:
-                    logger.info('Writing data into {0}'.format(name))
+                    logger.info('Writing data into {0}', name)
                     with open(os.path.join(dest, name), 'w') as f:
                         f.write(data)
                 except (IOError, OSError):
                     logger.debug('error while writing data')
                     continue
-                logger.info('{0} downloaded successfully'.format(self.name))
+                logger.info('{0} downloaded successfully', self.name)
                 success = True
 
 

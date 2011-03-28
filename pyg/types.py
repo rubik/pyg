@@ -111,9 +111,9 @@ class Egg(object):
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
         if os.path.exists(eggpath):
-            logger.info('{0} is already installed'.format(self.packname))
+            logger.info('{0} is already installed', self.packname)
             raise AlreadyInstalled
-        logger.info('Installing {0} egg file'.format(self.packname))
+        logger.info('Installing {0} egg file', self.packname)
         with ZipFile(self.fobj) as z:
             z.extractall(eggpath)
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
@@ -134,7 +134,7 @@ class Egg(object):
             pass
         dist = pkg_resources.get_distribution(self.packname)
         for name, content, mode in script_args(dist):
-            logger.info('Installing {0} script to {1}'.format(name, BIN))
+            logger.info('Installing {0} script to {1}', name, BIN)
             target = os.path.join(BIN, name)
             with open(target, 'w' + mode) as f:
                 f.write(content)
@@ -160,7 +160,7 @@ class Archive(object):
             self.arch.extractall(tempdir)
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            logger.info('Running setup.py egg_info for {0}'.format(self.name))
+            logger.info('Running setup.py egg_info for {0}', self.name)
             if call_setup(fullpath, ['egg_info', '--egg-base', tempdir]) != 0:
                 logger.fatal('E: Cannot run egg_info: package requirements will not be installed.')
                 while True:
@@ -175,10 +175,10 @@ class Archive(object):
                         self.reqset.add(line.strip())
             except IOError:
                 pass
-            logger.info('Running setup.py install for {0}'.format(self.name))
+            logger.info('Running setup.py install for {0}', self.name)
             if call_setup(fullpath, ['install', '--single-version-externally-managed',
                                      '--record', '.pyg-install-record']) != 0:
-                logger.fatal('E: setup.py did not installed {0}'.format(self.name))
+                logger.fatal('E: setup.py did not installed {0}', self.name)
                 raise InstallationError
 
 
@@ -205,15 +205,15 @@ class Bundle(object):
             logger.indent += 8
             for d in deps:
                 l = os.path.join(location, d)
-                logger.info('Calling setup.py for {0}'.format(d))
+                logger.info('Calling setup.py for {0}', d)
                 call_setup(l)
-                logger.info('{0}: installed'.format(d))
+                logger.info('{0}: installed', d)
             logger.indent = 0
             logger.info('Finished processing dependencies')
             logger.info('Installing main package')
             for p in main_pack:
                 l = os.path.join(location, p)
-                logger.info('Calling setup.py for {0}'.format(p))
+                logger.info('Calling setup.py for {0}', p)
                 call_setup(l)
             logger.info('Bundle installed successfully')
 

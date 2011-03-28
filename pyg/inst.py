@@ -21,10 +21,10 @@ class Installer(object):
     def __init__(self, req):
         if is_installed(req):
             if not args_manager['upgrade']:
-                logger.info('{0} is already installed'.format(req))
+                logger.info('{0} is already installed', req)
                 raise AlreadyInstalled
             else:
-                logger.info('{0} is already installed, upgrading...'.format(req))
+                logger.info('{0} is already installed, upgrading...', req)
         self.req = req
 
     @ staticmethod
@@ -44,20 +44,20 @@ class Installer(object):
         try:
             r.install()
         except AlreadyInstalled:
-            logger.info('{0} is already installed'.format(r.name))
+            logger.info('{0} is already installed', r.name)
         except InstallationError:
-            logger.fatal('E: an error occurred while installing {0}'.format(r.name))
+            logger.fatal('E: an error occurred while installing {0}', r.name)
             raise
         if not r.reqset:
-            logger.info('{0} installed successfully'.format(r.name))
+            logger.info('{0} installed successfully', r.name)
             return
 
         # Now let's install dependencies
         if not args_manager['deps']:
-            logger.info('Skipping dependencies for {0}'.format(r.name))
+            logger.info('Skipping dependencies for {0}', r.name)
             return
         Installer._install_deps(r.reqset)
-        logger.info('{0} installed successfully'.format(r.name))
+        logger.info('{0} installed successfully', r.name)
 
     @ staticmethod
     def from_req_file(filepath):
@@ -87,7 +87,7 @@ class Installer(object):
         reqset = ReqSet()
 
         if is_installed(packname):
-            logger.info('{0} is already installed'.format(packname))
+            logger.info('{0} is already installed', packname)
             raise AlreadyInstalled
 
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
@@ -97,15 +97,15 @@ class Installer(object):
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         else:
-            logger.fatal('E: Cannot install {0}'.format(path))
+            logger.fatal('E: Cannot install {0}', packname)
             raise InstallationError
         try:
             installer.install()
         except Exception as e:
-            logger.fatal('E: {0}'.format(e))
+            logger.fatal('E: {0}', e)
             raise InstallationError
         Installer._install_deps(reqset)
-        logger.info('{0} installed successfully'.format(packname))
+        logger.info('{0} installed successfully', packname)
 
 
 class Uninstaller(object):
@@ -122,7 +122,7 @@ class Uninstaller(object):
         try:
             dist = pkg_resources.get_distribution(self.name)
         except pkg_resources.DistributionNotFound:
-            logger.debug('debug: dist not found: {0}'.format(self.name))
+            logger.debug('debug: dist not found: {0}', self.name)
 
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
@@ -173,7 +173,7 @@ class Uninstaller(object):
         if not to_del:
             logger.warn('Did not find any file to delete')
             sys.exit(1)
-        logger.info('Uninstalling {0}'.format(self.name))
+        logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
         for d in to_del:
             logger.info(d)
@@ -184,7 +184,7 @@ class Uninstaller(object):
             else:
                 u = raw_input('Proceed? (y/[n]) ').lower()
             if u in ('n', ''):
-                logger.info('{0} has not been uninstalled'.format(self.name))
+                logger.info('{0} has not been uninstalled', self.name)
                 break
             elif u == 'y':
                 for d in to_del:
@@ -194,8 +194,8 @@ class Uninstaller(object):
                         try:
                             os.remove(d)
                         except OSError:
-                            logger.error('E: Cannot delete: {0}'.format(d))
-                    logger.info('Deleting: {0}...'.format(d))
+                            logger.error('E: Cannot delete: {0}', d)
+                    logger.info('Deleting: {0}...', d)
                 logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
@@ -204,5 +204,5 @@ class Uninstaller(object):
                         if path_re.match(line) or path_re2.match(line):
                             continue
                         f.write(line)
-                logger.info('{0} uninstalled succesfully'.format(self.name))
+                logger.info('{0} uninstalled succesfully', self.name)
                 break

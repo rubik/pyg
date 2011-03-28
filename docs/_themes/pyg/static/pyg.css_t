@@ -23,6 +23,8 @@ body {
     color: #000;
     margin: 0;
     padding: 0;
+    #dc3c01;
+    #892601;
 }
 
 div.document {
@@ -165,17 +167,21 @@ div.body p {
     background-color: transparent;
 }
 
-a {
+a:link {
     font-family: 'Georgia';
     font-size: 105%;
     font-style: italic;
-    color: #185F6D;
+    color: {{ theme_link_color }};
     background-color: transparent;
     text-decoration: underline;
 }
+
+a:visited {
+    color: {{ theme_visited_link_color }}
+}
  
 a:hover {
-    color: #2794AA;
+    color: {{ theme_hover_link_color }};
 }
  
 div.body h1,
