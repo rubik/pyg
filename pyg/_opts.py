@@ -7,10 +7,22 @@ from .freeze import freeze
 from .req import Requirement
 from .types import args_manager
 from .inst import Installer, Uninstaller
-from .locations import USER_SITE, PYG_LINKS
+from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
 from .utils import is_installed, link, unlink
 from .web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
 
+
+def check_permissions():
+    try:
+        path = os.path.join(INSTALL_DIR, 'pyg-permissions-test.pth')
+        with open(path, 'w'):
+            pass
+        os.remove(path)
+    ## FIXME: Do we need OSError too?
+    except (IOError, OSError):
+        return False
+    else:
+        return True
 
 def install_from_name(name):
     return Installer(name).install()

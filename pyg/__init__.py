@@ -68,6 +68,25 @@ def _set_up():
     return parser
 
 def main():
+    if not opts.check_permissions():
+        sys.exit('''Pyg cannot create new files in the installation directory.
+Installation directory was:
+
+    {0}
+
+Perhaps your account does not have write access to this directory?  If the
+installation directory is a system-owned directory, you may need to sign in
+as the administrator or "root" account.  If you do not have administrative
+access to this machine, you may wish to choose a different installation
+directory, preferably one that is listed in your PYTHONPATH environment
+variable.
+
+If you need further informations about Pyg command-line options visit:
+
+    http://pyg.readthedocs.org/en/latest/cmdline.html
+or
+    http://pyg-installer.co.nr
+'''.format(__import__('pyg').locations.INSTALL_DIR))
     try:
         parser = _set_up()
         args = parser.parse_args()
