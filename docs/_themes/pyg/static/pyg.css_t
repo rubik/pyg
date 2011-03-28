@@ -1,9 +1,9 @@
 /*
- * werkzeug.css_t
+ * pyg.css_t
  * ~~~~~~~~~~~~~~
  *
- * :copyright: Copyright 2010 by Armin Ronacher.
- * :license: Flask Design License, see LICENSE for details.
+ * :copyright: Copyright 2010 by Michele Lacchia.
+ * :license: MIT License.
  */
 
 {% set page_width = '980px' %}
@@ -23,8 +23,6 @@ body {
     color: #000;
     margin: 0;
     padding: 0;
-    #dc3c01;
-    #892601;
 }
 
 div.document {

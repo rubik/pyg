@@ -16,22 +16,22 @@ class Logger(object):
         self.level = Logger.INFO
 
     def verbose(self, msg, *a, **kw):
-        self.log(self.VERBOSE, msg, **kw)
+        self.log(self.VERBOSE, msg, *a, **kw)
 
     def debug(self, msg, *a, **kw):
-        self.log(self.DEBUG, msg, **kw)
+        self.log(self.DEBUG, msg, *a, **kw)
 
     def info(self, msg, *a, **kw):
-        self.log(self.INFO, msg, **kw)
+        self.log(self.INFO, msg, *a, **kw)
 
     def warn(self, msg, *a, **kw):
-        self.log(self.WARN, msg, **kw)
+        self.log(self.WARN, msg, *a, **kw)
 
     def error(self, msg, *a, **kw):
-        self.log(self.ERROR, msg, **kw)
+        self.log(self.ERROR, msg, *a, **kw)
 
     def fatal(self, msg, *a, **kw):
-        self.log(self.FATAL, msg, **kw)
+        self.log(self.FATAL, msg, *a, **kw)
 
     def log(self, level, msg, *a, **kw):
         if level >= self.level:
