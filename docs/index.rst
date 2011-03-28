@@ -12,6 +12,7 @@ Welcome to Pyg's documentation!
 :Version: |version|
 :Source code: http://github.com/rubik/pyg
 :Download: http://pypi.python.org/pypi/pyg
+:Homepage: http://pyg-installer.co.nr
 :Keywords: python, easy_install, packages, pypi
 :Date: |today|
 

@@ -24,10 +24,32 @@ def check_permissions():
     else:
         return True
 
+def check_and_exit():
+    if not check_permissions():
+        sys.exit('''Pyg cannot create new files in the installation directory.
+Installation directory was:
+
+    {0}
+
+Perhaps your account does not have write access to this directory?  If the
+installation directory is a system-owned directory, you may need to sign in
+as the administrator or "root" account.  If you do not have administrative
+access to this machine, you may wish to choose a different installation
+directory, preferably one that is listed in your PYTHONPATH environment
+variable.
+
+If you need further information about Pyg command-line options visit:
+
+    http://pyg.readthedocs.org/en/latest/cmdline.html
+or
+    http://pyg-installer.co.nr
+'''.format(__import__('pyg').locations.INSTALL_DIR))
+
 def install_from_name(name):
     return Installer(name).install()
 
 def install_func(args):
+    check_and_exit()
     if args.no_deps:
         args_manager['deps'] = False
     if args.upgrade:
@@ -44,6 +66,7 @@ def install_func(args):
     return install_from_name(args.packname)
 
 def uninst_func(args):
+    check_and_exit()
     if args.yes:
         args_manager['yes'] = True
     if args.req_file:
