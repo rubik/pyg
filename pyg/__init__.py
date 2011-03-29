@@ -62,6 +62,7 @@ def _set_up():
 
     sub_down = sub.add_parser('download')
     sub_down.add_argument('packname')
+    sub_down.add_argument('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
     sub_down.add_argument('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
     sub_down.add_argument('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
     sub_down.set_defaults(func=opts.download_func)

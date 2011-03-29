@@ -8,7 +8,7 @@ from .req import Requirement
 from .types import args_manager
 from .inst import Installer, Uninstaller
 from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
-from .utils import is_installed, link, unlink
+from .utils import is_installed, dirname, link, unlink, unpack
 from .web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
 
 
@@ -119,4 +119,10 @@ def download_func(args):
         pref = ['.' + args.prefer.strip('.')]
     name = args.packname
     dest = args.download_dir
-    return Downloader(Requirement(name), pref).download(dest)
+    unpk = args.unpack
+    downloader = Downloader(Requirement(name), pref)
+    downloader.download(dest)
+    if unpk:
+        a = os.path.join(dest, downloader.name)
+        logger.info('Unpacking {0} to {1}', downloader.name, dirname(a))
+        unpack(a)

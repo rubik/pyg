@@ -296,6 +296,19 @@ If the requirement is not satisfied Pyg won't download anything::
 
 .. program:: download
 
+.. option:: -u, --unpack
+
+    Once downloaded the package, unpack it::
+
+        $ pyg download -u pypol_
+        Found egg file for another Python version: 2.6. Continue searching...
+        Retrieving data for pypol_
+        Writing data into pypol_-0.5-py2.7.egg
+        pypol_ downloaded successfully
+        Unpacking pypol_-0.5-py2.7.egg to ./pypol_-0.5-py2.7
+        $ l
+        pypol_-0.5-py2.7/  pypol_-0.5-py2.7.egg
+
 .. option:: -d <path>, --download-dir <path>
 
     Where to download the package, default to :file:`.` (current working directory)::

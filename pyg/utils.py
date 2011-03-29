@@ -4,6 +4,7 @@ import pwd
 import sys
 import shutil
 import zipfile
+import tarfile
 import tempfile
 import subprocess
 import collections
@@ -72,11 +73,28 @@ def glob(dir, pattern):
     with ChDir(dir):
         return glob_mod.glob(pattern)
 
-def ext(path):
+def dir_ext(path):
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
-        return '.tar' + e
-    return e
+        e = '.tar' + e
+        p = p[:-4]
+    return p, e
+
+def dirname(path):
+    return dir_ext(path)[0]
+
+def ext(path):
+    return dir_ext(path)[1]
+
+def unpack(path):
+    path = os.path.abspath(path)
+    d, e = dir_ext(path)
+    if e in ('.egg', '.zip'):
+        arch = ZipFile(path)
+    elif e in ('.tar', '.tar.gz', '.tar.bz2'):
+        mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
+        arch = tarfile.open(path, mode=mode)
+    arch.extractall(d)
 
 
 class FileMapper(collections.defaultdict):
@@ -125,6 +143,13 @@ class ZipFile(zipfile.ZipFile):
 
     def __exit__(self, type, value, traceback):
         self.close()
+
+#class TarFile(tarfile.TarFile):
+#    def __enter__(self):
+#        return self
+#
+#    def __exit__(self, type, value, traceback):
+#        self.close()
 
 
 ## This is a generic file object needed for ConfigParser.ConfigParser

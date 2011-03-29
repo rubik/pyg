@@ -140,6 +140,7 @@ class Downloader(object):
                     continue
                 logger.info('{0} downloaded successfully', self.name)
                 success = True
+                self.name = name
 
 
 ## OLD! We are using xmlrpclib to communicate with pypi
