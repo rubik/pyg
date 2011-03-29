@@ -148,15 +148,52 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
 
 .. option:: -y, --yes
 
-    Do not ask confirmation of uninstall deletions.
+    Do not ask confirmation of uninstall deletions::
 
-    TODO: ADD EXAMPLE
+        $ pyg uninstall -y iterutils
+        Uninstalling iterutils
+                /usr/local/lib/python2.7/dist-packages/iterutils.py
+                /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info
+                /usr/local/lib/python2.7/dist-packages/iterutils.pyc
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.py...
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info...
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.pyc...
+        Removing egg path from easy_install.pth...
+        iterutils uninstalled succesfully
 
 .. option:: -r <path>, --req-file <path>
 
     Uninstall all the packages listed in the given requirement file.
 
-    TODO: ADD EXAMPLE
+    ::
+
+        $ cat r.txt
+        itertools_recipes
+        iterutils
+
+    ::
+
+        $ pyg uninstall -r r.txt
+        Uninstalling itertools_recipes
+                /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
+                /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
+                /usr/local/lib/python2.7/dist-packages/itertools_recipes-0.1.egg-info
+        Proceed? (y/[n]) y
+        Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes.py...
+        Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc...
+        Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes-0.1.egg-info...
+        Removing egg path from easy_install.pth...
+        itertools_recipes uninstalled succesfully
+        Uninstalling iterutils
+                /usr/local/lib/python2.7/dist-packages/iterutils.py
+                /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info
+                /usr/local/lib/python2.7/dist-packages/iterutils.pyc
+        Proceed? (y/[n]) y
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.py...
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info...
+        Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.pyc...
+        Removing egg path from easy_install.pth...
+        iterutils uninstalled succesfully
 
 
 The ``rm`` command
@@ -282,6 +319,25 @@ Pyg can perform searches on PyPI with the ``search`` command::
     virtualenv-distribute  1.3.4.4 - Virtual Python Environment builder
 
 
+Checking installed packages
+---------------------------
+
+If you want to check if a package is installed, you can use the ``check`` command::
+
+    $ pyg check packname
+
+Some examples::
+
+        $ pyg check pyg
+        True
+        $ pyg check pyg==42
+        False
+        $ pyg check pyg==0.1.2
+        True
+        $ pyg check pyg==0.1.3
+        False
+
+
 Downloading packages
 --------------------
 
@@ -298,7 +354,7 @@ If the requirement is not satisfied Pyg won't download anything::
 
 .. option:: -u, --unpack
 
-    Once downloaded the package, unpack it::
+    After downloading a package, Pyg unpacks it::
 
         $ pyg download -u pypol_
         Found egg file for another Python version: 2.6. Continue searching...

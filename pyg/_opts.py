@@ -70,7 +70,7 @@ def uninst_func(args):
     if args.yes:
         args_manager['yes'] = True
     if args.req_file:
-        with open(os.path.abspath(req_file)) as f:
+        with open(os.path.abspath(args.req_file)) as f:
             for line in f:
                 Uninstaller(line.strip()).uninstall()
     if args.packname:
@@ -83,6 +83,9 @@ def unlink_func(args):
     if args.all:
         return os.remove(pyg_links())
     return unlink(args.path)
+
+def check_func(args):
+    return sys.stdout.write(str(is_installed(args.packname)) + '\n')
 
 def freeze_func(args):
     f = freeze()

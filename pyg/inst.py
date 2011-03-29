@@ -171,7 +171,7 @@ class Uninstaller(object):
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
         if not to_del:
-            logger.warn('Did not find any file to delete')
+            logger.warn('{0}: did not find any file to delete', self.name)
             sys.exit(1)
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8

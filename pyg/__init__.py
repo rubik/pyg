@@ -60,6 +60,10 @@ def _set_up():
     sub_search.add_argument('packname')
     sub_search.set_defaults(func=opts.search_func)
 
+    sub_ck = sub.add_parser('check')
+    sub_ck.add_argument('packname')
+    sub_ck.set_defaults(func=opts.check_func)
+
     sub_down = sub.add_parser('download')
     sub_down.add_argument('packname')
     sub_down.add_argument('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
