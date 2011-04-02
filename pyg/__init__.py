@@ -1,11 +1,12 @@
 import os
 import sys
 
-import _opts as opts
-from .types import InstallationError, AlreadyInstalled
-
 
 __version__ = '0.1.2'
+
+
+import _opts as opts
+from .types import InstallationError, AlreadyInstalled
 
 
 def _set_up():

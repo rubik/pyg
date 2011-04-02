@@ -3,7 +3,7 @@
 :mod:`pyg.locations` --- Pyg constants
 ======================================
 
-.. module:: pyg.utils
+.. module:: pyg.locations
     :synopsis: Pyg constants
 
 .. moduleauthor:: Michele Lacchia <michelelacchia@gmail.com>

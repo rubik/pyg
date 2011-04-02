@@ -63,6 +63,8 @@ def install_func(args):
         return Installer.from_file(args.packname)
     if args.req_file:
         return Installer.from_req_file(args.packname)
+    if args.packname.startswith('http'):
+        return Installer.from_url(args.packname)
     return install_from_name(args.packname)
 
 def uninst_func(args):

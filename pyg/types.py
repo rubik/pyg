@@ -52,6 +52,21 @@ class AlreadyInstalled(InstallationError):
 
 
 class Version(object):
+    '''
+    This class implements a Version object with comparison methods::
+
+        >>> Version('0.1') < Version('0.1.1')
+        True
+        >>> Version('0.1') == Version('0.1')
+        True
+        >>> Version('0.1') >= Version('0.1')
+        True
+        >>> Version('0.1b') > Version('0.1')
+        False
+        >>> Version('0.1b') > Version('0.1a')
+        True
+    '''
+
     def __init__(self, v):
         self._v = v
         self.v = pkg_resources.parse_version(v)
@@ -79,6 +94,10 @@ class Version(object):
 
 
 class ReqSet(object):
+    '''
+    A requirement set, used by :class:`~pyg.types.Archive` and :class:`~pyg.types.Egg` to keep trace of package's requirements.
+    '''
+
     def __init__(self):
         self._reqs = set()
 
@@ -101,6 +120,17 @@ class ReqSet(object):
 
 
 class Egg(object):
+    '''
+    This class represent a Python Egg object. It needs a file-like object with egg data.
+
+    :param fobj: the file-like object with egg data
+    :param eggname: the egg name (for example ``pyg-0.1.2-py2.7.egg``)
+    :param reqset: a :class:`~pyg.types.ReqSet` object used to store requirements
+    :param packname: the package name. If the egg name is ``pyg-0.1.2-py2.7.egg``, *packname* should be ``pyg``
+
+    
+    '''
+
     def __init__(self, fobj, eggname, reqset, packname=None):
         self.fobj = fobj
         self.eggname = os.path.basename(eggname)
@@ -222,7 +252,7 @@ class ArgsManager(object):
 
     _OPTS = {## Install dependencies?
             'deps': True,
-            ## Package Index url
+            ## Package Index Url
             'index_url': 'http://pypi.python.org/pypi',
             ## Force installation?
             'upgrade': False,

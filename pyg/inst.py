@@ -4,10 +4,12 @@ import sys
 import site
 import shutil
 import zipfile
+import urlparse
 import ConfigParser
 import pkg_resources
 
 from .req import Requirement
+from .web import WebManager
 from .locations import EASY_INSTALL, USER_SITE, BIN
 from .utils import TempDir, File, ext, is_installed
 from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled, args_manager
@@ -106,6 +108,16 @@ class Installer(object):
             raise InstallationError
         Installer._install_deps(reqset)
         logger.info('{0} installed successfully', packname)
+
+    @ staticmethod
+    def from_url(url):
+        logger.info('Installing from url: {0}', url)
+        with TempDir() as t:
+            packname = urlparse.urlsplit(url).path.split('/')[-1]
+            path = os.path.join(t, packname)
+            with open(path, 'w') as f:
+                f.write(WebManager.request(url))
+            Installer.from_file(path)
 
 
 class Uninstaller(object):

@@ -11,6 +11,7 @@ Pyg can be used as a Python library. It offers some modules to interact with PyP
    api/inst.rst
    api/req.rst
    api/web.rst
+   api/types.rst
    api/locations.rst
    api/utils.rst
    api/freeze.rst
