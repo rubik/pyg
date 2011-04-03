@@ -6,7 +6,7 @@ import pkg_resources
 
 from .scripts import script_args
 from .locations import EASY_INSTALL, INSTALL_DIR, BIN
-from .utils import TempDir, ZipFile, call_setup, name_from_egg, glob
+from .utils import TempDir, ZipFile, call_setup, name_from_egg, glob, ext
 from .log import logger
 
 
@@ -185,66 +185,52 @@ class Archive(object):
             self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 
+    @ staticmethod
+    def run_setup(path, name, reqset, tempdir):
+        logger.info('Running setup.py egg_info for {0}', name)
+        if call_setup(path, ['egg_info', '--egg-base', tempdir]) != 0:
+            logger.fatal('E: Cannot run egg_info: package requirements will not be installed.')
+            while True:
+                u = raw_input('Do you want to continue anyway? (y/[n]) ').lower()
+                if u in ('n', ''):
+                    raise InstallationError
+                elif u == 'y':
+                    break
+        try:
+            with open(os.path.join(glob(tempdir, '*.egg-info')[0], 'requires.txt')) as f:
+                for line in f:
+                    reqset.add(line.strip())
+        ## IndexError means no requirements, but if we are here the user wants to continue anyway
+        except (IOError, IndexError):
+            pass
+        logger.info('Running setup.py install for {0}', name)
+        if call_setup(path, ['install', '--single-version-externally-managed',
+                                 '--record', '.pyg-install-record']) != 0:
+            logger.fatal('E: setup.py did not install {0}', name)
+            raise InstallationError
+
     def install(self):
         with TempDir() as tempdir:
             self.arch.extractall(tempdir)
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            logger.info('Running setup.py egg_info for {0}', self.name)
-            if call_setup(fullpath, ['egg_info', '--egg-base', tempdir]) != 0:
-                logger.fatal('E: Cannot run egg_info: package requirements will not be installed.')
-                while True:
-                    u = raw_input('Do you want to continue anyway? (y/[n]) ').lower()
-                    if u in ('n', ''):
-                        raise InstallationError
-                    elif u == 'y':
-                        break
-            try:
-                with open(os.path.join(glob(tempdir, '*.egg-info')[0], 'requires.txt')) as f:
-                    for line in f:
-                        self.reqset.add(line.strip())
-            except IOError:
-                pass
-            logger.info('Running setup.py install for {0}', self.name)
-            if call_setup(fullpath, ['install', '--single-version-externally-managed',
-                                     '--record', '.pyg-install-record']) != 0:
-                logger.fatal('E: setup.py did not install {0}', self.name)
-                raise InstallationError
+            Archive.run_setup(fullpath, self.name, self.reqset, tempdir)
 
 
 class Bundle(object):
-    def __init__(self, filepath):
+    def __init__(self, filepath, reqset):
         self.path = os.path.abspath(filepath)
+        self.reqset = reqset
 
     def install(self):
         with TempDir() as tempdir:
             with ZipFile(self.path) as z:
                 z.extractall(tempdir)
             location = os.path.join(tempdir, 'build')
-            pip_manifest = os.path.join(tempdir, 'pip-manifest.txt')
-            with open(pip_manifest) as pf:
-                lines = pf.readlines()[4:]
-                main_pack, deps = [], []
-                current = main_pack
-                for line in lines:
-                    if line.startswith('#'):
-                        current = deps
-                        continue
-                    current.append(line.split('==')[0])
-            logger.info('Installing dependencies')
-            logger.indent += 8
-            for d in deps:
-                l = os.path.join(location, d)
-                logger.info('Calling setup.py for {0}', d)
-                call_setup(l)
-                logger.info('{0}: installed', d)
-            logger.indent = 0
-            logger.info('Finished processing dependencies')
-            logger.info('Installing main package')
-            for p in main_pack:
-                l = os.path.join(location, p)
-                logger.info('Calling setup.py for {0}', p)
-                call_setup(l)
+            for f in os.listdir(location):
+                logger.info('Installing {0}...', f)
+                p = os.path.join(location, f)
+                Archive.run_setup(p, f, self.reqset, tempdir)
             logger.info('Bundle installed successfully')
 
 
@@ -258,6 +244,8 @@ class ArgsManager(object):
             'upgrade': False,
             ## Install to user-site or to site-packages?
             'egg_install_dir': INSTALL_DIR,
+            ## Install base directory for all installation
+            'install_base': None,
             ## Ask confirmation of uninstall deletions?
             'yes': False,
             }

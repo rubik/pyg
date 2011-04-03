@@ -83,27 +83,13 @@ where *packname* is the name of the package you want to install.
 
     Do not install package's dependencies.
 
-    TODO: ADD EXAMPLE
-
 .. option:: -i <url>, --index-url <url>
 
     Specify the base URL of Python Package Index (default to ``http://pypi.python.org/pypi``).
 
-    TODO: ADD EXAMPLE
-
 .. option:: --user
 
     Install the package in the user site-packages.
-
-    TODO: ADD EXAMPLE
-
-.. option:: -d, --develop
-
-    Install the package in development mode.
-
-    .. warning::
-
-        Not Implemented Yet
 
 
 .. _uninst:

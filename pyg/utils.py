@@ -11,6 +11,7 @@ import collections
 import pkg_resources
 import glob as glob_mod
 
+
 from .locations import PYG_LINKS
 from .log import logger
 
@@ -60,8 +61,7 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_setup(path, a, stdout=None, stderr=None):
-    stdout, stderr = stdout or subprocess.PIPE, stderr or subprocess.PIPE
+def call_setup(path, a, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code]
     cwd = os.getcwd()

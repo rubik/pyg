@@ -12,7 +12,7 @@ from .req import Requirement
 from .web import WebManager
 from .locations import EASY_INSTALL, USER_SITE, BIN
 from .utils import TempDir, File, ext, is_installed
-from .types import Archive, Egg, Bundle, ReqSet, InstallationError, AlreadyInstalled, args_manager
+from .types import Archive, Egg, Bundle, ReqSet, PygError, InstallationError, AlreadyInstalled, args_manager
 from .log import logger
 
 
@@ -95,7 +95,7 @@ class Installer(object):
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(open(path), e, packname, reqset)
         elif e in ('.pybundle', '.pyb'):
-            installer = Bundle(filepath)
+            installer = Bundle(filepath, reqset)
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         else:
@@ -111,10 +111,10 @@ class Installer(object):
 
     @ staticmethod
     def from_url(url):
-        logger.info('Installing from url: {0}', url)
         with TempDir() as t:
             packname = urlparse.urlsplit(url).path.split('/')[-1]
             path = os.path.join(t, packname)
+            logger.info('Installing {0}', packname)
             with open(path, 'w') as f:
                 f.write(WebManager.request(url))
             Installer.from_file(path)
@@ -184,7 +184,7 @@ class Uninstaller(object):
                         to_del.add(n + '-script.py')
         if not to_del:
             logger.warn('{0}: did not find any file to delete', self.name)
-            sys.exit(1)
+            raise PygError
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
         for d in to_del:

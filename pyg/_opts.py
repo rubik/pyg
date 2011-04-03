@@ -1,14 +1,15 @@
 import os
 import sys
 import urllib2
+import urlparse
 
 from .log import logger
 from .freeze import freeze
 from .req import Requirement
-from .types import args_manager
+from .types import args_manager, PygError
 from .inst import Installer, Uninstaller
 from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
-from .utils import is_installed, dirname, link, unlink, unpack
+from .utils import is_installed, dirname, link, unlink, unpack, call_setup
 from .web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
 
 
@@ -57,8 +58,20 @@ def install_func(args):
     if args.user:
         args_manager['egg_install_dir'] = USER_SITE
     args_manager['index_url'] = args.index_url
-    if args.develop:
-        raise NotImplementedError('not implemented yet')
+    args_manager['install_base'] = args.install_base
+    #if args.develop:
+    #    path = os.path.abspath(args.develop)
+    #    if args.packname.startswith('http'):
+    #        url = args.packname
+    #        name = urlparse.urlsplit(url).path.split('/')[-1]
+    #        filepath = os.path.join(path, name)
+    #        with open(filepath, 'w') as f:
+    #            f.write(WebManager.request(url))
+    #    else:
+    #        d = Downloader(args.packname)
+    #        d.download(path)
+    #        name = d.name
+    #    call_setup()
     if args.file:
         return Installer.from_file(args.packname)
     if args.req_file:
@@ -74,9 +87,15 @@ def uninst_func(args):
     if args.req_file:
         with open(os.path.abspath(args.req_file)) as f:
             for line in f:
-                Uninstaller(line.strip()).uninstall()
-    if args.packname:
-        return Uninstaller(args.packname).uninstall()
+                try:
+                    Uninstaller(line.strip()).uninstall()
+                except PygError:
+                    continue
+    for p in args.packname:
+        try:
+            Uninstaller(p).uninstall()
+        except PygError:
+            continue
 
 def link_func(args):
     return link(args.path)

@@ -15,7 +15,7 @@
 
     This object stores command-line options. You can use it like a standard Python dictionary. Currently, it holds these options:
 
-        :deps (True): if True, install package dependencies
+        **deps (True)**: if True, install package dependencies
         **index_url** (http://pypi.python.org):  the Package Index Url
 
         **upgrade (False)**: if True, force a re-installation
