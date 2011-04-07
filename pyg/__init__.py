@@ -1,5 +1,6 @@
 import os
 import sys
+import urllib2
 
 import _opts as opts
 from .types import PygError, InstallationError, AlreadyInstalled
@@ -9,78 +10,83 @@ __version__ = '0.1.2'
 
 
 def _set_up():
-    import argparse
+    from argh import ArghParser, arg, command
 
-    parser = argparse.ArgumentParser(prog='pyg')
+    parser = ArghParser(prog='pyg')
     parser.add_argument('-v', '--version', action='version', version=__version__)
-    sub = parser.add_subparsers()
+
+
+    @ arg('packname')
+    @ arg('-r', '--req-file', action='store_true', help='Install packages from the specified requirement file')
+    @ arg('-f', '--file', action='store_true', help='Do not download the package but use the local file')
+    @ arg('-u', '--upgrade', action='store_true', help='If the package is already installed')
+    @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
+    @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
+    @ arg('-b', '--install-base', metavar='<path>', help='Base installation directory')
+    @ arg('--user', action='store_true', help='Install to user site')
+    def install(args):
+        opts.install_func(args)
+
+    @ arg('packname', nargs='+')
+    @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
+    @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
+    def uninstall(args):
+        opts.uninst_func(args)
+
+    @ arg('packname', nargs='+')
+    @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
+    @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
+    def rm(args):
+        uninstall(args)
     
-    sub_inst = sub.add_parser('install')
-    sub_inst.add_argument('packname')
-    sub_inst.add_argument('-r', '--req-file', action='store_true', help='Install packages from the specified requirement file')
-    sub_inst.add_argument('-f', '--file', action='store_true', help='Do not download the package but use the local file')
-    sub_inst.add_argument('-u', '--upgrade', action='store_true', help='If the package is already installed')
-    sub_inst.add_argument('-n', '--no-deps', action='store_true', help='Do not install dependencies')
-    sub_inst.add_argument('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
-    sub_inst.add_argument('-b', '--install-base', metavar='<path>', help='Base installation directory')
-    sub_inst.add_argument('--user', action='store_true', help='Install to user site')
-    sub_inst.set_defaults(func=opts.install_func)
+    @ command
+    def list(packname):
+        opts.list_func(packname)
 
-    sub_un = sub.add_parser('uninstall')
-    sub_un.add_argument('packname', nargs='+')
-    sub_un.add_argument('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
-    sub_un.add_argument('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
-    sub_un.set_defaults(func=opts.uninst_func)
+    @ arg('-c', '--count', action='store_true', help='Only returns requirements count')
+    @ arg('-f', '--file', metavar='<path>', help='Writes requirements into the specified file')
+    def freeze(args):
+        opts.freeze_func(args)
 
-    sub_rm = sub.add_parser('rm')
-    sub_rm.add_argument('packname', nargs='+')
-    sub_rm.add_argument('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
-    sub_rm.add_argument('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
-    sub_rm.set_defaults(func=opts.uninst_func)
-    
-    sub_list = sub.add_parser('list')
-    sub_list.add_argument('packname')
-    sub_list.set_defaults(func=opts.list_func)
+    @ command
+    def link(path):
+        opts.link_func(path)
 
-    sub_fr = sub.add_parser('freeze')
-    sub_fr.add_argument('-c', '--count', action='store_true', help='Only returns requirements count')
-    sub_fr.add_argument('-f', '--file', metavar='<path>', help='Writes requirements into the specified file')
-    sub_fr.set_defaults(func=opts.freeze_func)
+    @ arg('path', nargs='?')
+    @ arg('-a', '--all', action='store_true', help='Remove all links')
+    def unlink(args):
+        opts.unlink_func(args)
 
-    sub_ln = sub.add_parser('link')
-    sub_ln.add_argument('path')
-    sub_ln.set_defaults(func=opts.link_func)
+    @ command
+    def search(packname):
+        opts.search_func(packname)
 
-    sub_uln = sub.add_parser('unlink')
-    sub_uln.add_argument('path', nargs='?')
-    sub_uln.add_argument('-a', '--all', action='store_true', help='Remove all links')
-    sub_uln.set_defaults(func=opts.unlink_func)
+    @ command
+    def check(packname):
+        opts.check_func(packname)
 
-    sub_search = sub.add_parser('search')
-    sub_search.add_argument('packname')
-    sub_search.set_defaults(func=opts.search_func)
+    @ arg('packname')
+    @ arg('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
+    @ arg('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
+    @ arg('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
+    def download(args):
+        opts.download_func(args)
 
-    sub_ck = sub.add_parser('check')
-    sub_ck.add_argument('packname')
-    sub_ck.set_defaults(func=opts.check_func)
-
-    sub_down = sub.add_parser('download')
-    sub_down.add_argument('packname')
-    sub_down.add_argument('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
-    sub_down.add_argument('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
-    sub_down.add_argument('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
-    sub_down.set_defaults(func=opts.download_func)
+    parser.add_commands([install, uninstall, rm, list, freeze, link, unlink, list, search, check, download])
     return parser
 
 def main():
     try:
         parser = _set_up()
-        args = parser.parse_args()
-        args.func(args)
+        args = parser.dispatch()
     except (PygError, InstallationError):
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)
+    except urllib2.HTTPError as e:
+        sys.exit(e.msg)
+    except urllib2.URLError as e:
+        sys.exit('urllib error: {0}'.format(e.reason))
     sys.exit(0)
 
 if __name__ == '__main__':

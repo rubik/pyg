@@ -3,7 +3,7 @@ import pyg
 from setuptools import setup, find_packages
 
 
-requires = ['setuptools']
+requires = ['setuptools', 'pkgtools']
 try:
     import argparse
 except ImportError:

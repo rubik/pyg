@@ -41,6 +41,8 @@ def link(path):
     if not os.path.exists(path):
         logger.error('{0} does not exist', path)
     if not os.path.exists(PYG_LINKS):
+        if not os.path.exists(os.path.dirname(PYG_LINKS)):
+            os.makedirs(os.path.dirname(PYG_LINKS))
         open(PYG_LINKS, 'w').close()
     path = os.path.abspath(path)
     logger.info('Linking {0} in {1}...', path, PYG_LINKS)

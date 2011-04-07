@@ -1,22 +1,18 @@
 import re
 import os
 import urllib2
-import xmlrpclib
 
+from pkgtools.pypi import PyPI
 from .types import PygError, Version, args_manager
 from .utils import FileMapper, ext, right_egg, version_egg
 from .log import logger
 
 
-__all__ = ['WebManager', 'PackageManager', 'PyPI', 'PREFERENCES']
+__all__ = ['WebManager', 'PackageManager', 'PREFERENCES']
 
 
 ## This constants holds files priority
 PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
-
-
-def PyPI(index_url='http://pypi.python.org/pypi'):
-    return xmlrpclib.ServerProxy(index_url, xmlrpclib.Transport())
 
 
 class WebManager(object):
@@ -24,7 +20,7 @@ class WebManager(object):
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
     def __init__(self, req):
-        self.pypi = PyPI(args_manager['index_url'])
+        self.pypi = PyPI(index_url=args_manager['index_url'])
         self.req = req
         self.name = self.req.name
         self.versions = None

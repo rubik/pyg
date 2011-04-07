@@ -24,6 +24,7 @@ class Requirement(object):
              '>': operator.gt,
              '<=': operator.le,
              '<': operator.lt,
+             '!=': lambda a,b: a != b,
              None: lambda a,b: True
              }
 

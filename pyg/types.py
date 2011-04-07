@@ -3,12 +3,18 @@ import re
 import sys
 import tarfile
 import pkg_resources
+from StringIO import StringIO
 
+from pkgtools.pkg import Egg as EggTools
 from .scripts import script_args
 from .locations import EASY_INSTALL, INSTALL_DIR, BIN
 from .utils import TempDir, ZipFile, call_setup, name_from_egg, glob, ext
 from .log import logger
 
+
+class i(StringIO):
+    def fileno(self):
+        pass
 
 ## A generic error thrown by Pyg
 class PygError(Exception):
@@ -156,12 +162,6 @@ class Egg(object):
             ## When using this file for the first time
             except IndexError:
                 pass
-        try:
-            with open(os.path.join(eggpath, 'EGG-INFO', 'requires.txt')) as f:
-                for line in f:
-                    self.reqset.add(line.strip())
-        except IOError:
-            pass
         dist = pkg_resources.get_distribution(self.packname)
         for name, content, mode in script_args(dist):
             logger.info('Installing {0} script to {1}', name, BIN)
@@ -169,6 +169,12 @@ class Egg(object):
             with open(target, 'w' + mode) as f:
                 f.write(content)
                 os.chmod(target, 0755)
+        with TempDir() as tempdir:
+            try:
+                for req in EggTools(self.fobj, tempdir).file('requires.txt'):
+                    self.reqset.add(req)
+            except KeyError:
+                logger.debug('requires.txt not found')
 
 
 class Archive(object):

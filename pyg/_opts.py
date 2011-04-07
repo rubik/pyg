@@ -97,16 +97,16 @@ def uninst_func(args):
         except PygError:
             continue
 
-def link_func(args):
-    return link(args.path)
+def link_func(path):
+    return link(path)
 
 def unlink_func(args):
     if args.all:
-        return os.remove(pyg_links())
+        return os.remove(PYG_LINKS)
     return unlink(args.path)
 
-def check_func(args):
-    return sys.stdout.write(str(is_installed(args.packname)) + '\n')
+def check_func(name):
+    return sys.stdout.write(str(is_installed(name)) + '\n')
 
 def freeze_func(args):
     f = freeze()
@@ -119,9 +119,8 @@ def freeze_func(args):
             req_file.write(f)
     return sys.stdout.write(f)
 
-def list_func(args):
+def list_func(name):
     res = []
-    name = args.packname
     versions = PyPI().package_releases(name, True)
     if not versions:
         versions = map(str, sorted(WebManager.versions_from_html(name), reverse=True))
@@ -132,8 +131,8 @@ def list_func(args):
             res.append(v)
     return sys.stdout.write('\n'.join(res) + '\n')
 
-def search_func(args):
-    res = PyPI().search({'name': args.packname})
+def search_func(name):
+    res = PyPI().search({'name': name})
     return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in \
                             sorted(res, key=lambda i: i['_pypi_ordering'], reverse=True)) + '\n')
 
