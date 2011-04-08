@@ -38,7 +38,7 @@ def _set_up():
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
     def rm(args):
         uninstall(args)
-    
+
     @ command
     def list(packname):
         opts.list_func(packname)

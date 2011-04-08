@@ -1,4 +1,3 @@
-import sys
 import pyg
 from setuptools import setup, find_packages
 
@@ -9,18 +8,18 @@ try:
 except ImportError:
     requires.append('argparse')
 
-long_desc = '''Pyg 
+long_desc = '''Pyg
 ===
 
-Pyg is a Python package manager that is meant to be an alternative to easy_install. 
-It can download, install, remove packages. 
+Pyg is a Python package manager that is meant to be an alternative to easy_install.
+It can download, install, remove packages.
 Pyg supports almost all package filetypes:
 
- * .tar.gz 
- * .tar.bz2 
- * .zip 
- * .egg 
- * .pybundle 
+ * .tar.gz
+ * .tar.bz2
+ * .zip
+ * .egg
+ * .pybundle
  * .pyb (an abbreviation for .pybundle)
 
 Pyg can remove all packages, even those installed with pure-distutils install (``python setup.py install``).
