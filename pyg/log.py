@@ -14,6 +14,7 @@ class Logger(object):
     def __init__(self,level=Logger.INFO):
         self.indent = 0
         self.level = level
+        self.last_msg = None
 
     def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, *a, **kw)
@@ -29,9 +30,15 @@ class Logger(object):
 
     def error(self, msg, *a, **kw):
         self.log(self.ERROR, msg, *a, **kw)
+        exc = kw.get('exc', None)
+        if exc is not None:
+            raise exc(self.last_msg)
 
     def fatal(self, msg, *a, **kw):
         self.log(self.FATAL, msg, *a, **kw)
+        exc = kw.get('exc', None)
+        if exc is not None:
+            raise exc(self.last_msg)
 
     def log(self, level, msg, *a, **kw):
         if level >= self.level:
@@ -43,6 +50,7 @@ class Logger(object):
 
             ## flush() makes the log immediately readable
             sys.stdout.flush()
+            self.last_msg = msg
 
 
 logger = Logger()
