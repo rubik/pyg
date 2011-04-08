@@ -17,7 +17,7 @@ if __name__ == '__main__':
         load_entry_point({spec!r}, {group!r}, {name!r})()
     )'''
 
-if sys.version_info <= (3,):
+if sys.version_info < (3,):
     def isascii(s):
         try:
             unicode(s, 'ascii')
