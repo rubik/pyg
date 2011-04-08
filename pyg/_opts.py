@@ -1,7 +1,6 @@
 import os
 import sys
-import urllib2
-import urlparse
+import urllib.parse as urlparse
 
 from .log import logger
 from .freeze import freeze

@@ -1,6 +1,7 @@
 import re
 import os
-import urllib2
+import urllib.request as urllib2
+from urllib.error import HTTPError,URLError
 
 from pkgtools.pypi import PyPI
 from .types import PygError, Version, args_manager
@@ -89,7 +90,7 @@ class Downloader(object):
         try:
             self.pman = PackageManager(req, pref)
             self.name = self.pman.name
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             logger.fatal('E: {0}', e.msg)
             raise PygError
 

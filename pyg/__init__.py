@@ -1,8 +1,8 @@
 import os
 import sys
-import urllib2
+import urllib.error as urllib2
 
-import _opts as opts
+import _opts as opts ##FIXME: not legal import in py3k
 from .types import PygError, InstallationError, AlreadyInstalled
 
 

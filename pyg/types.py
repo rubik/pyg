@@ -3,8 +3,8 @@ import re
 import sys
 import tarfile
 import pkg_resources
-import ConfigParser
-from StringIO import StringIO
+import configparser as ConfigParser
+from io import StringIO
 
 from pkgtools.pkg import Dir as DirTools
 from .scripts import script_args
@@ -131,7 +131,7 @@ class Egg(object):
     :param reqset: a :class:`~pyg.types.ReqSet` object used to store requirements
     :param packname: the package name. If the egg name is ``pyg-0.1.2-py2.7.egg``, *packname* should be ``pyg``
 
-    
+
     '''
 
     def __init__(self, fobj, eggname, reqset, packname=None):
