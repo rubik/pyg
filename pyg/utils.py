@@ -63,13 +63,19 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_setup(path, a, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code]
-    cwd = os.getcwd()
     with ChDir(path):
-        rcode = subprocess.call(args + a, stdout=stdout, stderr=stderr)
-    return rcode
+        stdout = open('pyg-proc-stdout', 'w')
+        stderr = open('pyg-proc-stderr', 'w')
+        return subprocess.check_call(args + a, stdout=stdout, stderr=stderr)
+
+def run_setup(path, name, global_args=[], args=[], exc=TypeError):
+    logger.info('Running setup.py install for {0}', name)
+    if call_setup(path, global_args + ['install', '--single-version-externally-managed',
+                                       '--record', '.pyg-install-record'] + args):
+        logger.fatal('setup.py did not install {0}', name, exc=exc)
 
 def glob(dir, pattern):
     with ChDir(dir):

@@ -108,7 +108,7 @@ class Downloader(object):
             if success:
                 break
             if not self.files[p]:
-                logger.error('{0} files not found. Continue searching...', p)
+                logger.warn('{0} files not found. Continue searching...', p)
                 continue
             for v, name, hash, url in self.files[p]:
                 if success:

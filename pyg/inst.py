@@ -30,7 +30,12 @@ class Installer(object):
         self.req = req
 
     @ staticmethod
-    def _install_deps(rs):
+    def _install_deps(rs, name=None):
+        if not rs:
+            return
+        if not args_manager['deps']:
+            logger.info('Skipping dependencies for {0}', name)
+            return
         logger.info('Installing dependencies...')
         logger.indent += 8
         for req in rs:
@@ -50,15 +55,9 @@ class Installer(object):
         except InstallationError:
             logger.fatal('E: an error occurred while installing {0}', r.name)
             raise
-        if not r.reqset:
-            logger.info('{0} installed successfully', r.name)
-            return
 
         # Now let's install dependencies
-        if not args_manager['deps']:
-            logger.info('Skipping dependencies for {0}', r.name)
-            return
-        Installer._install_deps(r.reqset)
+        Installer._install_deps(r.reqset, r.name)
         logger.info('{0} installed successfully', r.name)
 
     @ staticmethod
@@ -101,12 +100,8 @@ class Installer(object):
         else:
             logger.fatal('E: Cannot install {0}', packname)
             raise InstallationError
-        try:
-            installer.install()
-        except Exception as e:
-            logger.fatal('E: {0}', e)
-            raise InstallationError
-        Installer._install_deps(reqset)
+        installer.install()
+        Installer._install_deps(reqset, packname)
         logger.info('{0} installed successfully', packname)
 
     @ staticmethod

@@ -3,18 +3,15 @@ import re
 import sys
 import tarfile
 import pkg_resources
+import ConfigParser
 from StringIO import StringIO
 
-from pkgtools.pkg import Egg as EggTools
+from pkgtools.pkg import Dir as DirTools
 from .scripts import script_args
 from .locations import EASY_INSTALL, INSTALL_DIR, BIN
-from .utils import TempDir, ZipFile, call_setup, name_from_egg, glob, ext
+from .utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, glob, ext
 from .log import logger
 
-
-class i(StringIO):
-    def fileno(self):
-        pass
 
 ## A generic error thrown by Pyg
 class PygError(Exception):
@@ -152,6 +149,7 @@ class Egg(object):
         logger.info('Installing {0} egg file', self.packname)
         with ZipFile(self.fobj) as z:
             z.extractall(eggpath)
+        logger.info('Adding egg file to sys.path')
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
             lines = f.readlines()
         with open(EASY_INSTALL, 'w') as f:
@@ -169,12 +167,13 @@ class Egg(object):
             with open(target, 'w' + mode) as f:
                 f.write(content)
                 os.chmod(target, 0755)
-        with TempDir() as tempdir:
-            try:
-                for req in EggTools(self.fobj, tempdir).file('requires.txt'):
-                    self.reqset.add(req)
-            except KeyError:
-                logger.debug('requires.txt not found')
+        logger.info('Looking for requirements...')
+        try:
+            for req in DirTools(os.path.join(eggpath, 'EGG-INFO')).file('requires.txt'):
+                print req
+                self.reqset.add(req)
+        except KeyError:
+            logger.debug('requires.txt not found')
 
 
 class Archive(object):
@@ -191,42 +190,23 @@ class Archive(object):
             self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 
-    @ staticmethod
-    def run_setup(path, name, reqset, tempdir):
-        logger.info('Running setup.py egg_info for {0}', name)
-        if call_setup(path, ['egg_info', '--egg-base', tempdir]) != 0:
-            logger.fatal('E: Cannot run egg_info: package requirements will not be installed.')
-            while True:
-                u = raw_input('Do you want to continue anyway? (y/[n]) ').lower()
-                if u in ('n', ''):
-                    raise InstallationError
-                elif u == 'y':
-                    break
-        try:
-            with open(os.path.join(glob(tempdir, '*.egg-info')[0], 'requires.txt')) as f:
-                for line in f:
-                    reqset.add(line.strip())
-        ## IndexError means no requirements, but if we are here the user wants to continue anyway
-        except (IOError, IndexError):
-            pass
-        logger.info('Running setup.py install for {0}', name)
-        if call_setup(path, ['install', '--single-version-externally-managed',
-                                 '--record', '.pyg-install-record']) != 0:
-            logger.fatal('E: setup.py did not install {0}', name)
-            raise InstallationError
-
     def install(self):
         with TempDir() as tempdir:
             self.arch.extractall(tempdir)
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            Archive.run_setup(fullpath, self.name, self.reqset, tempdir)
+            call_setup(fullpath, ['egg_info', '--egg-base', tempdir])
+            run_setup(fullpath, self.name, exc=InstallationError)
+            try:
+                for r in DirTools(os.path.join(tempdir, glob(tempdir, '*.egg-info')[0])).file('requires.txt'):
+                    self.reqset.add(r)
+            except (KeyError, ConfigParser.MissingSectionHeaderError):
+                logger.debug('requires.txt not found')
 
 
 class Bundle(object):
-    def __init__(self, filepath, reqset):
+    def __init__(self, filepath):
         self.path = os.path.abspath(filepath)
-        self.reqset = reqset
 
     def install(self):
         with TempDir() as tempdir:
@@ -235,8 +215,7 @@ class Bundle(object):
             location = os.path.join(tempdir, 'build')
             for f in os.listdir(location):
                 logger.info('Installing {0}...', f)
-                p = os.path.join(location, f)
-                Archive.run_setup(p, f, self.reqset, tempdir)
+                run_setup(os.path.join(location, f), f)
             logger.info('Bundle installed successfully')
 
 
