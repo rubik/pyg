@@ -1,8 +1,8 @@
 import os
 import sys
-import urllib2
+import urllib.error as urllib2
 
-import _opts as opts
+import _opts as opts ##FIXME: not legal import in py3k
 from .types import PygError, InstallationError, AlreadyInstalled
 
 
@@ -38,7 +38,7 @@ def _set_up():
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
     def rm(args):
         uninstall(args)
-    
+
     @ command
     def list(packname):
         opts.list_func(packname)

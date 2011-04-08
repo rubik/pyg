@@ -4,8 +4,8 @@ import sys
 import site
 import shutil
 import zipfile
-import urlparse
-import ConfigParser
+import urllib.parse as urlparse
+import configparser as ConfigParser
 import pkg_resources
 
 from .req import Requirement

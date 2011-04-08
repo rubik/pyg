@@ -2,13 +2,11 @@ import os
 import re
 import sys
 import operator
-import cStringIO
+import io as cStringIO
 import pkg_resources
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
+
+from hashlib import md5
 
 from .utils import ext, right_egg
 from .web import WebManager, PackageManager
@@ -25,7 +23,7 @@ class Requirement(object):
              '<=': operator.le,
              '<': operator.lt,
              '!=': lambda a,b: a != b,
-             None: lambda a,b: True
+              None: lambda a,b: True, ##FIXME: does None really work?
              }
 
     def __init__(self, req):
@@ -98,7 +96,7 @@ class Requirement(object):
                     installer = Archive(fobj, e, p.name, self.reqset)
                 elif e == '.egg':
                     installer = Egg(fobj, name, self.reqset, p.name)
-    
+
                 ## There is no need to catch the exceptions now, this will be done by `pyg.inst.Installer.install`
                 installer.install()
                 if not self.version:

@@ -116,7 +116,7 @@ class TempDir(object):
     def __enter__(self):
         self.tempdir = tempfile.mkdtemp(self.suffix, self.prefix)
         return self.tempdir
-    
+
     def __exit__(self, *args):
         shutil.rmtree(self.tempdir)
 

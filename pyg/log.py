@@ -11,9 +11,9 @@ class Logger(object):
     ERROR = logging.ERROR
     FATAL = logging.FATAL
 
-    def __init__(self):
+    def __init__(self,level=Logger.INFO):
         self.indent = 0
-        self.level = Logger.INFO
+        self.level = level
 
     def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, *a, **kw)

@@ -17,20 +17,12 @@ if __name__ == '__main__':
         load_entry_point({spec!r}, {group!r}, {name!r})()
     )'''
 
-if sys.version_info <= (3,):
-    def isascii(s):
-        try:
-            unicode(s, 'ascii')
-            return True
-        except UnicodeError:
-            return False
-else:
-    def isascii(s):
-        try:
-            s.encode('ascii')
-            return True
-        except UnicodeError:
-            return False
+def isascii(s):
+    try:
+        s.encode('ascii')
+        return True
+    except UnicodeError:
+        return False
 
 def nt_quote_arg(arg):
     result = []
