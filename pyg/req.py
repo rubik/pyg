@@ -78,22 +78,23 @@ class Requirement(object):
     #    ## The highest version possible
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
-    def _download_and_install(self, url, e, packname):
+    def _download_and_install(self, url, hash, filename, packname):
         logger.info('Downloading {0}', self.name)
         fobj = cStringIO.StringIO(WebManager.request(url))
         logger.info('Checking md5 sum')
         if md5(fobj.getvalue()).hexdigest() != hash:
             logger.fatal('E: {0} appears to be corrupted', self.name)
             return
+        e = ext(filename)
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(fobj, e, packname, self.reqset)
         elif e == '.egg':
-            installer = Egg(fobj, name, self.reqset, packname)
+            installer = Egg(fobj, filename, self.reqset, packname)
 
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
 
-    def _use_json():
+    def _use_json(self):
         pypi = PyPIJson(self.name)
         json = pypi.retrieve()
         self.name = pypi.package_name
@@ -102,7 +103,9 @@ class Requirement(object):
         for release in json['urls']:
             if release['packagetype'] == 'bdist_egg' and release['python_version'] != PYTHON_VERSION:
                 continue
-            raise NotImplementedError('not implemented yet')
+            filename, hash, url = release['filename'], release['md5_digest'], release['url']
+            self._download_and_install(url, hash, filename, self.name)
+            break
 
     def install(self):
         ## We don't have any requirement to meet, so we can use the PyPI Json API
@@ -115,11 +118,10 @@ class Requirement(object):
             for v, name, hash, url in p.arrange_items()[pext]:
                 if pext == '.egg' and not right_egg(name):
                     continue
-                e = ext(name)
-                if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
                     continue
                 logger.info('Best match: {0}=={1}', self.name, v)
-                self._download_and_install(url, e, p.name)
+                self._download_and_install(url, hash, name, p.name)
                 if not self.version:
                     self.version = v
                 success = True

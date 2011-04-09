@@ -32,8 +32,10 @@ class Installer(object):
     @ staticmethod
     def _install_deps(rs):
         logger.info('Installing dependencies...')
-        logger.indent += 8
         for req in rs:
+            logger.indent = 0
+            logger.info('Installing {0}', req)
+            logger.indent = 8
             try:
                 Installer(req).install()
             except AlreadyInstalled:

@@ -2,7 +2,7 @@ import re
 import os
 import urllib2
 
-from pkgtools.pypi import PyPI
+from pkgtools.pypi import PyPIXmlRpc as PyPI
 from .types import PygError, Version, args_manager
 from .utils import FileMapper, ext, right_egg, version_egg
 from .log import logger
