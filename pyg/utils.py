@@ -12,9 +12,11 @@ import pkg_resources
 import glob as glob_mod
 
 
-from .locations import PYG_LINKS
-from .log import logger
+from locations import PYG_LINKS
+from log import logger
 
+
+PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 
 def is_installed(req):
     try:

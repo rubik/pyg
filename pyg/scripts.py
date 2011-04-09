@@ -77,10 +77,10 @@ def get_script_header(script_text, executable=sys.executable):
     return hdr
 
 def script_args(dist):
-    spec = str(dist.as_requirement())
+    spec = dist.as_req()
     header = get_script_header("", sys.executable)
     for group in 'console_scripts', 'gui_scripts':
-        for name, ep in dist.get_entry_map(group).items():
+        for name, ep in dist.entry_points_map(group).items():
             script_text = SCRIPT_TEXT.format(**locals())
             if sys.platform == 'win32':
                 # On Windows/wininst, add a .py extension and an .exe launcher

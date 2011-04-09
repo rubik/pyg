@@ -37,8 +37,10 @@ class Installer(object):
             logger.info('Skipping dependencies for {0}', name)
             return
         logger.info('Installing dependencies...')
-        logger.indent += 8
         for req in rs:
+            logger.indent = 0
+            logger.info('Installing {0}', req)
+            logger.indent = 8
             try:
                 Installer(req).install()
             except AlreadyInstalled:

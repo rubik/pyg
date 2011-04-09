@@ -160,7 +160,7 @@ class Egg(object):
             ## When using this file for the first time
             except IndexError:
                 pass
-        dist = pkg_resources.get_distribution(self.packname)
+        dist = DirTools(os.path.join(eggpath, 'EGG-INFO'))
         for name, content, mode in script_args(dist):
             logger.info('Installing {0} script to {1}', name, BIN)
             target = os.path.join(BIN, name)
@@ -169,8 +169,12 @@ class Egg(object):
                 os.chmod(target, 0755)
         logger.info('Looking for requirements...')
         try:
+<<<<<<< HEAD
             for req in DirTools(os.path.join(eggpath, 'EGG-INFO')).file('requires.txt'):
                 print req
+=======
+            for req in dist.file('requires.txt'):
+>>>>>>> master
                 self.reqset.add(req)
         except KeyError:
             logger.debug('requires.txt not found')

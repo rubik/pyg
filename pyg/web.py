@@ -3,7 +3,7 @@ import os
 import urllib.request as urllib2
 from urllib.error import HTTPError,URLError
 
-from pkgtools.pypi import PyPI
+from pkgtools.pypi import PyPIXmlRpc as PyPI
 from .types import PygError, Version, args_manager
 from .utils import FileMapper, ext, right_egg, version_egg
 from .log import logger
