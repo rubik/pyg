@@ -16,6 +16,8 @@ from .locations import PYG_LINKS
 from .log import logger
 
 
+PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
+
 def is_installed(req):
     try:
         pkg_resources.get_distribution(req)
