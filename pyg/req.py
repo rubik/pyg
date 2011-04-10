@@ -107,11 +107,7 @@ class Requirement(object):
             self._download_and_install(url, hash, filename, self.name)
             break
 
-    def install(self):
-        ## We don't have any requirement to meet, so we can use the PyPI Json API
-        if self.op is None:
-            self._use_json()
-            return
+    def _use_xml(self):
         p = PackageManager(self)
         success = False
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
@@ -130,3 +126,11 @@ class Requirement(object):
                 break
         if not success:
             raise InstallationError
+
+    def install(self):
+        ## We don't have any requirement to meet, so we can use the PyPI Json API
+        ## to get the most recent release
+        if self.op is None:
+            self._use_json()
+        else:
+            self._use_xml()

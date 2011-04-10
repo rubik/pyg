@@ -56,26 +56,13 @@ def install_func(args):
     if args.upgrade:
         args_manager['upgrade'] = True
     if args.user:
-        args_manager['egg_install_dir'] = USER_SITE
+        args_manager['install_dir'] = USER_SITE
     args_manager['index_url'] = args.index_url
-    args_manager['install_base'] = args.install_base
-    #if args.develop:
-    #    path = os.path.abspath(args.develop)
-    #    if args.packname.startswith('http'):
-    #        url = args.packname
-    #        name = urlparse.urlsplit(url).path.split('/')[-1]
-    #        filepath = os.path.join(path, name)
-    #        with open(filepath, 'w') as f:
-    #            f.write(WebManager.request(url))
-    #    else:
-    #        d = Downloader(args.packname)
-    #        d.download(path)
-    #        name = d.name
-    #    call_setup()
-    if args.file:
-        return Installer.from_file(args.packname)
+    args_manager['install_dir'] = args.install_dir
+    if os.path.exists(args.packname) and os.path.isfile(args.packname):
+        return Installer.from_file(os.path.abspath(args.packname))
     if args.req_file:
-        return Installer.from_req_file(args.packname)
+        return Installer.from_req_file(os.path.abspath(args.packname))
     if args.packname.startswith('http'):
         return Installer.from_url(args.packname)
     return install_from_name(args.packname)

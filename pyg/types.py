@@ -139,7 +139,7 @@ class Egg(object):
         self.eggname = os.path.basename(eggname)
         self.reqset = reqset
         self.packname = packname or name_from_egg(eggname)
-        self.idir = args_manager['egg_install_dir']
+        self.idir = args_manager['install_dir']
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
@@ -195,7 +195,11 @@ class Archive(object):
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
             call_setup(fullpath, ['egg_info', '--egg-base', tempdir])
-            run_setup(fullpath, self.name, exc=InstallationError)
+            idir = args_manager['install_dir']
+            if idir != INSTALL_DIR:
+                run_setup(fullpath, self.name, args=['--install-base', idir], exc=InstallationError)
+            else:
+                run_setup(fullpath, self.name, exc=InstallationError)
             try:
                 for r in DirTools(os.path.join(tempdir, glob(tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
@@ -214,7 +218,12 @@ class Bundle(object):
             location = os.path.join(tempdir, 'build')
             for f in os.listdir(location):
                 logger.info('Installing {0}...', f)
-                run_setup(os.path.join(location, f), f)
+                fullpath = os.path.join(location, f)
+                idir = args_manager['install_dir']
+                if idir != INSTALL_DIR:
+                    run_setup(fullpath, f, args=['--install-base', idir], exc=InstallationError)
+                else:
+                    run_setup(fullpath, f, exc=InstallationError)
             logger.info('Bundle installed successfully')
 
 
@@ -226,10 +235,8 @@ class ArgsManager(object):
             'index_url': 'http://pypi.python.org/pypi',
             ## Force installation?
             'upgrade': False,
-            ## Install to user-site or to site-packages?
-            'egg_install_dir': INSTALL_DIR,
-            ## Install base directory for all installation
-            'install_base': None,
+            ## Install base directory for all installations
+            'install_dir': INSTALL_DIR,
             ## Ask confirmation of uninstall deletions?
             'yes': False,
             }
