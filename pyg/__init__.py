@@ -22,7 +22,7 @@ def _set_up():
     @ arg('-u', '--upgrade', action='store_true', help='If the package is already installed')
     @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
-    @ arg('-b', '--install-base', metavar='<path>', help='Base installation directory')
+    @ arg('-d', '--install-dir', metavar='<path>', help='Base installation directory')
     @ arg('--user', action='store_true', help='Install to user site')
     def install(args):
         opts.install_func(args)
