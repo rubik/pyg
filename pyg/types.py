@@ -164,18 +164,34 @@ class Egg(object):
             except IndexError:
                 pass
         dist = EggDir(eggpath)
-        for name, content, mode in script_args(dist):
-            logger.info('Installing {0} script to {1}', name, BIN)
-            target = os.path.join(BIN, name)
-            with open(target, 'w' + mode) as f:
-                f.write(content)
-                os.chmod(target, 0755)
+        if args_manager['scripts']:
+            for name, content, mode in script_args(dist):
+                logger.info('Installing {0} script to {1}', name, BIN)
+                target = os.path.join(BIN, name)
+                with open(target, 'w' + mode) as f:
+                    f.write(content)
+                    os.chmod(target, 0755)
         logger.info('Looking for requirements...')
         try:
             for req in dist.file('requires.txt'):
                 self.reqset.add(req)
         except KeyError:
             logger.debug('requires.txt not found')
+
+
+class Dir(object):
+    def __init__(self, path):
+        self.path = path
+
+    def install(self):
+        args = []
+        if args_manager['install_dir'] != INSTALL_DIR:
+            args += ['--install-base', args_manager['install_dir']]
+        if not args_manager['scripts']:
+            args += ['--install-scripts', tempdir]
+        if not args_manager['data']:
+            args += ['--install-data', tempdir]
+        run_setup(fullpath, self.name, args=args, exc=InstallationError)
 
 
 class Archive(object):
@@ -197,12 +213,9 @@ class Archive(object):
             self.arch.extractall(tempdir)
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
+            logger.info('Running setup.py egg_info for {0}', self.name)
             call_setup(fullpath, ['egg_info', '--egg-base', tempdir])
-            idir = args_manager['install_dir']
-            if idir != INSTALL_DIR:
-                run_setup(fullpath, self.name, args=['--install-base', idir], exc=InstallationError)
-            else:
-                run_setup(fullpath, self.name, exc=InstallationError)
+            Dir(fullpath).install()
             try:
                 for r in DirTools(os.path.join(tempdir, glob(tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
@@ -222,11 +235,7 @@ class Bundle(object):
             for f in os.listdir(location):
                 logger.info('Installing {0}...', f)
                 fullpath = os.path.join(location, f)
-                idir = args_manager['install_dir']
-                if idir != INSTALL_DIR:
-                    run_setup(fullpath, f, args=['--install-base', idir], exc=InstallationError)
-                else:
-                    run_setup(fullpath, f, exc=InstallationError)
+                Dir(fullpath).install()
             logger.info('Bundle installed successfully')
 
 
@@ -240,6 +249,10 @@ class ArgsManager(object):
             'upgrade': False,
             ## Install base directory for all installations
             'install_dir': INSTALL_DIR,
+            ## Install scripts?
+            'scripts': True,
+            ## Install data?
+            'data': True,
             ## Ask confirmation of uninstall deletions?
             'yes': False,
             }

@@ -15,6 +15,8 @@ def init_parser(version=None):
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @ arg('-d', '--install-dir', metavar='<path>', help='Base installation directory')
     @ arg('-u', '--user', action='store_true', help='Install to user site')
+    @ arg('--no-scripts', action='store_true', help='Do not install scripts')
+    @ arg('--no-data', action='store_true', help='Do not install data files')
     def install(args):
         opts.install_func(args)
 
@@ -63,9 +65,9 @@ def init_parser(version=None):
     def download(args):
         opts.download_func(args)
 
-    @ command
-    def update():
-        opts.update_func()
+    @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation for the upgrade')
+    def update(args):
+        opts.update_func(args)
 
     parser.add_commands([install, uninstall, rm, list, freeze, link, unlink,
                          list, search, check, download, update])

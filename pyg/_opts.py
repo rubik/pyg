@@ -55,6 +55,10 @@ def install_func(args):
         args_manager['deps'] = False
     if args.upgrade:
         args_manager['upgrade'] = True
+    if args.no_scripts:
+        args_manager['scripts'] = False
+    if args.no_data:
+        args_manager['data'] = False
     if args.user:
         args_manager['install_dir'] = USER_SITE
     args_manager['index_url'] = args.index_url
@@ -134,7 +138,9 @@ def download_func(args):
         logger.info('Unpacking {0} to {1}', downloader.name, dirname(a))
         unpack(a)
 
-def update_func():
+def update_func(args):
+    if args.yes:
+        args_manager['yes'] = True
     check_and_exit()
     logger.info('Loading list of installed packages...')
     up = Updater()
