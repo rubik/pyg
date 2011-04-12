@@ -185,18 +185,20 @@ class Egg(object):
 
 
 class Dir(object):
-    def __init__(self, path):
+    def __init__(self, path, name):
         self.path = path
+        self.name = name
 
     def install(self):
-        args = []
-        if args_manager['install_dir'] != INSTALL_DIR:
-            args += ['--install-base', args_manager['install_dir']]
-        if not args_manager['scripts']:
-            args += ['--install-scripts', tempdir]
-        if not args_manager['data']:
-            args += ['--install-data', tempdir]
-        run_setup(fullpath, self.name, args=args, exc=InstallationError)
+        with TempDir() as tempdir:
+            args = []
+            if args_manager['install_dir'] != INSTALL_DIR:
+                args += ['--install-base', args_manager['install_dir']]
+            if not args_manager['scripts']:
+                args += ['--install-scripts', tempdir]
+            if not args_manager['data']:
+                args += ['--install-data', tempdir]
+            run_setup(fullpath, self.name, args=args, exc=InstallationError)
 
 
 class Archive(object):
@@ -220,7 +222,7 @@ class Archive(object):
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
             logger.info('Running setup.py egg_info for {0}', self.name)
             call_setup(fullpath, ['egg_info', '--egg-base', tempdir])
-            Dir(fullpath).install()
+            Dir(fullpath, self.name).install()
             try:
                 for r in DirTools(os.path.join(tempdir, glob(tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
@@ -240,7 +242,7 @@ class Bundle(object):
             for f in os.listdir(location):
                 logger.info('Installing {0}...', f)
                 fullpath = os.path.join(location, f)
-                Dir(fullpath).install()
+                Dir(fullpath, f).install()
             logger.info('Bundle installed successfully')
 
 
