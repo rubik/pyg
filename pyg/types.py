@@ -74,6 +74,9 @@ class Version(object):
         self._v = v
         self.v = pkg_resources.parse_version(v)
 
+    def __str__(self):
+        return str(self._v)
+
     def __repr__(self):
         return 'Version({0})'.format(self._v)
 

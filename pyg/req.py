@@ -10,9 +10,8 @@ try:
 except ImportError:
     from md5 import md5
 
-from pkgtools.pypi import PyPIJson
 from .utils import PYTHON_VERSION, ext, right_egg
-from .web import WebManager, PackageManager
+from .web import WebManager, PackageManager, Json
 from .types import Version, Egg, Archive, ReqSet, InstallationError
 from .log import logger
 
@@ -32,6 +31,7 @@ class Requirement(object):
     def __init__(self, req):
         self.req = req
         self.reqset = ReqSet()
+        self.pypi_json = Json()
         self.split()
 
     def __repr__(self):
@@ -95,9 +95,8 @@ class Requirement(object):
         installer.install()
 
     def _use_json(self):
-        pypi = PyPIJson(self.name)
-        json = pypi.retrieve()
-        self.name = pypi.package_name
+        json = self.pypi_json.json()
+        self.name = json.package_name
         self.version = json['info']['version']
         logger.info('Best match: {0}=={1}', self.name, self.version)
         for release in json['urls']:

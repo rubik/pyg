@@ -9,12 +9,13 @@ import urlparse
 import ConfigParser
 import pkg_resources
 
-from pkgtools.pkg import EggDir, Dir, Installed
+from pkgtools.pkg import EggDir, Dir, WorkingSet
 from .req import Requirement
-from .web import WebManager
+from .web import WebManager, Json
 from .locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
 from .utils import TempDir, File, ext, is_installed
-from .types import Archive, Egg, Bundle, ReqSet, PygError, InstallationError, AlreadyInstalled, args_manager
+from .types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
+                    AlreadyInstalled, args_manager
 from .log import logger
 
 
@@ -92,7 +93,7 @@ class Installer(object):
         packname = os.path.basename(filepath).split('-')[0]
         reqset = ReqSet()
 
-        if is_installed(packname):
+        if is_installed(packname) and not args_manager['upgrade']:
             logger.info('{0} is already installed', packname)
             raise AlreadyInstalled
 
@@ -114,9 +115,9 @@ class Installer(object):
         logger.info('{0} installed successfully', packname)
 
     @ staticmethod
-    def from_url(url):
+    def from_url(url, packname=None):
         with TempDir() as t:
-            packname = urlparse.urlsplit(url).path.split('/')[-1]
+            packname = packname if packname is not None else urlparse.urlsplit(url).path.split('/')[-1]
             path = os.path.join(t, packname)
             logger.info('Installing {0}', packname)
             with open(path, 'w') as f:
@@ -226,29 +227,48 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self):
-        self.packages = {}
-        self._find_packages()
+        self.working_set = WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug)
+        self.json = Json()
 
     def _pkgutil_onerror(self, pkgname):
         logger.debug('Error while importing {0}', pkgname)
 
-    def _find_packages(self):
-        for loader, package_name, ispkg in pkgutil.walk_packages(onerror=self._pkgutil_onerror):
-            if len(package_name.split('.')) > 1:
-                logger.debug('Not a top-level package: {0}', package_name)
-                continue
-            path = loader.find_module(package_name).filename
-            if ext(path) in ('.py', '.pyc', '.so'):
-                logger.debug('Not a package: {0}', package_name)
-                continue
-
-            ## We want to keep only packages with metadata-files
+    def upgrade(self, package_name, json, version):
+        args_manager['upgrade'] = True
+        logger.info('Upgrading {0} to {1}', package_name, version)
+        logger.indent = 8
+        for release in json['urls']:
+            logger.info('Installing {0}...', release['filename'])
+            logger.indent += 4
             try:
-                installed = Installed(package_name)
+                Installer.from_url(release['url'])
             except Exception as e:
-                logger.debug('Error on retrieving metadata from {0}: {1}', package_name, e)
-                continue
-            self.packages[package_name] = (path, installed)
+                logger.error('E: An error occurred while installing {0}: {1}', package_name, e)
+                logger.info('Trying another file...')
+                logger.indent -= 4
+        logger.indent = 0
 
     def update(self):
-        raise NotImplementedError('not implemented yet')
+        logger.info('Searching for updates')
+        for package, data in self.working_set:
+            path, dist = data
+            try:
+                json = self.json.json(package)
+                new_version = Version(json['info']['version'])
+            except Exception as e:
+                logger.error('E: Failed to fetch data for {0}', package, exc=PygError)
+            if Version(dist.version) >= new_version:
+                continue
+            logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)
+            while True:
+                if args_manager['yes']:
+                    u = 'y'
+                else:
+                    u = raw_input('Do you want to upgrade? (y/[n]) ').lower()
+                if u in ('n', ''):
+                    logger.info('{0} has not been upgraded', package)
+                    break
+                elif u == 'y':
+                    self.upgrade(package, json, new_version)
+                    break
+        logger.info('Updating finished successfully')

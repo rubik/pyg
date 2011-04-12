@@ -63,5 +63,10 @@ def init_parser(version=None):
     def download(args):
         opts.download_func(args)
 
-    parser.add_commands([install, uninstall, rm, list, freeze, link, unlink, list, search, check, download])
+    @ command
+    def update():
+        opts.update_func()
+
+    parser.add_commands([install, uninstall, rm, list, freeze, link, unlink,
+                         list, search, check, download, update])
     return parser
