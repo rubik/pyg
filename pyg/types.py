@@ -6,7 +6,7 @@ import pkg_resources
 import ConfigParser
 from StringIO import StringIO
 
-from pkgtools.pkg import Dir as DirTools
+from pkgtools.pkg import EggDir, Dir as DirTools
 from scripts import script_args
 from locations import EASY_INSTALL, INSTALL_DIR, BIN
 from utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, glob, ext
@@ -160,7 +160,7 @@ class Egg(object):
             ## When using this file for the first time
             except IndexError:
                 pass
-        dist = DirTools(os.path.join(eggpath, 'EGG-INFO'))
+        dist = EggDir(eggpath)
         for name, content, mode in script_args(dist):
             logger.info('Installing {0} script to {1}', name, BIN)
             target = os.path.join(BIN, name)

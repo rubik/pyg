@@ -4,8 +4,8 @@ import urllib2
 import urlparse
 
 from .log import logger
-from .freeze import freeze
 from .req import Requirement
+from .freeze import freeze, list_releases
 from .types import args_manager, PygError
 from .inst import Installer, Uninstaller
 from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
@@ -108,11 +108,8 @@ def freeze_func(args):
 
 def list_func(name):
     res = []
-    versions = PyPI().package_releases(name, True)
-    if not versions:
-        versions = map(str, sorted(WebManager.versions_from_html(name), reverse=True))
-    for v in versions:
-        if is_installed('{0}=={1}'.format(name, v)):
+    for v, inst in list_releases(name):
+        if inst:
             res.append(v + '\tinstalled')
         else:
             res.append(v)
