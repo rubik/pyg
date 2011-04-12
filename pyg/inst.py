@@ -3,14 +3,16 @@ import os
 import sys
 import site
 import shutil
+import pkgutil
 import zipfile
 import urllib.parse as urlparse
 import configparser as ConfigParser
 import pkg_resources
 
+from pkgtools.pkg import EggDir, Dir, Installed
 from .req import Requirement
 from .web import WebManager
-from .locations import EASY_INSTALL, USER_SITE, BIN
+from .locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
 from .utils import TempDir, File, ext, is_installed
 from .types import Archive, Egg, Bundle, ReqSet, PygError, InstallationError, AlreadyInstalled, args_manager
 from .log import logger
@@ -215,3 +217,33 @@ class Uninstaller(object):
                         f.write(line)
                 logger.info('{0} uninstalled succesfully', self.name)
                 break
+
+
+class Updater(object):
+    def __init__(self):
+        self.packages = {}
+        self._find_packages()
+
+    def _pkgutil_onerror(self, pkgname):
+        logger.debug('Error while importing {0}', pkgname)
+
+    def _find_packages(self):
+        for loader, package_name, ispkg in pkgutil.walk_packages(onerror=self._pkgutil_onerror):
+            if len(package_name.split('.')) > 1:
+                logger.debug('Not a top-level package: {0}', package_name)
+                continue
+            path = loader.find_module(package_name).filename
+            if ext(path) in ('.py', '.pyc', '.so'):
+                logger.debug('Not a package: {0}', package_name)
+                continue
+
+            ## We want to keep only packages with metadata-files
+            try:
+                installed = Installed(package_name)
+            except Exception as e:
+                logger.debug('Error on retrieving metadata from {0}: {1}', package_name, e)
+                continue
+            self.packages[package_name] = (path, installed)
+
+    def update(self):
+        raise NotImplementedError('not implemented yet')

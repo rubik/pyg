@@ -11,7 +11,7 @@ from hashlib import md5
 from pkgtools.pypi import PyPIJson
 from .utils import PYTHON_VERSION, ext, right_egg
 from .web import WebManager, PackageManager
-from .types import Version, Egg, Archive, ReqSet
+from .types import Version, Egg, Archive, ReqSet, InstallationError
 from .log import logger
 
 
