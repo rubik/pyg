@@ -3,7 +3,7 @@ import os
 import urllib.request as urllib2
 from urllib.error import HTTPError,URLError
 
-from pkgtools.pypi import PyPIXmlRpc as PyPI
+from pkgtools.pypi import PyPIXmlRpc as PyPI, PyPIJson
 from .types import PygError, Version, args_manager
 from .utils import FileMapper, ext, right_egg, version_egg
 from .log import logger
@@ -140,8 +140,22 @@ class Downloader(object):
                 self.name = name
 
 
-## OLD! We are using xmlrpclib to communicate with pypi
-## Maybe we can use it in the future
+class Json(object):
+    def __init__(self):
+        self.cache = {}
+
+    def json(self, package_name, fast=False):
+        if package_name in self.cache:
+            return self.cache[package_name]
+        pypi = PyPIJson(package_name, fast)
+        data = pypi.retrieve()
+        self.cache[package_name] = data
+        self.package_name = pypi.package_name
+        return data
+
+
+## OLD! We are using xmlrpclib to communicate with pypi.
+## Maybe we can use it in the future.
 class LinkFinder(object):
 
     base_url = 'http://pypi.python.org/simple/'

@@ -6,7 +6,7 @@ from .log import logger
 from .req import Requirement
 from .freeze import freeze, list_releases
 from .types import args_manager, PygError
-from .inst import Installer, Uninstaller
+from .inst import Installer, Uninstaller, Updater
 from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
 from .utils import is_installed, dirname, link, unlink, unpack, call_setup
 from .web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
@@ -132,3 +132,9 @@ def download_func(args):
         a = os.path.join(dest, downloader.name)
         logger.info('Unpacking {0} to {1}', downloader.name, dirname(a))
         unpack(a)
+
+def update_func():
+    check_and_exit()
+    logger.info('Loading list of installed packages...')
+    up = Updater()
+    up.update()
