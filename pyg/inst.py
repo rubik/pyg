@@ -119,11 +119,13 @@ class Installer(object):
         reqset = ReqSet()
         try:
             with TempDir() as tempdir:
+                logger.info('Installing {0}', name)
                 Dir(path, name, tempdir, reqset).install()
         except Exception as e:
             logger.fatal('E: {0}: cannot install the package', e, exc=InstallationError)
         else:
-            Installer._install_deps(reqset)
+            if reqset:
+                Installer._install_deps(reqset)
             logger.info('{0} installed successfully', name)
 
     @ staticmethod

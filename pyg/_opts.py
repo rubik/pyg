@@ -61,8 +61,9 @@ def install_func(args):
         args_manager['data'] = False
     if args.user:
         args_manager['install_dir'] = USER_SITE
+    if args.install_dir != INSTALL_DIR:
+        args_manager['install_dir'] = args.install_dir
     args_manager['index_url'] = args.index_url
-    args_manager['install_dir'] = args.install_dir
     if os.path.exists(args.packname):
         path = os.path.abspath(args.packname)
         if os.path.isfile(path):

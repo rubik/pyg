@@ -1,5 +1,6 @@
 def init_parser(version=None):
     import _opts as opts
+    from .locations import INSTALL_DIR as _loc_install_dir
     from argh import ArghParser, arg, command
 
     parser = ArghParser(prog='pyg')
@@ -13,7 +14,7 @@ def init_parser(version=None):
     @ arg('-U', '--upgrade', action='store_true', help='If the package is already installed')
     @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
-    @ arg('-d', '--install-dir', metavar='<path>', help='Base installation directory')
+    @ arg('-d', '--install-dir', default=_loc_install_dir, metavar='<path>', help='Base installation directory')
     @ arg('-u', '--user', action='store_true', help='Install to user site')
     @ arg('--no-scripts', action='store_true', help='Do not install scripts')
     @ arg('--no-data', action='store_true', help='Do not install data files')
