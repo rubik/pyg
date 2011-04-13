@@ -15,6 +15,7 @@ from .locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
 from .utils import TempDir, File, ext, is_installed
 from .types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
+from .parser import init_parser
 from .log import logger
 
 
@@ -69,14 +70,23 @@ class Installer(object):
     def from_req_file(filepath):
         path = os.path.abspath(filepath)
         not_installed = set()
+        parser = init_parser()
         with open(path) as f:
             for line in f:
                 try:
-                    Installer(line.strip()).install()
+                    logger.indent = 0
+                    logger.info('Installing: {0}', line.strip())
+                    logger.indent = 8
+                    parser.dispatch(argv=['install'] + line.split())
                 except AlreadyInstalled:
                     continue
                 except InstallationError:
                     not_installed.add(line.strip())
+                except SystemExit as e:
+                    if e.code != 0:
+                        logger.warn('W: {0} tried to raise SystemExit: skipping installation')
+                    else:
+                        logger.info('{0} tried to raise SystemExit, but the exit code was 0')
         if not_installed:
             logger.warn('These packages have not been installed:')
             logger.indent = 8

@@ -6,8 +6,8 @@
  * :license: MIT License.
  */
 
-{% set page_width = '980px' %}
-{% set sidebar_width = '230px' %}
+{% set page_width = '1100px' %}
+{% set sidebar_width = '285px' %}
 {% set font_family = "'Ubuntu', serif" %}
 {% set header_font_family = "'Ubuntu', " ~ font_family %}
  
@@ -156,8 +156,14 @@ div.highlight {
     background-color: white;
 }
 
+div.highlight-console {
+    max-width: 95%;
+}
+
 div.highlight pre {
     background-color: #E5EDF1;
+    max-width: 95%;
+    border: 1px solid #C7ECB8;
 }
 
 div.body p {
@@ -273,7 +279,7 @@ p.admonition-title:after {
     content: ":";
 }
 
-pre, tt {
+tt {
     font-family: {{ font_family }}
     font-size: 0.9em;
 }
@@ -361,10 +367,12 @@ ul, ol {
 }
  
 pre {
-    background: #E8EFF0;
+    background: #F0FFEB;
     padding: 7px 30px;
     margin: 15px -30px;
     line-height: 1.3em;
+    font-family: {{ font_family }}
+    font-size: 0.9em;
 }
 
 dl pre, blockquote pre, li pre {
