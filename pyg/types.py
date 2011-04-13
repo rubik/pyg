@@ -185,20 +185,29 @@ class Egg(object):
 
 
 class Dir(object):
-    def __init__(self, path, name):
+    def __init__(self, path, name, tempdir, reqset=None):
         self.path = path
         self.name = name
+        self.tempdir = tempdir
+        self.reqset = reqset
 
     def install(self):
-        with TempDir() as tempdir:
-            args = []
-            if args_manager['install_dir'] != INSTALL_DIR:
-                args += ['--install-base', args_manager['install_dir']]
-            if not args_manager['scripts']:
-                args += ['--install-scripts', tempdir]
-            if not args_manager['data']:
-                args += ['--install-data', tempdir]
-            run_setup(fullpath, self.name, args=args, exc=InstallationError)
+        if self.reqset is not None:
+            logger.info('Running setup.py egg_info for {0}', self.name)
+            call_setup(fullpath, ['egg_info', '--egg-base', self.tempdir])
+            try:
+                for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
+                    self.reqset.add(r)
+            except (KeyError, ConfigParser.MissingSectionHeaderError):
+                logger.debug('requires.txt not found')
+        args = []
+        if args_manager['install_dir'] != INSTALL_DIR:
+            args += ['--install-base', args_manager['install_dir']]
+        if not args_manager['scripts']:
+            args += ['--install-scripts', self.tempdir]
+        if not args_manager['data']:
+            args += ['--install-data', self.tempdir]
+        run_setup(fullpath, self.name, args=args, exc=InstallationError)
 
 
 class Archive(object):
@@ -220,14 +229,7 @@ class Archive(object):
             self.arch.extractall(tempdir)
             self.arch.close()
             fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            logger.info('Running setup.py egg_info for {0}', self.name)
-            call_setup(fullpath, ['egg_info', '--egg-base', tempdir])
-            Dir(fullpath, self.name).install()
-            try:
-                for r in DirTools(os.path.join(tempdir, glob(tempdir, '*.egg-info')[0])).file('requires.txt'):
-                    self.reqset.add(r)
-            except (KeyError, ConfigParser.MissingSectionHeaderError):
-                logger.debug('requires.txt not found')
+            Dir(fullpath, self.name, tempdir, self.reqset).install()
 
 
 class Bundle(object):
@@ -242,13 +244,14 @@ class Bundle(object):
             for f in os.listdir(location):
                 logger.info('Installing {0}...', f)
                 fullpath = os.path.join(location, f)
-                Dir(fullpath, f).install()
+                Dir(fullpath, f, tempdir).install()
             logger.info('Bundle installed successfully')
 
 
 class ArgsManager(object):
 
-    _OPTS = {## Install dependencies?
+    _OPTS = {
+            ## Install dependencies?
             'deps': True,
             ## Package Index Url
             'index_url': 'http://pypi.python.org/pypi',

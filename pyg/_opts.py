@@ -62,8 +62,16 @@ def install_func(args):
         args_manager['install_dir'] = USER_SITE
     args_manager['index_url'] = args.index_url
     args_manager['install_dir'] = args.install_dir
-    if os.path.exists(args.packname) and os.path.isfile(args.packname):
-        return Installer.from_file(os.path.abspath(args.packname))
+    if os.path.exists(args.packname):
+        path = os.path.abspath(args.packname)
+        if os.path.isfile(path):
+            return Installer.from_file(path)
+        elif os.path.isdir(path):
+            if not os.path.exists(os.path.join(path, 'setup.py')):
+                raise PygError('{0} must contain the setup.py file', path)
+            return Installer.from_dir(path)
+        else:
+            raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
     if args.req_file:
         return Installer.from_req_file(os.path.abspath(args.packname))
     if args.packname.startswith('http'):
