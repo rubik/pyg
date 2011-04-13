@@ -171,6 +171,8 @@ class Egg(object):
                 with open(target, 'w' + mode) as f:
                     f.write(content)
                     os.chmod(target, 0755)
+        else:
+            logger.info('Scripts not installed')
         logger.info('Looking for requirements...')
         try:
 <<<<<<< HEAD

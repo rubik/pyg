@@ -63,6 +63,8 @@ def install_func(args):
     if args.install_dir != INSTALL_DIR:
         args_manager['install_dir'] = args.install_dir
     args_manager['index_url'] = args.index_url
+    if args.req_file:
+        return Installer.from_req_file(os.path.abspath(args.packname))
     if os.path.exists(args.packname):
         path = os.path.abspath(args.packname)
         if os.path.isfile(path):
@@ -73,8 +75,6 @@ def install_func(args):
             return Installer.from_dir(path)
         else:
             raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
-    if args.req_file:
-        return Installer.from_req_file(os.path.abspath(args.packname))
     if args.packname.startswith('http'):
         return Installer.from_url(args.packname)
     return install_from_name(args.packname)

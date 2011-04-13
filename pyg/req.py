@@ -93,8 +93,8 @@ class Requirement(object):
         installer.install()
 
     def _use_json(self):
-        json = self.pypi_json.json()
-        self.name = json.package_name
+        json = self.pypi_json.json(self.name)
+        self.name = self.pypi_json.package_name
         self.version = json['info']['version']
         logger.info('Best match: {0}=={1}', self.name, self.version)
         for release in json['urls']:
