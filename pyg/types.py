@@ -194,7 +194,7 @@ class Dir(object):
     def install(self):
         if self.reqset is not None:
             logger.info('Running setup.py egg_info for {0}', self.name)
-            call_setup(fullpath, ['egg_info', '--egg-base', self.tempdir])
+            call_setup(self.path, ['egg_info', '--egg-base', self.tempdir])
             try:
                 for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
@@ -207,7 +207,7 @@ class Dir(object):
             args += ['--install-scripts', self.tempdir]
         if not args_manager['data']:
             args += ['--install-data', self.tempdir]
-        run_setup(fullpath, self.name, args=args, exc=InstallationError)
+        run_setup(self.path, self.name, args=args, exc=InstallationError)
 
 
 class Archive(object):
