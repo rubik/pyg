@@ -3,19 +3,18 @@ import os
 import sys
 import site
 import shutil
-import pkgutil
 import zipfile
 import urlparse
 import ConfigParser
 import pkg_resources
 
-from pkgtools.pkg import EggDir, Dir, WorkingSet
+from pkgtools.pkg import WorkingSet
 from .req import Requirement
 from .web import WebManager, Json
 from .locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
 from .utils import TempDir, File, ext, is_installed
 from .types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
-                    AlreadyInstalled, args_manager
+                    AlreadyInstalled, Dir, args_manager
 from .log import logger
 
 
@@ -113,6 +112,19 @@ class Installer(object):
             raise InstallationError
         Installer._install_deps(reqset)
         logger.info('{0} installed successfully', packname)
+
+    @ staticmethod
+    def from_dir(path):
+        name = os.path.basename(path)
+        reqset = ReqSet()
+        try:
+            with TempDir() as tempdir:
+                Dir(path, name, tempdir, reqset).install()
+        except Exception as e:
+            logger.fatal('E: {0}: cannot install the package', e, exc=InstallationError)
+        else:
+            Installer._install_deps(reqset)
+            logger.info('{0} installed successfully', name)
 
     @ staticmethod
     def from_url(url, packname=None):
