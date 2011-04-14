@@ -41,7 +41,7 @@ setup(name='pyg',
       platforms='any',
       packages=['pyg'],
       keywords=['python', 'easy_install', 'setuptools', 'package manager'],
-      install_requires=requires,
+      requires=requires,
       provides=['pyg'],
       entry_points={
         'console_scripts': [
