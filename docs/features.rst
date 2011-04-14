@@ -10,7 +10,7 @@ Pyg can:
 
 Currently Pyg cannot:
     * install from binaries (e.g. from :file:`.exe` or :file:`.msi`)
-    * install packages in editable mode from VCS (GitHub, Bitbucket, Bazaar, Svn)
+    * install packages in editable mode from VCS (Git, Mercurial, Bazaar, Svn)
 
 
 Uninstall

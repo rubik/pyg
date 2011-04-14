@@ -2,11 +2,7 @@ import pyg
 from setuptools import setup, find_packages
 
 
-requires = ['setuptools', 'pkgtools']
-try:
-    import argparse
-except ImportError:
-    requires.append('argparse')
+requires = ['setuptools', 'pkgtools (>= 0.3)', 'argh (>= 0.14)']
 
 long_desc = '''Pyg
 ===
@@ -46,6 +42,7 @@ setup(name='pyg',
       packages=['pyg'],
       keywords=['python', 'easy_install', 'setuptools', 'package manager'],
       install_requires=requires,
+      provides=['pyg'],
       entry_points={
         'console_scripts': [
             'pyg = pyg:main'
