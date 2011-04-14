@@ -4,7 +4,7 @@ __version__ = '0.2'
 
 def main():
     import sys
-    import urllib2
+    import urllib.error as urllib2
     from .parser import init_parser
     from .types import PygError, InstallationError, AlreadyInstalled
 
