@@ -65,13 +65,19 @@ def unlink(path):
                 continue
             f.write(line)
 
+def call_subprocess(args, stdout, stderr):
+    try:
+        return subprocess.check_call(args, stdout=stdout, stderr=stderr)
+    except subprocess.CalledProcessError as e:
+        return e.returncode
+
 def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code]
     with ChDir(path):
         stdout = open('pyg-proc-stdout', 'w')
         stderr = open('pyg-proc-stderr', 'w')
-        return subprocess.check_call(args + a, stdout=stdout, stderr=stderr)
+        return call_subprocess(args + a, stdout=stdout, stderr=stderr)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
