@@ -119,8 +119,8 @@ class Installer(object):
         logger.info('{0} installed successfully', packname)
 
     @ staticmethod
-    def from_dir(path):
-        name = os.path.basename(path)
+    def from_dir(path, name=None):
+        name = name or os.path.basename(path)
         reqset = ReqSet()
         try:
             with TempDir() as tempdir:
