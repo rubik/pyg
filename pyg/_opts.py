@@ -2,13 +2,15 @@ import os
 import sys
 import urllib.parse as urlparse
 
+from vcs import vcs
+
 from .log import logger
 from .req import Requirement
 from .freeze import freeze, list_releases
 from .types import args_manager, PygError
 from .inst import Installer, Uninstaller, Updater
 from .locations import USER_SITE, PYG_LINKS, INSTALL_DIR
-from .utils import is_installed, dirname, link, unlink, unpack, call_setup
+from .utils import TempDir, is_installed, dirname, link, unlink, unpack, call_setup
 from .web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
 
 
@@ -63,6 +65,8 @@ def install_func(args):
     if args.install_dir != INSTALL_DIR:
         args_manager['install_dir'] = args.install_dir
     args_manager['index_url'] = args.index_url
+    if args.editable:
+        return vcs(args.packname).develop()
     if args.req_file:
         return Installer.from_req_file(os.path.abspath(args.packname))
     if os.path.exists(args.packname):
@@ -77,6 +81,11 @@ def install_func(args):
             raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
     if args.packname.startswith('http'):
         return Installer.from_url(args.packname)
+    for s in ('git+', 'hg+', 'bzr+', 'svn+'):
+        if args.packname.startswith(s):
+            import tempfile
+            tempdir = tempfile.mkdtemp();print tempdir
+            return vcs(args.packname, tempdir).install()
     return install_from_name(args.packname)
 
 def uninst_func(args):
