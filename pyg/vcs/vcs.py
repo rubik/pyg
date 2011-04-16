@@ -13,7 +13,8 @@ class Git(VCS):
         if url.startswith('git+'):
             url = url[4:]
         self.url, self.package_name = self.parse_url(url)
-        super(Git, self).__init__(dest or self.package_name)
+        skip = True if dest is not None else False
+        super(Git, self).__init__(dest or self.package_name, skip)
 
 
 class Hg(VCS):
@@ -25,7 +26,8 @@ class Hg(VCS):
         if url.startswith('hg+'):
             url = url[3:]
         self.url, self.package_name = self.parse_url(url)
-        super(Hg, self).__init__(dest or self.package_name)
+        skip = True if dest is not None else False
+        super(Hg, self).__init__(dest or self.package_name, skip)
 
 
 class Bzr(VCS):
@@ -37,7 +39,8 @@ class Bzr(VCS):
         if url.startswith('bzr+'):
             url = url[4:]
         self.url, self.package_name = self.parse_url(url)
-        super(Bzr, self).__init__(dest or self.package_name)
+        skip = True if dest is not None else False
+        super(Bzr, self).__init__(dest or self.package_name, skip)
 
 
 class Svn(VCS):
@@ -49,4 +52,5 @@ class Svn(VCS):
         if url.startswith('svn+'):
             url = url[4:]
         self.url, self.package_name = self.parse_url(url)
-        super(Svn, self).__init__(dest or self.package_name)
+        skip = True if dest is not None else False
+        super(Svn, self).__init__(dest or self.package_name, skip)

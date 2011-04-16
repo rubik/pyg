@@ -11,7 +11,7 @@ def main():
     try:
         parser = init_parser(__version__)
         args = parser.dispatch()
-    except (PygError, InstallationError):
+    except (PygError, InstallationError, ValueError):
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)

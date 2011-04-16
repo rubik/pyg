@@ -12,8 +12,14 @@ class VCS(object):
 
     ARGS = None
 
-    def __init__(self, dest):
+    def __init__(self, dest, skip=False):
         self.dest = os.path.abspath(dest)
+        self.skip = skip
+
+    def __repr__(self):
+        return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__,
+                                                 self.package_name,
+                                                 id(self))
 
     @ property
     def cmd(self):
@@ -25,15 +31,23 @@ class VCS(object):
 
     @ property
     def dir(self):
-        return os.path.join(self.dest, os.listdir(self.dest)[0])
+        try:
+            return os.path.join(self.dest, os.listdir(self.dest)[0])
+        except OSError:
+            return None
 
     def parse_url(self, url):
+        if not '#egg=' in url:
+            raise ValueError('You must specify #egg=PACKAGE')
         return url.split('#egg=')
 
     def retrieve_data(self):
+        print 'dre'
         self.call_cmd([self.url])
 
     def check_dest(self):
+        if self.skip:
+            return
         if os.path.exists(self.dest):
             while True:
                 u = raw_input('The destination already exists: {0}\nWhat do you want to do?\n\n' \
