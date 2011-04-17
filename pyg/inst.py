@@ -306,7 +306,6 @@ class Updater(object):
                 json = self.json.json(package)
                 new_version = Version(json['info']['version'])
             except Exception as e:
-                print e
                 logger.error('E: Failed to fetch data for {0}', package, exc=PygError)
             if Version(dist.version) >= new_version:
                 continue
