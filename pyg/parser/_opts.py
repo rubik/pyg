@@ -84,9 +84,8 @@ def install_func(args):
         return Installer.from_url(args.packname)
     for s in ('git+', 'hg+', 'bzr+', 'svn+'):
         if args.packname.startswith(s):
-            import tempfile
-            tempdir = tempfile.mkdtemp();print tempdir
-            return vcs(args.packname, tempdir).install()
+            with TempDir() as tempdir:
+                return vcs(args.packname, tempdir).install()
     return install_from_name(args.packname)
 
 def uninst_func(args):
