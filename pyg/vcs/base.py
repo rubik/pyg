@@ -42,7 +42,6 @@ class VCS(object):
         return url.split('#egg=')
 
     def retrieve_data(self):
-        print 'dre'
         self.call_cmd([self.url])
 
     def check_dest(self):
@@ -76,10 +75,9 @@ class VCS(object):
             with ChDir(self.dest):
                 if self.ARGS is not None:
                     args = ARGS + args
-                stdout = open(os.path.join(tempdir, 'pyg-stdout.txt'), 'w')
-                stderr = open(os.path.join(tempdir, 'pyg-stderr.txt'), 'w')
                 logger.info('Copying data from {0} to {1}', self.url, self.dest)
-                return call_subprocess([self.cmd, self.method] + args, stdout, stderr)
+                if call_subprocess([self.cmd, self.method] + args, sys.stdout, sys.stderr) != 0:
+                    logger.fatal('E: Cannot retrieve data', exc=InstallationError)
 
     def develop(self):
         self.retrieve_data()
