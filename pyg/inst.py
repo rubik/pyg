@@ -4,19 +4,19 @@ import sys
 import site
 import shutil
 import zipfile
-import urllib.parse as urlparse
-import configparser as ConfigParser
+import urlparse
+import ConfigParser
 import pkg_resources
 
 from pkgtools.pkg import WorkingSet
-from .req import Requirement
-from .web import WebManager, Json
-from .locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
-from .utils import TempDir, File, ext, is_installed
-from .types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
+from pyg.req import Requirement
+from pyg.web import WebManager, Json
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
+from pyg.utils import TempDir, File, ext, is_installed
+from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
-from parser.parser import init_parser
-from .log import logger
+from pyg.parser.parser import init_parser
+from pyg.log import logger
 
 
 __all__ = ['Installer', 'Uninstaller']

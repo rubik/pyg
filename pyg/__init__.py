@@ -4,9 +4,9 @@ __version__ = '0.2'
 
 def main():
     import sys
-    import urllib.error as urllib2
+    import urllib2
     from parser.parser import init_parser
-    from .types import PygError, InstallationError, AlreadyInstalled
+    from types import PygError, InstallationError, AlreadyInstalled
 
     try:
         parser = init_parser(__version__)

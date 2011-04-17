@@ -12,8 +12,8 @@ import pkg_resources
 import glob as glob_mod
 
 
-from locations import PYG_LINKS
-from log import logger
+from pyg.locations import PYG_LINKS
+from pyg.log import logger
 
 
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))

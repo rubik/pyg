@@ -1,12 +1,11 @@
 import re
 import os
-import urllib.request as urllib2
-from urllib.error import HTTPError,URLError
+import urllib2
 
 from pkgtools.pypi import PyPIXmlRpc as PyPI, PyPIJson
-from .types import PygError, Version, args_manager
-from .utils import FileMapper, ext, right_egg, version_egg
-from .log import logger
+from pyg.types import PygError, Version, args_manager
+from pyg.utils import FileMapper, ext, right_egg, version_egg
+from pyg.log import logger
 
 
 __all__ = ['WebManager', 'PackageManager', 'PREFERENCES']
@@ -90,7 +89,7 @@ class Downloader(object):
         try:
             self.pman = PackageManager(req, pref)
             self.name = self.pman.name
-        except HTTPError as e:
+        except urllib2.HTTPError as e:
             logger.fatal('E: {0}', e.msg)
             raise PygError
 

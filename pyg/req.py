@@ -2,16 +2,16 @@ import os
 import re
 import sys
 import operator
-import io as cStringIO
+import cStringIO
 import pkg_resources
 
 
 from hashlib import md5
 
-from .utils import PYTHON_VERSION, ext, right_egg
-from .web import WebManager, PackageManager, Json
-from .types import Version, Egg, Archive, ReqSet, InstallationError
-from .log import logger
+from pyg.utils import PYTHON_VERSION, ext, right_egg
+from pyg.web import WebManager, PackageManager, Json
+from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
+from pyg.log import logger
 
 
 

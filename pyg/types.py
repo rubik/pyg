@@ -3,14 +3,14 @@ import re
 import sys
 import tarfile
 import pkg_resources
-import configparser as ConfigParser
-from io import StringIO
+import ConfigParser
+from cStringIO import StringIO
 
 from pkgtools.pkg import Dir as DirTools
-from .scripts import script_args
-from .locations import EASY_INSTALL, INSTALL_DIR, BIN
-from .utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, glob, ext
-from .log import logger
+from pyg.scripts import script_args
+from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN
+from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, glob, ext
+from pyg.log import logger
 
 
 ## A generic error thrown by Pyg
@@ -175,12 +175,7 @@ class Egg(object):
             logger.info('Scripts not installed')
         logger.info('Looking for requirements...')
         try:
-<<<<<<< HEAD
-            for req in DirTools(os.path.join(eggpath, 'EGG-INFO')).file('requires.txt'):
-                print req
-=======
             for req in dist.file('requires.txt'):
->>>>>>> master
                 self.reqset.add(req)
         except KeyError:
             logger.debug('requires.txt not found')

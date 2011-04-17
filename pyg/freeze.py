@@ -1,8 +1,8 @@
 import os
 import pkg_resources
 
-from .web import PyPI, WebManager
-from .utils import is_installed
+from pyg.web import PyPI, WebManager
+from pyg.utils import is_installed
 
 
 def freeze():
