@@ -90,18 +90,17 @@ def install_func(args):
 
 def uninst_func(args):
     check_and_exit()
-    if args.yes:
-        args_manager['yes'] = True
+    yes = True if args.yes else False
     if args.req_file:
         with open(os.path.abspath(args.req_file)) as f:
             for line in f:
                 try:
-                    Uninstaller(line.strip()).uninstall()
+                    Uninstaller(line.strip(), yes).uninstall()
                 except PygError:
                     continue
     for p in args.packname:
         try:
-            Uninstaller(p).uninstall()
+            Uninstaller(p, yes).uninstall()
         except PygError:
             continue
 

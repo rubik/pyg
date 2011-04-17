@@ -262,6 +262,8 @@ class ArgsManager(object):
             'data': True,
             ## Ask confirmation of uninstall deletions?
             'yes': False,
+            ## Use cache when updating?
+            'use_cache': True,
             }
 
     def __getitem__(self, item):

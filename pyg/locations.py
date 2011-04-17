@@ -1,4 +1,5 @@
 import os
+import pwd
 import sys
 import site
 import platform
@@ -66,3 +67,26 @@ else:
     ## Forcing to use /usr/local/bin on standard Mac OS X
     if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
         BIN = '/usr/local/bin'
+
+
+## If we are running on a *nix system and we are in a SUDO session the `SUDO_UID`
+## environment variable will be set. We can use that to get the user's home
+## We also set to None all the variables that depend on HOME.
+HOME = os.getenv('HOME')
+PYG_HOME = PACKAGES_CACHE = None
+_sudo_uid = os.getenv('SUDO_UID')
+if _sudo_uid:
+    _sudo_uid = int(_sudo_uid)
+    HOME = pwd.getpwuid(_sudo_uid).pw_dir
+
+## Here is Pyg's HOME directory
+## If it does not exists we create it
+if HOME:
+    PYG_HOME = os.path.join(HOME, '.pyg')
+    if not os.path.exists(PYG_HOME):
+        os.makedirs(PYG_HOME)
+
+    ## Now let's look for `installed_packages.txt` file
+    ## At the moment we don't care wheter it exists or not,
+    ## this will be checked by `pyg.inst.Updater`
+    PACKAGES_CACHE = os.path.join(PYG_HOME, 'installed_packages.txt')

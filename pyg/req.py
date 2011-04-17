@@ -97,12 +97,15 @@ class Requirement(object):
         self.name = self.pypi_json.package_name
         self.version = json['info']['version']
         logger.info('Best match: {0}=={1}', self.name, self.version)
+        print json['urls']
         for release in json['urls']:
             if release['packagetype'] == 'bdist_egg' and release['python_version'] != PYTHON_VERSION:
-                continue
+                logger.info('Found an Egg for another Python version. Continue searching...')
             filename, hash, url = release['filename'], release['md5_digest'], release['url']
             self._download_and_install(url, hash, filename, self.name)
             break
+        else:
+            logger.fatal('E: Did not find any release on PyPI for {0}', self.name, exc=InstallationError)
 
     def _use_xml(self):
         p = PackageManager(self)

@@ -8,10 +8,10 @@ import urlparse
 import ConfigParser
 import pkg_resources
 
-from pkgtools.pkg import WorkingSet
+from pkgtools.pkg import WorkingSet, Installed
 from pyg.req import Requirement
 from pyg.web import WebManager, Json
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR, PACKAGES_CACHE
 from pyg.utils import TempDir, File, ext, is_installed
 from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
@@ -57,9 +57,8 @@ class Installer(object):
             r.install()
         except AlreadyInstalled:
             logger.info('{0} is already installed', r.name)
-        except InstallationError:
-            logger.fatal('E: an error occurred while installing {0}', r.name)
-            raise
+        except InstallationError as e:
+            logger.error('E: {0}', e, exc=InstallationError)
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
@@ -149,8 +148,9 @@ class Installer(object):
 
 
 class Uninstaller(object):
-    def __init__(self, packname):
+    def __init__(self, packname, yes=False):
         self.name = packname
+        self.yes = yes
 
     def uninstall(self):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
@@ -219,7 +219,7 @@ class Uninstaller(object):
             logger.info(d)
         logger.indent -= 8
         while True:
-            if args_manager['yes']:
+            if self.yes:
                 u = 'y'
             else:
                 u = raw_input('Proceed? (y/[n]) ').lower()
@@ -235,7 +235,7 @@ class Uninstaller(object):
                             os.remove(d)
                         except OSError:
                             logger.error('E: Cannot delete: {0}', d)
-                    logger.info('Deleting: {0}...', d)
+                    logger.info('Deleting: {0}', d)
                 logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
@@ -250,38 +250,67 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self):
-        self.working_set = WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug)
+        if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE) or not args_manager['use_cache']:
+            open(PACKAGES_CACHE, 'w').close()
+            self.working_set = list(WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug))
+        else:
+            logger.info('Reading cache...')
+            with open(PACKAGES_CACHE, 'r') as f:
+                self.working_set = []
+                for line in f:
+                    line = line.strip()
+                    package, path = line.split()
+                    try:
+                        dist = Installed(package)
+                    except ValueError:
+                        dist = Installed(os.path.basename(path))
+                    self.working_set.append((package, (path, dist))
+                                            )
+        logger.info('{0} packages loaded', len(self.working_set))
         self.json = Json()
 
     def _pkgutil_onerror(self, pkgname):
         logger.debug('Error while importing {0}', pkgname)
 
     def upgrade(self, package_name, json, version):
+        logger.info('Removing {0} old version', package_name)
+        logger.indent += 8
+        Uninstaller(package_name, True).uninstall()
+        logger.indent = 0
         args_manager['upgrade'] = True
         logger.info('Upgrading {0} to {1}', package_name, version)
-        logger.indent = 8
+        logger.indent += 8
         for release in json['urls']:
             logger.info('Installing {0}...', release['filename'])
             logger.indent += 4
             try:
                 Installer.from_url(release['url'])
+                break
             except Exception as e:
                 logger.error('E: An error occurred while installing {0}: {1}', package_name, e)
                 logger.info('Trying another file...')
                 logger.indent -= 4
+        else:
+            logger.fatal('E: Did not find any release on PyPI for {0}', package_name)
         logger.indent = 0
 
     def update(self):
         logger.info('Searching for updates')
+        if PACKAGES_CACHE:
+            with open(PACKAGES_CACHE, 'w') as f:
+                for package, data in self.working_set:
+                    f.write('{0} {1}\n'.format(package, data[0]))
         for package, data in self.working_set:
             path, dist = data
             try:
                 json = self.json.json(package)
                 new_version = Version(json['info']['version'])
             except Exception as e:
+                print e
                 logger.error('E: Failed to fetch data for {0}', package, exc=PygError)
             if Version(dist.version) >= new_version:
                 continue
+
             logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)
             while True:
                 if args_manager['yes']:
