@@ -252,6 +252,7 @@ class Updater(object):
     def __init__(self):
         if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE) or not args_manager['use_cache']:
             open(PACKAGES_CACHE, 'w').close()
+            logger.info('Cache file not found: $HOME/.pyg/installed_packages.txt')
             self.working_set = list(WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug))
         else:
             logger.info('Reading cache...')
@@ -273,10 +274,11 @@ class Updater(object):
         logger.debug('Error while importing {0}', pkgname)
 
     def upgrade(self, package_name, json, version):
-        logger.info('Removing {0} old version', package_name)
-        logger.indent += 8
-        Uninstaller(package_name, True).uninstall()
-        logger.indent = 0
+        ## FIXME: Do we have to remove the package old version?
+        #logger.info('Removing {0} old version', package_name)
+        #logger.indent += 8
+        #Uninstaller(package_name, True).uninstall()
+        #logger.indent = 0
         args_manager['upgrade'] = True
         logger.info('Upgrading {0} to {1}', package_name, version)
         logger.indent += 8

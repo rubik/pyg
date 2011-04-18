@@ -6,13 +6,57 @@ Pyg should be used mostly from the command line, as it requires root's privilege
 Installing
 ----------
 
+.. program:: install
+
 To install a package, simply run::
 
-    $ pyg install packname
+    $ pyg install package
 
-where *packname* is the name of the package you want to install.
+*package* can be a number of things:
 
-.. program:: install
+    * the name of the package you want to install (e.g. ``pyg`` or ``sphinx``)
+    * a package URL (e.g. ``http://www.example.org/path/to/mypackage-0.1.tar.gz``)
+    * a local file (like ``path/to/mypackage-0.42-py2.7.egg``)
+    * a local directory containing a :file:`setup.py` file
+    * a repository URL (like ``git+git@github.com/rubik/pyg``)
+
+Pyg supports these files:
+
+    * :file:`.tar.gz`
+    * :file:`.tar.bz2`
+    * :file:`.zip`
+    * :file:`.egg`
+    * :file:`.pybundle`
+    * :file:`.pyb` (an abbreviation of Pip's bundle files)
+
+.. option:: -e <URL>, --editable <URL>
+
+    Install a package in editable mode (``python setup.py develop``) from an online repository. Supported VCS are:
+
+        * Git (prefix ``git+``)
+        * Mercurial (prefix ``hg+``)
+        * Bazaar (prefix ``bzr+``)
+        * Subversion (prefix ``svn+``)
+
+    The URL syntax is as follow::
+
+        <prefix><repo_url>#egg=<package_name>
+
+    All fields are required. The last part (``#egg=<package_name>``) specifies the package name.
+
+    .. versionadded:: 0.3
+
+.. option:: --no-script
+
+    Do not install packages' scripts.
+
+    .. versionadded:: 0.3
+
+.. option:: --no-data
+
+    Do not install packages' data files.
+
+    .. versionadded:: 0.3
 
 .. option:: -r <path>, --req-file <path>
 
@@ -22,29 +66,10 @@ where *packname* is the name of the package you want to install.
 
     See also: :ref:`reqs`
 
-.. option:: -f <path>, --file <path>
-
-    Do not download the package, but use the one specified::
-
-        $ pyg install -f Sphinx-1.0.7.tar.gz
-
-    The path can be absolute::
-
-        $ pyg install -f /home/42/Sphinx-1.0.7-py2.7.egg
-
-    Supported files:
-
-    * :file:`.tar.gz`
-    * :file:`.tar.bz2`
-    * :file:`.zip`
-    * :file:`.egg`
-    * :file:`.pybundle`
-    * :file:`.pyb` (an abbreviation of pip's bundle files)
-
-.. option:: -u, --upgrade
+.. option:: -U, --upgrade
 
     If the package is already installed, install it again.
-    For example, if you install ``pypol_`` v0.4::
+    For example, you install ``pypol_`` v0.4::
 
         $ pyg install pypol_==0.4
         Best match: pypol_==0.4
@@ -54,30 +79,16 @@ where *packname* is the name of the package you want to install.
         Running setup.py install for pypol_
         pypol_ installed successfully
 
-    And then run ``list``::
+    Later you may want to re-install the package. Instead of running ``uninstall`` and then ``install``, you can use the :option:`-U` option::
 
-        $ pyg list pypol_
-        0.5
-        0.4	installed
-        0.3
-        0.2
-
-    You may want to re-install the package. Instead of running ``uninstall`` and then ``install``, you can use the :option:`-u` option::
-
-        $ pyg install -u pypol_
+        $ pyg install -U pypol_
         Best match: pypol_==0.5
         Downloading pypol_
         Checking md5 sum
         Installing pypol_ egg file
         pypol_ installed successfully
 
-    And now::
-
-        $ pyg list pypol_
-        0.5	installed
-        0.4
-        0.3
-        0.2
+    .. versionadded:: 0.2
 
 .. option:: -n, --no-deps
 
@@ -87,7 +98,11 @@ where *packname* is the name of the package you want to install.
 
     Specify the base URL of Python Package Index (default to ``http://pypi.python.org/pypi``).
 
-.. option:: --user
+.. option:: -d <path>, --install-dir <path>
+
+    The base installation directory for all packages.
+
+.. option:: -u, --user
 
     Install the package in the user site-packages.
 
@@ -314,18 +329,20 @@ If you want to check if a package is installed, you can use the ``check`` comman
 
 Some examples::
 
-        $ pyg check pyg
-        True
-        $ pyg check pyg==42
-        False
-        $ pyg check pyg==0.1.2
-        True
-        $ pyg check pyg==0.1.3
-        False
+    $ pyg check pyg
+    True
+    $ pyg check pyg==42
+    False
+    $ pyg check pyg==0.1.2
+    True
+    $ pyg check pyg==0.1.3
+    False
 
 
 Downloading packages
 --------------------
+
+.. versionadded:: 0.2
 
 If you only need to download a package you can use the ``download`` command::
 
@@ -377,3 +394,46 @@ If the requirement is not satisfied Pyg won't download anything::
         Retrieving data for pyg
         Writing data into pyg-0.1-py2.7.egg
         pyg downloaded successfully
+
+
+Upgrading installed packages
+----------------------------
+
+.. versionadded:: 0.3
+
+.. program:: update
+
+When you use the ``update`` command, Pyg searches through all installed packages and checks for updates. If there are some, Pyg installs them.
+
+Before loading the entire list of installed packages, Pyg checks the :file:`~/.pyg/installed_packages.txt` file. If it exists Pyg will update only packages in that file::
+
+    $ pyg update
+    Cache file not found: $HOME/.pyg/installed_packages.txt
+    Loading list of installed packages...
+    15 packages loaded
+    Searching for updates
+    A new release is avaiable for simplejson: 2.1.5 (old 2.1.3)
+    Do you want to upgrade? (y/[n]) y
+    Upgrading simplejson to 2.1.5
+            Installing simplejson-2.1.5.tar.gz...
+                Installing simplejson-2.1.5.tar.gz
+                Running setup.py egg_info for simplejson
+                Running setup.py install for simplejson
+                simplejson installed successfully
+
+    ...
+
+    Updating finished successfully
+
+    $ pyg update
+    Loading list of installed packages...
+    Reading cache...
+    15 packages loaded
+    Searching for updates
+    A new release is avaiable for wadllib: 1.2.0 (old 1.1.8)
+    Do you want to upgrade? (y/[n]) n
+    wadllib has not been upgraded
+    A new release is avaiable for launchpadlib: 1.9.8 (old 1.9.7)
+    Do you want to upgrade? (y/[n]) n
+    launchpadlib has not been upgraded
+    Updating finished successfully
