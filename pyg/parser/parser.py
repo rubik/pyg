@@ -70,6 +70,11 @@ def init_parser(version=None):
     def update(args):
         opts.update_func(args)
 
-    parser.add_commands([install, uninstall, rm, list, freeze, link, unlink,
-                         list, search, check, download, update])
+    @ command
+    def shell():
+        from pyg.parser.shell import PygShell
+        PygShell().cmdloop()
+
+    parser.add_commands([install, uninstall, rm, freeze, link, unlink, list,
+                         search, check, download, update, shell])
     return parser

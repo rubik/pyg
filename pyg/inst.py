@@ -19,7 +19,7 @@ from pyg.parser.parser import init_parser
 from pyg.log import logger
 
 
-__all__ = ['Installer', 'Uninstaller']
+__all__ = ['Installer', 'Uninstaller', 'Updater']
 
 
 class Installer(object):

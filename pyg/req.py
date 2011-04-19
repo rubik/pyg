@@ -97,7 +97,6 @@ class Requirement(object):
         self.name = self.pypi_json.package_name
         self.version = json['info']['version']
         logger.info('Best match: {0}=={1}', self.name, self.version)
-        print json['urls']
         for release in json['urls']:
             if release['packagetype'] == 'bdist_egg' and release['python_version'] != PYTHON_VERSION:
                 logger.info('Found an Egg for another Python version. Continue searching...')
