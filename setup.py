@@ -1,5 +1,5 @@
 import pyg
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 requires = ['setuptools', 'pkgtools (>= 0.3)', 'argh (>= 0.14)']

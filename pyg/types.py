@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import tarfile
 import pkg_resources
@@ -17,12 +16,14 @@ from pyg.log import logger
 class PygError(Exception):
     pass
 
+## An error thrown when the installation goes wrong
 class InstallationError(PygError):
     pass
 
 ## This isn't really an error but it is useful when Pyg is used as a library
 class AlreadyInstalled(InstallationError):
     pass
+
 
 #class Version(object): ## OLD!! Does not work properly!
 #    def __init__(self, v):
@@ -243,6 +244,11 @@ class Bundle(object):
                 fullpath = os.path.join(location, f)
                 Dir(fullpath, f, tempdir).install()
             logger.info('Bundle installed successfully')
+
+
+class BundleCreator(object):
+    def __init__(self, req):
+        raise NotImplementedError
 
 
 class ArgsManager(object):

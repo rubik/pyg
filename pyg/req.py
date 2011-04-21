@@ -1,10 +1,5 @@
-import os
-import re
-import sys
 import operator
 import cStringIO
-import pkg_resources
-
 
 from hashlib import md5
 

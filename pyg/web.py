@@ -2,7 +2,8 @@ import re
 import os
 import urllib2
 
-from pkgtools.pypi import PyPIXmlRpc as PyPI, PyPIJson
+from pkgtools.pypi import PyPIXmlRpc as PyPI, PyPIJson, real_name
+
 from pyg.types import PygError, Version, args_manager
 from pyg.utils import FileMapper, ext, right_egg, version_egg
 from pyg.log import logger
@@ -15,6 +16,23 @@ __all__ = ['WebManager', 'PackageManager', 'PREFERENCES']
 PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
 
 
+class ReqManager(object):
+    def __init__(self, req):
+        self.req = req
+        if self.req.op is None:
+            ## Use PyPI's Json interface
+            ## to get some more speed
+            self.package_manager = PyPIJson(self.req.name)
+        else:
+            self.package_manager = WebManager(self.req)
+
+    def find(self):
+        return self.package_manager.find()
+
+    def download(self, dest):
+        raise NotImplementedError
+
+
 class WebManager(object):
 
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
@@ -22,16 +40,8 @@ class WebManager(object):
     def __init__(self, req):
         self.pypi = PyPI(index_url=args_manager['index_url'])
         self.req = req
-        self.name = self.req.name
+        self.name = real_name(self.req.name)
         self.versions = None
-        try:
-            realname = sorted(self.pypi.search({'name': self.name}),
-                              key=lambda i: i['_pypi_ordering'], reverse=True)[0]['name']
-            if self.name.lower() == realname.lower():
-                self.name = realname
-                req.name = realname
-        except (KeyError, IndexError):
-            pass
 
         self.versions = map(Version, self.pypi.package_releases(self.name, True))
         if not self.versions:
@@ -55,9 +65,9 @@ class WebManager(object):
         return map(Version, set(v.strip('.') for v in _vre.findall(data)))
 
     def find(self):
-        for version in self.versions:
-            for res in self.pypi.release_urls(self.name, str(version)):
-                yield version, res['filename'], res['md5_digest'], res['url']
+        version = max(self.versions)
+        for res in self.pypi.release_urls(self.name, str(version)):
+            yield version, res['filename'], res['md5_digest'], res['url']
 
 
 class PackageManager(object):
@@ -151,6 +161,12 @@ class Json(object):
         self.cache[package_name] = data
         self.package_name = pypi.package_name
         return data
+
+    def find(self, package_name, fast=False):
+        data = self.json(package_name, fast)
+        version = data['version']
+        for release in data['urls']:
+            yield version, release['filename'], release['md5_digest'], release['url']
 
 
 ## OLD! We are using xmlrpclib to communicate with pypi.

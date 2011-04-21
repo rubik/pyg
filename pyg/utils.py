@@ -1,6 +1,5 @@
 import re
 import os
-import pwd
 import sys
 import shutil
 import zipfile
@@ -67,7 +66,12 @@ def unlink(path):
 
 def call_subprocess(args, stdout, stderr):
     try:
-        return subprocess.check_call(args, stdout=stdout, stderr=stderr)
+        keywords = ('fatal', 'error')
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        for line in output.split('\n'):
+            if any(keyword in line for keyword in keywords):
+                logger.error(line)
+        return 0
     except subprocess.CalledProcessError as e:
         return e.returncode
 
@@ -96,7 +100,7 @@ def dir_ext(path):
         p = p[:-4]
     return p, e
 
-def dirname(path):
+def name(path):
     return dir_ext(path)[0]
 
 def ext(path):

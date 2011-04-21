@@ -11,7 +11,7 @@ from pyg.freeze import freeze, list_releases
 from pyg.types import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
-from pyg.utils import TempDir, is_installed, dirname, link, unlink, unpack, call_setup
+from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
 
 
@@ -150,9 +150,9 @@ def download_func(args):
     downloader = Downloader(Requirement(name), pref)
     downloader.download(dest)
     if unpk:
-        a = os.path.join(dest, downloader.name)
-        logger.info('Unpacking {0} to {1}', downloader.name, dirname(a))
-        unpack(a)
+        path = os.path.abspath(downloader.name)
+        logger.info('Unpacking {0} to {1}', path, os.getcwd())
+        unpack(path)
 
 def update_func(args):
     if args.yes:

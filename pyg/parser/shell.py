@@ -10,7 +10,7 @@ from pyg.types import PygError, InstallationError, AlreadyInstalled
 
 SUPPORTED_COMMANDS = ['install', 'uninstall', 'rm', 'list', 'freeze', 'link',
                       'unlink', 'search', 'download', 'check', 'update']
-ADDITIONAL_COMMANDS = ['cd', 'rm', 'pwd', 'ls']
+ADDITIONAL_COMMANDS = ['cd', 'pwd', 'ls']
 HELP = '''Supported commands:
 ===================
 
@@ -41,6 +41,8 @@ def command(parser, cmd_name):
             return parser.dispatch([cmd_name] + args.split())
         except (SystemExit, AlreadyInstalled, PygError):
             pass
+        except Exception as e:
+            print e
     return inner
 
 
@@ -80,18 +82,18 @@ class PygShell(cmd.Cmd, object):
     def do_pwd(self, line):
         print os.getcwd()
 
-    def do_rm(self, line):
-        if not line.split():
-            print '*** Error: rm must have an argument'
-            return
-        path = line.split()[0]
-        try:
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-        except OSError as e:
-            print 'rm: {0}: {1}'.format(e.strerror, path)
+    #def do_rm(self, line):
+    #    if not line.split():
+    #        print '*** Error: rm must have an argument'
+    #        return
+    #    path = line.split()[0]
+    #    try:
+    #        if os.path.isdir(path):
+    #            shutil.rmtree(path)
+    #        else:
+    #            os.remove(path)
+    #    except OSError as e:
+    #        print 'rm: {0}: {1}'.format(e.strerror, path)
 
     def do_ls(self, line):
         args = line.split()

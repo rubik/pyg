@@ -3,7 +3,6 @@ import os
 import sys
 import site
 import shutil
-import zipfile
 import urlparse
 import ConfigParser
 import pkg_resources
@@ -11,7 +10,7 @@ import pkg_resources
 from pkgtools.pkg import WorkingSet, Installed
 from pyg.req import Requirement
 from pyg.web import WebManager, Json
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN, INSTALL_DIR, PACKAGES_CACHE
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
 from pyg.utils import TempDir, File, ext, is_installed
 from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
