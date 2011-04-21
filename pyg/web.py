@@ -9,7 +9,7 @@ from pyg.utils import FileMapper, ext, right_egg, version_egg
 from pyg.log import logger
 
 
-__all__ = ['WebManager', 'PackageManager', 'PREFERENCES']
+__all__ = ['WebManager', 'ReqManager', 'Json', 'PREFERENCES']
 
 
 ## This constants holds files priority
@@ -29,8 +29,52 @@ class ReqManager(object):
     def find(self):
         return self.package_manager.find()
 
+    def files(self):
+        files = FileMapper(list)
+        for release in self.find():
+            files[ext(p[3])].append(p)
+        return files
+
     def download(self, dest):
-        raise NotImplementedError
+        dest = os.path.abspath(dest)
+        files = self.files()
+
+        ## We need a placeholder because of the nested for loops
+        success = False
+
+        for p in PREFERENCES:
+            if success:
+                break
+            if not files[p]:
+                logger.warn('{0} files not found. Continue searching...', p)
+                continue
+            for v, name, hash, url in files[p]:
+                if success:
+                    break
+                if p == '.egg' and not right_egg(name):
+                    logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
+                    continue
+                try:
+                    data = WebManager.request(url)
+                except (urllib2.URLError, urllib2.HTTPError) as e:
+                    logger.debug('urllib2 error: {0}', e.args)
+                    continue
+                if not data:
+                    logger.debug('request failed')
+                    continue
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                logger.info('Retrieving data for {0}', self.req.name)
+                try:
+                    logger.info('Writing data into {0}', name)
+                    with open(os.path.join(dest, name), 'w') as f:
+                        f.write(data)
+                except (IOError, OSError):
+                    logger.debug('error while writing data')
+                    continue
+                logger.info('{0} downloaded successfully', self.req.name)
+                success = True
+                self.downloaded_name = name
 
 
 class WebManager(object):
@@ -40,18 +84,17 @@ class WebManager(object):
     def __init__(self, req):
         self.pypi = PyPI(index_url=args_manager['index_url'])
         self.req = req
-        self.name = real_name(self.req.name)
-        self.versions = None
+        try:
+            self.name = real_name(self.req.name)
+        except urllib2.HTTPError as e:
+            logger.error(e.msg, exc=PygError)
 
         self.versions = map(Version, self.pypi.package_releases(self.name, True))
-        if not self.versions:
-            self.name, old = self.name.capitalize(), self.name
-            self.versions = map(Version, self.pypi.package_releases(self.name, True))
+
         ## Slow way: we need to search versions by ourselves
         if not self.versions:
-            self.name = old
             self.versions = WebManager.versions_from_html(self.name)
-        self.versions = sorted((v for v in self.versions if req.match(v)), reverse=True)
+        self.versions = sorted((v for v in self.versions if self.req.match(v)), reverse=True)
 
     @ staticmethod
     def request(url):
@@ -70,85 +113,6 @@ class WebManager(object):
             yield version, res['filename'], res['md5_digest'], res['url']
 
 
-class PackageManager(object):
-    def __init__(self, req, pref=None):
-        if pref is None:
-            pref = PREFERENCES
-        if len(pref) < 4:
-            for p in PREFERENCES:
-                if p not in pref:
-                    pref.append(p)
-
-        ## For now fast=True and index_url=DEFAULT
-        self.w = WebManager(req)
-        self.name = self.w.name
-        self.pref = pref
-        self.files = FileMapper(list)
-        self.files.pref = self.pref
-
-    def arrange_items(self):
-        for p in self.w.find():
-            e = ext(p[3])
-            self.files[e].append(p)
-        ## FIXME: We have to consider the preferences!
-        return self.files
-
-
-class Downloader(object):
-    def __init__(self, req, pref=None):
-        try:
-            self.pman = PackageManager(req, pref)
-            self.name = self.pman.name
-        except urllib2.HTTPError as e:
-            logger.fatal('E: {0}', e.msg)
-            raise PygError
-
-        self.files = self.pman.arrange_items()
-        if not self.files:
-            logger.error('E: Did not find files to download')
-            raise PygError
-
-    def download(self, dest):
-        dest = os.path.abspath(dest)
-
-        ## We need a placeholder because of the nested for loops
-        success = False
-
-        for p in self.pman.pref:
-            if success:
-                break
-            if not self.files[p]:
-                logger.warn('{0} files not found. Continue searching...', p)
-                continue
-            for v, name, hash, url in self.files[p]:
-                if success:
-                    break
-                if p == '.egg' and not right_egg(name):
-                    logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
-                    continue
-                try:
-                    data = WebManager.request(url)
-                except (urllib2.URLError, urllib2.HTTPError) as e:
-                    logger.debug('urllib2 error: {0}', e.args)
-                    continue
-                if not data:
-                    logger.debug('request failed')
-                    continue
-                if not os.path.exists(dest):
-                    os.makedirs(dest)
-                logger.info('Retrieving data for {0}', self.name)
-                try:
-                    logger.info('Writing data into {0}', name)
-                    with open(os.path.join(dest, name), 'w') as f:
-                        f.write(data)
-                except (IOError, OSError):
-                    logger.debug('error while writing data')
-                    continue
-                logger.info('{0} downloaded successfully', self.name)
-                success = True
-                self.name = name
-
-
 class Json(object):
     def __init__(self):
         self.cache = {}
@@ -161,12 +125,6 @@ class Json(object):
         self.cache[package_name] = data
         self.package_name = pypi.package_name
         return data
-
-    def find(self, package_name, fast=False):
-        data = self.json(package_name, fast)
-        version = data['version']
-        for release in data['urls']:
-            yield version, release['filename'], release['md5_digest'], release['url']
 
 
 ## OLD! We are using xmlrpclib to communicate with pypi.

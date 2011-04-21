@@ -4,7 +4,7 @@ import cStringIO
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg
-from pyg.web import WebManager, PackageManager, Json
+from pyg.web import WebManager, Req, Json
 from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
 from pyg.log import logger
 
@@ -102,10 +102,10 @@ class Requirement(object):
             logger.fatal('E: Did not find any release on PyPI for {0}', self.name, exc=InstallationError)
 
     def _use_xml(self):
-        p = PackageManager(self)
+        p = ReqManager(self)
         success = False
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-            for v, name, hash, url in p.arrange_items()[pext]:
+            for v, name, hash, url in p.files()[pext]:
                 if pext == '.egg' and not right_egg(name):
                     continue
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
@@ -122,9 +122,9 @@ class Requirement(object):
             raise InstallationError
 
     def install(self):
-        ## We don't have any requirement to meet, so we can use the PyPI Json API
-        ## to get the most recent release
         if self.op is None:
+            ## We don't have any requirement to meet, so we can use the PyPI Json API
+            ## to get the most recent release
             self._use_json()
         else:
             self._use_xml()
