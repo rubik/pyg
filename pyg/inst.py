@@ -334,17 +334,6 @@ class Bundler(object):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
 
-    def _clean(self, dir):
-        '''
-        Clean all downloaded files in the specified directory. We only need the directories.
-        '''
-
-        logger.debug('clean up')
-        for file in (d for d in os.listdir(dir) if os.path.isfile(d)):
-            logger.debug('removing {0}', file)
-            print file
-            os.remove(file)
-
     def _download(self, dir, req):
         '''
         Given a destination directory and a requirement to meet, download it and return the archive path.
@@ -357,16 +346,25 @@ class Bundler(object):
         return arch_name
 
     def bundle(self):
-        def _add_to_archive(zfile, tdir, dir):
-            for file in os.listdir(os.path.join(tdir, dir)):
-                path = os.path.join(tdir, dir, file)
-                print path
-                if os.path.isfile(path):
-                    zfile.write(path, os.path.join(dir, file))
-                elif os.path.isdir(path):
-                    _add_to_archive(zfile, tdir, path)
+        '''
+        Create a bundle of the specified package:
 
-        with TempDir() as tempdir:
+            1. Download all required packages (included dependencies)
+            2. Collect the packages in a single zip file (bundle)
+            3. Move the bundle from the built dir to the destination
+        '''
+
+        def _add_to_archive(zfile, dir):
+            for file in os.listdir(dir):
+                path = os.path.join(dir, file)
+                if os.path.isfile(path):
+                    zfile.write(path, os.path.join(dir, file)[len(tempdir):])
+                elif os.path.isdir(path):
+                    _add_to_archive(zfile, path)
+
+        import tempfile
+        tempdir = tempfile.mkdtemp(); print tempdir
+        if True:
             ## Step 1: we recursively download all required packages
             #####
             reqs = [self.req]
@@ -374,13 +372,15 @@ class Bundler(object):
             while reqs:
                 r = reqs.pop()
                 logger.indent = 0
-                logger.info('Looking for {0} dependencies', r)
+                logger.info('{0}:', r)
                 logger.indent = 8
                 try:
                     dist = SDist(self._download(tempdir, r))
                 except ConfigParser.MissingSectionHeaderError:
                     continue
                 try:
+                    logger.info('Looking for {0} dependencies', r)
+                    logger.indent += 8
                     for requirement in dist.file('requires.txt'):
                         if requirement not in already_downloaded:
                             logger.info('Found: {0}', requirement)
@@ -398,16 +398,16 @@ class Bundler(object):
             ## Step 2: we collect the downloaded packages and bundle all together
             ## in a single file (zipped)
             #####
-            ## Before gathering packages we need to clean the folder up.
-            self._clean(tempdir)
-
-            ## Now we are ready to bundle
             logger.info('Adding packages to the bundle')
-            bundle = zipfile.ZipFile(self.bundle_name, mode='w')
+            bundle = zipfile.ZipFile(os.path.join('.', self.bundle_name), mode='w')
             for package in os.listdir(tempdir):
-                if os.path.isdir(os.path.join(tempdir, package)):
-                    _add_to_archive(bundle, tempdir, package)
+                path = os.path.join(tempdir, package)
+                if os.path.isdir(path):
+                    _add_to_archive(bundle, path)
             bundle.close()
 
             ## Last step: move the bundle to the current working directory
+            dest = os.path.join(os.getcwd(), self.bundle_name)
+            if os.path.exists(dest):
+                os.remove(dest)
             shutil.move(os.path.join(self.bundle_name), os.getcwd())
