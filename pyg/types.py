@@ -246,11 +246,6 @@ class Bundle(object):
             logger.info('Bundle installed successfully')
 
 
-class BundleCreator(object):
-    def __init__(self, req):
-        raise NotImplementedError
-
-
 class ArgsManager(object):
 
     _OPTS = {

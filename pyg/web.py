@@ -30,7 +30,8 @@ class ReqManager(object):
 
         if pref is None:
             pref = PREFERENCES
-        elif len(pref) < 4:
+        pref = list(pref)
+        if len(pref) < 4:
             for p in PREFERENCES:
                 if p not in pref:
                     pref.append(p)

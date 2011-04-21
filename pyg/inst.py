@@ -3,23 +3,24 @@ import os
 import sys
 import site
 import shutil
+import zipfile
 import urlparse
 import ConfigParser
 import pkg_resources
 
 from pkgtools.pypi import PyPIJson
-from pkgtools.pkg import WorkingSet, Installed
-from pyg.web import WebManager
+from pkgtools.pkg import WorkingSet, Installed, SDist
+from pyg.web import WebManager, ReqManager
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
-from pyg.utils import TempDir, File, ext, is_installed
+from pyg.utils import TempDir, File, ext, is_installed, unpack
 from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
 from pyg.parser.parser import init_parser
 from pyg.log import logger
 
 
-__all__ = ['Installer', 'Uninstaller', 'Updater']
+__all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
 
 
 class Installer(object):
@@ -324,3 +325,89 @@ class Updater(object):
                     self.upgrade(package, json, new_version)
                     break
         logger.info('Updating finished successfully')
+
+
+class Bundler(object):
+    def __init__(self, req, bundle_name):
+        self.req = req
+        if not bundle_name.endswith('.pybundle') and not bundle_name.endswith('.pyb'):
+            bundle_name += '.pyb'
+        self.bundle_name = bundle_name
+
+    def _clean(self, dir):
+        '''
+        Clean all downloaded files in the specified directory. We only need the directories.
+        '''
+
+        logger.debug('clean up')
+        for file in (d for d in os.listdir(dir) if os.path.isfile(d)):
+            logger.debug('removing {0}', file)
+            print file
+            os.remove(file)
+
+    def _download(self, dir, req):
+        '''
+        Given a destination directory and a requirement to meet, download it and return the archive path.
+        '''
+
+        manager = ReqManager(req, ('.tar.gz', '.tar.bz2', '.zip'))
+        manager.download(dir)
+        arch_name = os.path.join(dir, manager.downloaded_name)
+        unpack(arch_name)
+        return arch_name
+
+    def bundle(self):
+        def _add_to_archive(zfile, tdir, dir):
+            for file in os.listdir(os.path.join(tdir, dir)):
+                path = os.path.join(tdir, dir, file)
+                print path
+                if os.path.isfile(path):
+                    zfile.write(path, os.path.join(dir, file))
+                elif os.path.isdir(path):
+                    _add_to_archive(zfile, tdir, path)
+
+        with TempDir() as tempdir:
+            ## Step 1: we recursively download all required packages
+            #####
+            reqs = [self.req]
+            already_downloaded = set()
+            while reqs:
+                r = reqs.pop()
+                logger.indent = 0
+                logger.info('Looking for {0} dependencies', r)
+                logger.indent = 8
+                try:
+                    dist = SDist(self._download(tempdir, r))
+                except ConfigParser.MissingSectionHeaderError:
+                    continue
+                try:
+                    for requirement in dist.file('requires.txt'):
+                        if requirement not in already_downloaded:
+                            logger.info('Found: {0}', requirement)
+                            reqs.append(Requirement(requirement))
+                except KeyError:
+                    logger.debug('requires.txt not found for {0}', dist)
+                try:
+                    as_req = dist.as_req()
+                except KeyError:
+                    as_req = str(r)
+                already_downloaded.add(as_req)
+            logger.indent = 0
+            logger.info('Finished processing dependencies')
+
+            ## Step 2: we collect the downloaded packages and bundle all together
+            ## in a single file (zipped)
+            #####
+            ## Before gathering packages we need to clean the folder up.
+            self._clean(tempdir)
+
+            ## Now we are ready to bundle
+            logger.info('Adding packages to the bundle')
+            bundle = zipfile.ZipFile(self.bundle_name, mode='w')
+            for package in os.listdir(tempdir):
+                if os.path.isdir(os.path.join(tempdir, package)):
+                    _add_to_archive(bundle, tempdir, package)
+            bundle.close()
+
+            ## Last step: move the bundle to the current working directory
+            shutil.move(os.path.join(self.bundle_name), os.getcwd())
