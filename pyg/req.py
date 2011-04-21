@@ -4,7 +4,7 @@ import cStringIO
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg
-from pyg.web import WebManager, Req, Json
+from pyg.web import WebManager, ReqManager, Json
 from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
 from pyg.log import logger
 
@@ -87,21 +87,7 @@ class Requirement(object):
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
 
-    def _use_json(self):
-        json = self.pypi_json.json(self.name)
-        self.name = self.pypi_json.package_name
-        self.version = json['info']['version']
-        logger.info('Best match: {0}=={1}', self.name, self.version)
-        for release in json['urls']:
-            if release['packagetype'] == 'bdist_egg' and release['python_version'] != PYTHON_VERSION:
-                logger.info('Found an Egg for another Python version. Continue searching...')
-            filename, hash, url = release['filename'], release['md5_digest'], release['url']
-            self._download_and_install(url, hash, filename, self.name)
-            break
-        else:
-            logger.fatal('E: Did not find any release on PyPI for {0}', self.name, exc=InstallationError)
-
-    def _use_xml(self):
+    def install(self):
         p = ReqManager(self)
         success = False
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
@@ -120,11 +106,3 @@ class Requirement(object):
                 break
         if not success:
             raise InstallationError
-
-    def install(self):
-        if self.op is None:
-            ## We don't have any requirement to meet, so we can use the PyPI Json API
-            ## to get the most recent release
-            self._use_json()
-        else:
-            self._use_xml()

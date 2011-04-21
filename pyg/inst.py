@@ -7,9 +7,10 @@ import urlparse
 import ConfigParser
 import pkg_resources
 
+from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import WorkingSet, Installed
+from pyg.web import WebManager
 from pyg.req import Requirement
-from pyg.web import WebManager, Json
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
 from pyg.utils import TempDir, File, ext, is_installed
 from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
@@ -267,7 +268,6 @@ class Updater(object):
                     self.working_set.append((package, (path, dist))
                                             )
         logger.info('{0} packages loaded', len(self.working_set))
-        self.json = Json()
 
     def _pkgutil_onerror(self, pkgname):
         logger.debug('Error while importing {0}', pkgname)
@@ -304,7 +304,7 @@ class Updater(object):
         for package, data in self.working_set:
             path, dist = data
             try:
-                json = self.json.json(package)
+                json = PyPIJson(package).retrieve()
                 new_version = Version(json['info']['version'])
             except Exception as e:
                 logger.error('E: Failed to fetch data for {0}', package, exc=PygError)

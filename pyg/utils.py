@@ -108,7 +108,8 @@ def ext(path):
 
 def unpack(path):
     path = os.path.abspath(path)
-    d, e = dir_ext(path)
+    d, n = os.path.split(path)
+    e = ext(n)
     if e in ('.egg', '.zip'):
         arch = ZipFile(path)
     elif e in ('.tar', '.tar.gz', '.tar.bz2'):

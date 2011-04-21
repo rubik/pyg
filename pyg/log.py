@@ -42,14 +42,17 @@ class Logger(object):
 
     def log(self, level, msg, *a, **kw):
         if level >= self.level:
+            std = sys.stdout
+            if level >= self.ERROR:
+                std = sys.stderr
             msg = ' ' * self.indent + msg.format(*a)
-            sys.stdout.write(msg)
+            std.write(msg)
 
             ## Automatically adds a newline character
-            sys.stdout.write('\n')
+            std.write('\n')
 
             ## flush() makes the log immediately readable
-            sys.stdout.flush()
+            std.flush()
             self.last_msg = msg
 
 

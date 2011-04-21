@@ -1,6 +1,7 @@
 import pkg_resources
 
-from pyg.web import PyPI, WebManager
+from pkgtools.pypi import PyPIXmlRpc
+from pyg.web import WebManager
 from pyg.utils import is_installed
 
 
@@ -13,7 +14,7 @@ def freeze():
 def list_releases(name):
     name = name[:-1] + '_' if name.endswith('-') else name
     res = []
-    versions = PyPI().package_releases(name, True)
+    versions = PyPIXmlRpc().package_releases(name, True)
     if not versions:
         versions = map(str, sorted(WebManager.versions_from_html(name), reverse=True))
     for v in versions:

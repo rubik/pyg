@@ -2,7 +2,7 @@ import re
 import os
 import urllib2
 
-from pkgtools.pypi import PyPIXmlRpc as PyPI, PyPIJson, real_name
+from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.types import PygError, Version, args_manager
 from pyg.utils import FileMapper, ext, right_egg, version_egg
@@ -17,22 +17,33 @@ PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
 
 
 class ReqManager(object):
-    def __init__(self, req):
+    def __init__(self, req, pref=None):
         self.req = req
         if self.req.op is None:
             ## Use PyPI's Json interface
             ## to get some more speed
+
             self.package_manager = PyPIJson(self.req.name)
         else:
             self.package_manager = WebManager(self.req)
+        self.name = self.req.name
+
+        if pref is None:
+            pref = PREFERENCES
+        elif len(pref) < 4:
+            for p in PREFERENCES:
+                if p not in pref:
+                    pref.append(p)
+        self.pref = pref
 
     def find(self):
         return self.package_manager.find()
 
     def files(self):
         files = FileMapper(list)
+        files.pref = self.pref
         for release in self.find():
-            files[ext(p[3])].append(p)
+            files[ext(release[3])].append(release)
         return files
 
     def download(self, dest):
@@ -42,7 +53,7 @@ class ReqManager(object):
         ## We need a placeholder because of the nested for loops
         success = False
 
-        for p in PREFERENCES:
+        for p in self.pref:
             if success:
                 break
             if not files[p]:
@@ -64,7 +75,7 @@ class ReqManager(object):
                     continue
                 if not os.path.exists(dest):
                     os.makedirs(dest)
-                logger.info('Retrieving data for {0}', self.req.name)
+                logger.info('Retrieving data for {0}', self.name)
                 try:
                     logger.info('Writing data into {0}', name)
                     with open(os.path.join(dest, name), 'w') as f:
@@ -72,7 +83,7 @@ class ReqManager(object):
                 except (IOError, OSError):
                     logger.debug('error while writing data')
                     continue
-                logger.info('{0} downloaded successfully', self.req.name)
+                logger.info('{0} downloaded successfully', self.name)
                 success = True
                 self.downloaded_name = name
 
@@ -82,13 +93,17 @@ class WebManager(object):
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
 
     def __init__(self, req):
-        self.pypi = PyPI(index_url=args_manager['index_url'])
+        self.pypi = PyPIXmlRpc(index_url=args_manager['index_url'])
         self.req = req
         try:
             self.name = real_name(self.req.name)
         except urllib2.HTTPError as e:
             logger.error(e.msg, exc=PygError)
 
+        ## So the req can know the real name of the package
+        self.req.name = self.name
+
+        ## Try to use PyPI's XML-RPC API
         self.versions = map(Version, self.pypi.package_releases(self.name, True))
 
         ## Slow way: we need to search versions by ourselves

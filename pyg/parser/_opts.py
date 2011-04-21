@@ -3,8 +3,9 @@ import sys
 import urllib2
 import urlparse
 
-from pyg.vcs import vcs
+from pkgtools.pypi import PyPIXmlRpc
 
+from pyg.vcs import vcs
 from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
@@ -12,7 +13,7 @@ from pyg.types import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
-from pyg.web import PREFERENCES, PyPI, WebManager, PackageManager, Downloader
+from pyg.web import WebManager, ReqManager
 
 
 def check_permissions():
@@ -136,7 +137,7 @@ def list_func(name):
     return sys.stdout.write('\n'.join(res) + '\n')
 
 def search_func(name):
-    res = PyPI().search({'name': name})
+    res = PyPIXmlRpc().search({'name': name})
     return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in \
                             sorted(res, key=lambda i: i['_pypi_ordering'], reverse=True)) + '\n')
 
@@ -147,10 +148,10 @@ def download_func(args):
     name = args.packname
     dest = args.download_dir
     unpk = args.unpack
-    downloader = Downloader(Requirement(name), pref)
+    downloader = ReqManager(Requirement(name), pref)
     downloader.download(dest)
     if unpk:
-        path = os.path.abspath(downloader.name)
+        path = os.path.abspath(downloader.downloaded_name)
         logger.info('Unpacking {0} to {1}', path, os.getcwd())
         unpack(path)
 
