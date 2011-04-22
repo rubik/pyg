@@ -2,7 +2,7 @@ import pyg
 from setuptools import setup
 
 
-requires = ['setuptools', 'pkgtools (>= 0.3)', 'argh (>= 0.14)']
+requires = ['setuptools', 'pkgtools>=0.3', 'argh>=0.14']
 
 long_desc = '''Pyg
 ===
@@ -41,7 +41,7 @@ setup(name='pyg',
       platforms='any',
       packages=['pyg'],
       keywords=['python', 'easy_install', 'setuptools', 'package manager'],
-      requires=requires,
+      install_requires=requires,
       provides=['pyg'],
       entry_points={
         'console_scripts': [
