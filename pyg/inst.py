@@ -13,7 +13,7 @@ from pkgtools.pkg import WorkingSet, Installed, SDist
 from pyg.web import WebManager, ReqManager
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
-from pyg.utils import TempDir, File, ext, is_installed, unpack
+from pyg.utils import TempDir, File, name, ext, is_installed, unpack, glob
 from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
                     AlreadyInstalled, Dir, args_manager
 from pyg.parser.parser import init_parser
@@ -328,11 +328,20 @@ class Updater(object):
 
 
 class Bundler(object):
+
+    MANIFEST = '''# This is a Pyg bundle file, that contains many source packages
+# that can be installed as a group.  You can install this like:
+#     pyg this_file.pyb
+# The rest of the file contains a list of all the packages included:
+{0}
+'''
+
     def __init__(self, req, bundle_name):
         self.req = req
         if not bundle_name.endswith('.pybundle') and not bundle_name.endswith('.pyb'):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
+        self.bundled = [] # To keep track of the all bundled packages
 
     def _download(self, dir, req):
         '''
@@ -341,17 +350,31 @@ class Bundler(object):
 
         manager = ReqManager(req, ('.tar.gz', '.tar.bz2', '.zip'))
         manager.download(dir)
-        arch_name = os.path.join(dir, manager.downloaded_name)
+        d_name, version = manager.downloaded_name, manager.downloaded_version
+        arch_name = os.path.join(dir, d_name)
         unpack(arch_name)
+        self.bundled.append('{0}=={1}'.format(name(d_name).split('-')[0], version))
         return arch_name
+
+    def _clean(self, dir):
+        '''
+        Clean the `dir` directory: it removes all top-level files, leaving only sub-directories.
+        '''
+
+        logger.debug('bundle: cleaning build dir')
+        for file in (d for d in os.listdir(dir) if os.path.isfile(os.path.join(dir, d))):
+            logger.debug('removing: {0}', file)
+            os.remove(os.path.join(dir, file))
 
     def bundle(self):
         '''
         Create a bundle of the specified package:
 
             1. Download all required packages (included dependencies)
-            2. Collect the packages in a single zip file (bundle)
-            3. Move the bundle from the built dir to the destination
+            2. Clean the build directory
+            3. Collect the packages in a single zip file (bundle)
+            4. Add the manifest file
+            5. Move the bundle from the built dir to the destination
         '''
 
         def _add_to_archive(zfile, dir):
@@ -362,10 +385,13 @@ class Bundler(object):
                 elif os.path.isdir(path):
                     _add_to_archive(zfile, path)
 
-        import tempfile
-        tempdir = tempfile.mkdtemp(); print tempdir
-        if True:
-            ## Step 1: we recursively download all required packages
+        with TempDir() as tempdir:
+            ## Step 1: we create the `build` directory
+            #####
+            build = os.path.join(tempdir, 'build')
+            os.mkdir(build)
+
+            ## Step 2: we recursively download all required packages
             #####
             reqs = [self.req]
             already_downloaded = set()
@@ -375,7 +401,7 @@ class Bundler(object):
                 logger.info('{0}:', r)
                 logger.indent = 8
                 try:
-                    dist = SDist(self._download(tempdir, r))
+                    dist = SDist(self._download(build, r))
                 except ConfigParser.MissingSectionHeaderError:
                     continue
                 try:
@@ -395,19 +421,26 @@ class Bundler(object):
             logger.indent = 0
             logger.info('Finished processing dependencies')
 
-            ## Step 2: we collect the downloaded packages and bundle all together
+            ## Step 3: we remove all files in the build directory, so we make sure
+            ## that when we collect packages we collect only dirs
+            #####
+            self._clean(build)
+
+            ## Step 4: we collect the downloaded packages and bundle all together
             ## in a single file (zipped)
             #####
             logger.info('Adding packages to the bundle')
-            bundle = zipfile.ZipFile(os.path.join('.', self.bundle_name), mode='w')
-            for package in os.listdir(tempdir):
-                path = os.path.join(tempdir, package)
-                if os.path.isdir(path):
-                    _add_to_archive(bundle, path)
+            bundle = zipfile.ZipFile(os.path.join(tempdir, self.bundle_name), mode='w')
+            _add_to_archive(bundle, build)
+
+            ## Step 4: add the manifest file
+            logger.info('Adding the manifest file')
+            bundle.writestr('pip-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
             bundle.close()
 
             ## Last step: move the bundle to the current working directory
             dest = os.path.join(os.getcwd(), self.bundle_name)
             if os.path.exists(dest):
+                logger.debug('dest already exists: removing it')
                 os.remove(dest)
-            shutil.move(os.path.join(self.bundle_name), os.getcwd())
+            shutil.move(os.path.join(tempdir, self.bundle_name), os.getcwd())

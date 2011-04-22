@@ -10,7 +10,7 @@ from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.types import args_manager, PygError
-from pyg.inst import Installer, Uninstaller, Updater
+from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import WebManager, ReqManager
@@ -162,3 +162,7 @@ def update_func(args):
     logger.info('Loading list of installed packages...')
     up = Updater()
     up.update()
+
+def bundle_func(args):
+    b = Bundler(Requirement(args.packname), args.bundlename)
+    b.bundle()

@@ -75,6 +75,11 @@ def init_parser(version=None):
         from pyg.parser.shell import PygShell
         PygShell().cmdloop()
 
+    @ arg('bundlename', help='Name of the bundle to create')
+    @ arg('packname', help='Name of the package to bundle')
+    def bundle(args):
+        opts.bundle_func(args)
+
     parser.add_commands([install, uninstall, rm, freeze, link, unlink, list,
-                         search, check, download, update, shell])
+                         search, check, download, update, shell, bundle])
     return parser

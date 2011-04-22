@@ -87,6 +87,7 @@ class ReqManager(object):
                 logger.info('{0} downloaded successfully', self.name)
                 success = True
                 self.downloaded_name = name
+                self.downloaded_version = v
 
 
 class WebManager(object):
