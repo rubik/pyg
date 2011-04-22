@@ -9,25 +9,48 @@ from pyg.utils import FileMapper, ext, right_egg, version_egg
 from pyg.log import logger
 
 
-__all__ = ['WebManager', 'ReqManager', 'Json', 'PREFERENCES']
+__all__ = ['ReqManager', 'get_version', 'request', 'PREFERENCES']
 
 
 ## This constants holds files priority
 PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
 
 
+def get_versions(req):
+    _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
+    name = req.name
+    pypi = PyPIXmlRpc()
+    versions = map(Version, self.pypi.package_releases(self.name, True))
+
+    ## Slow way: we need to search versions by ourselves
+    if not versions:
+        _vre = re.compile(_versions_re.format(name), re.I)
+        data = request('http://pypi.python.org/simple/{0}'.format(name))
+        versions = map(Version, set(v.strip('.') for v in _vre.findall(data)))
+    return (v for v in versions if req.match(v))
+
+def highest_version(req):
+    return max(get_versions(req))
+
+def request(url):
+    r = urllib2.Request(url)
+    return urllib2.urlopen(r).read()
+
+
 class ReqManager(object):
     def __init__(self, req, pref=None):
         self.req = req
+        self.req.name = self.name = real_name(self.req.name)
         if self.req.op is None:
-            ## Use PyPI's Json interface
-            ## to get some more speed
-
-            self.package_manager = PyPIJson(self.req.name)
+            self.package_manager = PyPIJson(self.name)
+        elif self.req.op == '==': ## LOL
+            self.package_manager = PyPIJson(self.name, self.req.version)
         else:
-            self.package_manager = WebManager(self.req)
-        self.name = self.req.name
+            self.package_manager = PyPIJson(self.name, get_version(self.req))
 
+        self._set_prefs(pref)
+
+    def _set_prefs(self, pref):
         if pref is None:
             pref = PREFERENCES
         pref = list(pref)
@@ -67,7 +90,7 @@ class ReqManager(object):
                     logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
                     continue
                 try:
-                    data = WebManager.request(url)
+                    data = request(url)
                 except (urllib2.URLError, urllib2.HTTPError) as e:
                     logger.debug('urllib2 error: {0}', e.args)
                     continue
@@ -88,60 +111,6 @@ class ReqManager(object):
                 success = True
                 self.downloaded_name = name
                 self.downloaded_version = v
-
-
-class WebManager(object):
-
-    _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
-
-    def __init__(self, req):
-        self.pypi = PyPIXmlRpc(index_url=args_manager['index_url'])
-        self.req = req
-        try:
-            self.name = real_name(self.req.name)
-        except urllib2.HTTPError as e:
-            logger.error(e.msg, exc=PygError)
-
-        ## So the req can know the real name of the package
-        self.req.name = self.name
-
-        ## Try to use PyPI's XML-RPC API
-        self.versions = map(Version, self.pypi.package_releases(self.name, True))
-
-        ## Slow way: we need to search versions by ourselves
-        if not self.versions:
-            self.versions = WebManager.versions_from_html(self.name)
-        self.versions = sorted((v for v in self.versions if self.req.match(v)), reverse=True)
-
-    @ staticmethod
-    def request(url):
-        r = urllib2.Request(url)
-        return urllib2.urlopen(r).read()
-
-    @ staticmethod
-    def versions_from_html(name):
-        _vre = re.compile(WebManager._versions_re.format(name), re.I)
-        data = WebManager.request('http://pypi.python.org/simple/{0}'.format(name))
-        return map(Version, set(v.strip('.') for v in _vre.findall(data)))
-
-    def find(self):
-        version = max(self.versions)
-        for res in self.pypi.release_urls(self.name, str(version)):
-            yield version, res['filename'], res['md5_digest'], res['url']
-
-
-class Json(object):
-    def __init__(self):
-        self.cache = {}
-
-    def json(self, package_name, fast=False):
-        if package_name in self.cache:
-            return self.cache[package_name]
-        pypi = PyPIJson(package_name, fast)
-        data = pypi.retrieve()
-        self.cache[package_name] = data
-        self.package_name = pypi.package_name
-        return data
 
 
 ## OLD! We are using xmlrpclib to communicate with pypi.

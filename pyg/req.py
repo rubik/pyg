@@ -4,10 +4,12 @@ import cStringIO
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg
-from pyg.web import WebManager, ReqManager, Json
+from pyg.web import ReqManager
 from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
 from pyg.log import logger
 
+
+__all__ = ['Requirement']
 
 
 class Requirement(object):
@@ -24,7 +26,6 @@ class Requirement(object):
     def __init__(self, req):
         self.req = req
         self.reqset = ReqSet()
-        self.pypi_json = Json()
         self.split()
 
     def __repr__(self):
@@ -73,10 +74,10 @@ class Requirement(object):
 
     def _download_and_install(self, url, hash, filename, packname):
         logger.info('Downloading {0}', self.name)
-        fobj = cStringIO.StringIO(WebManager.request(url))
+        fobj = cStringIO.StringIO(request(url))
         logger.info('Checking md5 sum')
         if md5(fobj.getvalue()).hexdigest() != hash:
-            logger.fatal('E: {0} appears to be corrupted', self.name)
+            logger.fatal('Error: {0} appears to be corrupted', self.name)
             return
         e = ext(filename)
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
@@ -105,4 +106,4 @@ class Requirement(object):
             if success:
                 break
         if not success:
-            raise InstallationError
+            raise InstallationError('Error: Did not find files on PyPI for {0}'.format(self.name))

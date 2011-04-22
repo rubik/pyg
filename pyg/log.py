@@ -2,6 +2,9 @@ import sys
 import logging
 
 
+__all__ = ['logger']
+
+
 class Logger(object):
 
     VERBOSE = logging.DEBUG - 1

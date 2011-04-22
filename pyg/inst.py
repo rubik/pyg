@@ -10,14 +10,14 @@ import pkg_resources
 
 from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import WorkingSet, Installed, SDist
-from pyg.web import WebManager, ReqManager
+
+from pyg.types import *
+from pyg.web import ReqManager
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
 from pyg.utils import TempDir, File, name, ext, is_installed, unpack, glob
-from pyg.types import Version, Archive, Egg, Bundle, ReqSet, PygError, InstallationError, \
-                    AlreadyInstalled, Dir, args_manager
-from pyg.parser.parser import init_parser
 from pyg.log import logger
+from pyg.parser.parser import init_parser
 
 
 __all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
@@ -59,7 +59,7 @@ class Installer(object):
         except AlreadyInstalled:
             logger.info('{0} is already installed', r.name)
         except InstallationError as e:
-            logger.error('E: {0}', e, exc=InstallationError)
+            logger.error(e.args[0], exc=InstallationError)
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
@@ -116,7 +116,7 @@ class Installer(object):
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         else:
-            logger.fatal('E: Cannot install {0}', packname)
+            logger.fatal('Error: Cannot install {0}', packname)
             raise InstallationError
         installer.install()
         Installer._install_deps(reqset, packname)
@@ -131,7 +131,7 @@ class Installer(object):
                 logger.info('Installing {0}', name)
                 Dir(path, name, tempdir, reqset).install()
         except Exception as e:
-            logger.fatal('E: {0}: cannot install the package', e, exc=InstallationError)
+            logger.fatal('Error: {0}: cannot install the package', e, exc=InstallationError)
         else:
             if reqset:
                 Installer._install_deps(reqset)
@@ -144,7 +144,7 @@ class Installer(object):
             path = os.path.join(t, packname)
             logger.info('Installing {0}', packname)
             with open(path, 'w') as f:
-                f.write(WebManager.request(url))
+                f.write(request(url))
             Installer.from_file(path)
 
 
@@ -235,7 +235,7 @@ class Uninstaller(object):
                         try:
                             os.remove(d)
                         except OSError:
-                            logger.error('E: Cannot delete: {0}', d)
+                            logger.error('Error: Cannot delete: {0}', d)
                     logger.info('Deleting: {0}', d)
                 logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
@@ -293,11 +293,11 @@ class Updater(object):
                 Installer.from_url(release['url'])
                 break
             except Exception as e:
-                logger.error('E: An error occurred while installing {0}: {1}', package_name, e)
+                logger.error('Error: An error occurred while installing {0}: {1}', package_name, e)
                 logger.info('Trying another file...')
                 logger.indent -= 4
         else:
-            logger.fatal('E: Did not find any release on PyPI for {0}', package_name)
+            logger.fatal('Error: Did not find any release on PyPI for {0}', package_name)
         logger.indent = 0
 
     def update(self):
@@ -317,7 +317,7 @@ class Updater(object):
                 json = PyPIJson(package).retrieve()
                 new_version = Version(json['info']['version'])
             except Exception as e:
-                logger.error('E: Failed to fetch data for {0}', package, exc=PygError)
+                logger.error('Error: Failed to fetch data for {0}', package, exc=PygError)
             if Version(dist.version) >= new_version:
                 continue
 

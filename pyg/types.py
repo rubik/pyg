@@ -12,6 +12,10 @@ from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, gl
 from pyg.log import logger
 
 
+__all__ = ['PygError', 'InstallationError', 'AlreadyInstalled', 'Version', 'ReqSet',
+           'Egg', 'Archive', 'Dir', 'Bundle', 'args_manager']
+
+
 ## A generic error thrown by Pyg
 class PygError(Exception):
     pass

@@ -9,9 +9,9 @@ def vcs(url, dest=None):
         if url.startswith(scheme):
            break
     else:
-        logger.fatal('E: URL should start with one of these schemes:\n{0}', schemes, exc=ValueError)
+        logger.fatal('Error: URL should start with one of these schemes:\n{0}', schemes, exc=ValueError)
     if not '#egg=' in url:
-        logger.fatal('E: URL should contain `#egg=PACKAGE`', exc=ValueError)
+        logger.fatal('Error: URL should contain `#egg=PACKAGE`', exc=ValueError)
 
     MAP = {
         'git': Git,

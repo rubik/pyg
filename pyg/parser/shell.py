@@ -8,6 +8,9 @@ from pyg.parser.parser import init_parser
 from pyg.types import PygError, InstallationError, AlreadyInstalled
 
 
+__all__ = ['PygShell']
+
+
 SUPPORTED_COMMANDS = ['install', 'uninstall', 'rm', 'list', 'freeze', 'link',
                       'unlink', 'search', 'download', 'check', 'update']
 ADDITIONAL_COMMANDS = ['cd', 'pwd', 'ls']

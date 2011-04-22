@@ -1,3 +1,10 @@
+'''
+This module contains the command-line parser. All imports are inside the function
+because we don't want to execute code before the parser is created and when Pyg is
+used as a library.
+'''
+
+
 def init_parser(version=None):
     import _opts as opts
     from pyg.locations import INSTALL_DIR as _loc_install_dir

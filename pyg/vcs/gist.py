@@ -9,7 +9,7 @@ except ImportError:
 
 from pyg.inst import Installer
 from pyg.utils import TempDir, name
-from pyg.web import WebManager
+from pyg.web import request
 from pyg.log import logger
 
 
@@ -36,7 +36,7 @@ class Gist(object):
         if self._data is not None:
             return self._data
         url = 'https://gist.github.com/api/v1/json/{0}'.format(self.gist_id)
-        self._data = json.loads(WebManager.request(url))
+        self._data = json.loads(request(url))
         return self._data
 
     @ property
@@ -48,7 +48,7 @@ class Gist(object):
 
     def get_file_content(self, filename):
         url = 'https://gist.github.com/raw/{0}/{1}'.format(self.gist_id, filename)
-        return WebManager.request(url)
+        return request(url)
 
     def download(self, dest, accumulator):
         logger.info('Retrieving file names')

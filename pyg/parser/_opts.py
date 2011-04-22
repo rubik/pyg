@@ -13,7 +13,7 @@ from pyg.types import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
-from pyg.web import WebManager, ReqManager
+from pyg.web import ReqManager
 
 
 def check_permissions():
@@ -110,7 +110,11 @@ def link_func(path):
 
 def unlink_func(args):
     if args.all:
-        return os.remove(PYG_LINKS)
+        try:
+            os.remove(PYG_LINKS)
+        except OSError:
+            pass
+        return
     return unlink(args.path)
 
 def check_func(name):

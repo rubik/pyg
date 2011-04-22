@@ -77,15 +77,15 @@ class VCS(object):
                     args = ARGS + args
                 logger.info('Copying data from {0} to {1}', self.url, self.dest)
                 if call_subprocess([self.cmd, self.method] + args, sys.stdout, sys.stderr) != 0:
-                    logger.fatal('E: Cannot retrieve data', exc=InstallationError)
+                    logger.fatal('Error: Cannot retrieve data', exc=InstallationError)
 
     def develop(self):
         self.retrieve_data()
         if not os.path.exists(os.path.join(self.dir, 'setup.py')):
-            logger.fatal('E: The repository must have a top-level setup.py file', exc=InstallationError)
+            logger.fatal('Error: The repository must have a top-level setup.py file', exc=InstallationError)
         logger.info('Running setup.py develop for {0}', self.package_name)
         if call_setup(self.dir, ['develop']) != 0:
-            logger.fatal('E: setup.py did not install {0}', self.package_name, exc=InstallationError)
+            logger.fatal('Error: setup.py did not install {0}', self.package_name, exc=InstallationError)
         logger.info('{0} installed succesfully', self.package_name)
 
     def install(self):
