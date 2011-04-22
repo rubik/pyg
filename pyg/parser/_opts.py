@@ -152,7 +152,7 @@ def download_func(args):
     downloader.download(dest)
     if unpk:
         path = os.path.abspath(downloader.downloaded_name)
-        logger.info('Unpacking {0} to {1}', path, os.getcwd())
+        logger.info('Unpacking {0} to {1}', os.path.basename(path), os.getcwd())
         unpack(path)
 
 def update_func(args):

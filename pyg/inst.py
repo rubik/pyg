@@ -274,6 +274,10 @@ class Updater(object):
         logger.debug('Error while importing {0}', pkgname)
 
     def upgrade(self, package_name, json, version):
+        '''
+        Upgrade a package to the most recent version.
+        '''
+
         ## FIXME: Do we have to remove the package old version?
         #logger.info('Removing {0} old version', package_name)
         #logger.indent += 8
@@ -297,6 +301,11 @@ class Updater(object):
         logger.indent = 0
 
     def update(self):
+        '''
+        Searches for updates for every package in the WorkingSet.
+        Then calls :meth:`~pyg.inst.Updater.upgrade`.
+        '''
+
         logger.info('Searching for updates')
         if PACKAGES_CACHE:
             with open(PACKAGES_CACHE, 'w') as f:
@@ -331,7 +340,7 @@ class Bundler(object):
 
     MANIFEST = '''# This is a Pyg bundle file, that contains many source packages
 # that can be installed as a group.  You can install this like:
-#     pyg this_file.pyb
+#     pyg install this_file.pyb
 # The rest of the file contains a list of all the packages included:
 {0}
 '''

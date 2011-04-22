@@ -273,16 +273,14 @@ If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` 
 
 When you link a directory Pyg add in a :file:`.pth` file the dir's path.
 
-TODO: ADD EXAMPLE
-
 
 Unlinking
 ---------
 
+.. program:: unlink
+
 If you want to remove a directory from :envvar:`PYTHONPATH` you can use the ``unlink`` command.
 Pyg can remove a directory from :envvar:`PYTHONPATH` only if that directory has been added previously.
-
-.. program:: unlink
 
 .. option:: -a, --all
 
@@ -395,6 +393,8 @@ If the requirement is not satisfied Pyg won't download anything::
         Writing data into pyg-0.1-py2.7.egg
         pyg downloaded successfully
 
+
+.. _upd:
 
 Upgrading installed packages
 ----------------------------
