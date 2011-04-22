@@ -3,14 +3,14 @@ Pyg's features
 
 Pyg can:
 
-    * install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundles`
-    * uninstall packages
-    * define fixed sets of requirement
-    * perform searches on PyPI
+    * Install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundle`s.
+    * Uninstall packages.
+    * Define fixed sets of requirement.
+    * Perform searches on PyPI.
 
 Currently Pyg cannot:
-    * install from binaries (e.g. from :file:`.exe` or :file:`.msi`)
-    * install packages in editable mode from VCS (Git, Mercurial, Bazaar, Svn)
+    * Install from binaries (e.g. from :file:`.exe` or :file:`.msi`).
+    * Install packages in editable mode from VCS (Git, Mercurial, Bazaar, Svn).
 
 
 Pyg compared to easy_install
