@@ -1,11 +1,12 @@
 import re
 import os
 import urllib2
+import HTMLParser
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.types import PygError, Version, args_manager
-from pyg.utils import FileMapper, ext, right_egg, version_egg
+from pyg.utils import FileMapper, name_ext, ext, right_egg, version_egg
 from pyg.log import logger
 
 
@@ -119,10 +120,24 @@ class LinkFinder(object):
 
     INDEX = 'http://pypi.python.org/'
     FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
-    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+)(?P<name>[^\<]+)</a><br/>'
+    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.-]+)(?P<name>[^\<]+)</a><br/>'
 
     def __init__(self, package_name):
         self.package_name = package_name
+
+    def _check_link(self, link, version):
+        '''
+        Check whether the link is good or not. The link must satisfy the following conditions:
+
+            * It have to end with a right extension (.tar.gz, .tar.bz2, .zip, or .egg).
+            * It have to be the newest (i.e. the version must be the one specified).
+        '''
+
+        base = link.split('/')[-1]
+        n, e = name_ext(base)
+        if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+            return False
+        return Version('-'.join(n.split('-')[1:])) == version
 
     def find_best_link(self):
         data = request('{0}/{1}/{2}'.format(self.INDEX, 'simple', self.package_name))
@@ -136,10 +151,35 @@ class LinkFinder(object):
         return v, d[v]
 
     def find_files(self, url, version):
-        data = request(url)
-        r = re.compile(self.FILE.format(self.package_name, version))
-        return (l for _, l in r.findall(data))
+        ## This is horrible, but it's the only solution:
+        ## we have to parse the page and then find all links
+        links = set()
+        PygHtmlParser(url, links)
+        return (l for l in links if self._check_link(l, version))
 
     def find(self):
         version, link = self.find_best_link()
         return self.find_files(link, version)
+
+
+class PygHtmlParser(HTMLParser.HTMLParser):
+    def __init__(self, url, stack):
+        HTMLParser.HTMLParser.__init__(self)
+        self.url = url + '/'[:not url.endswith('/')]
+        self.stack = stack ## stack must be a set object
+        self.feed(request(url))
+        logger.info('Reading: {0}', self.url)
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a' and attrs:
+            attrs = dict(attrs)
+            try:
+                h = attrs['href']
+                ## It's relative
+                if not h.startswith('http'):
+                    if h.startswith('/'):
+                        h = h[1:]
+                    h = self.url + h
+                self.stack.add(h)
+            except KeyError:
+                pass

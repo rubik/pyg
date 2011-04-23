@@ -88,10 +88,11 @@ class Requirement(object):
 
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
+        self.success = True
 
     def install(self):
         p = ReqManager(self)
-        success = False
+        self.success = False
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             for v, name, hash, url in p.files()[pext]:
                 if pext == '.egg' and not right_egg(name):
@@ -102,11 +103,10 @@ class Requirement(object):
                 self._download_and_install(url, name, p.name, hash)
                 if not self.version:
                     self.version = v
-                success = True
                 break
-            if success:
+            if self.success:
                 break
-        if not success:
+        if not self.success:
             logger.warn('Warning: did not find files on PyPI for {0}', self.name)
             logger.info('Looking for links on PyPI')
             link_finder = LinkFinder(self.name)
@@ -115,3 +115,5 @@ class Requirement(object):
                 logger.info('Found: {0}', filename)
                 self._download_and_install(url, filename, self.name)
                 break
+            if not self.success:
+                raise InstallationError('Fatal: cannot install {0}'.format(self.name))

@@ -3,7 +3,7 @@ Pyg's features
 
 Pyg can:
 
-    * Install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundle`s.
+    * Install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundle` files.
     * Uninstall packages.
     * Define fixed sets of requirement.
     * Perform searches on PyPI.

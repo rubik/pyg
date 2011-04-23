@@ -93,7 +93,7 @@ def glob(dir, pattern):
     with ChDir(dir):
         return glob_mod.glob(pattern)
 
-def dir_ext(path):
+def name_ext(path):
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e
@@ -101,10 +101,10 @@ def dir_ext(path):
     return p, e
 
 def name(path):
-    return dir_ext(path)[0]
+    return name_ext(path)[0]
 
 def ext(path):
-    return dir_ext(path)[1]
+    return name_ext(path)[1]
 
 def unpack(path):
     path = os.path.abspath(path)
