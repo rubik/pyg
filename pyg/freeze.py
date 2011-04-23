@@ -1,6 +1,7 @@
 import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
+from pyg.req import Requirement
 from pyg.web import get_versions
 from pyg.utils import is_installed
 
@@ -18,6 +19,7 @@ def list_releases(name):
     name = name[:-1] + '_' if name.endswith('-') else name
     res = []
     for v in get_versions(Requirement(name)):
+        v = str(v)
         if is_installed('{0}=={1}'.format(name, v)):
             res.append((v, True))
         else:

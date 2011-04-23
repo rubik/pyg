@@ -20,7 +20,7 @@ def get_versions(req):
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
     name = req.name
     pypi = PyPIXmlRpc()
-    versions = map(Version, self.pypi.package_releases(self.name, True))
+    versions = map(Version, pypi.package_releases(name, True))
 
     ## Slow way: we need to search versions by ourselves
     if not versions:
@@ -46,7 +46,7 @@ class ReqManager(object):
         elif self.req.op == '==': ## LOL
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
-            self.package_manager = PyPIJson(self.name, get_version(self.req))
+            self.package_manager = PyPIJson(self.name, highest_version(self.req))
 
         self._set_prefs(pref)
 

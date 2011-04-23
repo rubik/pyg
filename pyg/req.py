@@ -4,7 +4,7 @@ import cStringIO
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg
-from pyg.web import ReqManager
+from pyg.web import ReqManager, request
 from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
 from pyg.log import logger
 
