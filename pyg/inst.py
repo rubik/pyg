@@ -444,7 +444,7 @@ class Bundler(object):
 
             ## Step 4: add the manifest file
             logger.info('Adding the manifest file')
-            bundle.writestr('pip-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
+            bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
             bundle.close()
 
             ## Last step: move the bundle to the current working directory
