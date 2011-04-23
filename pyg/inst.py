@@ -31,6 +31,10 @@ class Installer(object):
                 raise AlreadyInstalled
             else:
                 logger.info('{0} is already installed, upgrading...', req)
+
+                ## Without this hack this would propagate
+                ## to package's dependencies
+                args_manager['upgrade'] = False
         self.req = req
 
     @ staticmethod
@@ -41,6 +45,7 @@ class Installer(object):
             logger.info('Skipping dependencies for {0}', name)
             return
         logger.info('Installing dependencies...')
+        print rs.reqs
         for req in rs:
             logger.indent = 0
             logger.info('Installing {0}', req)
@@ -48,6 +53,9 @@ class Installer(object):
             try:
                 Installer(req).install()
             except AlreadyInstalled:
+                continue
+            except InstallationError:
+                logger.warn('Error: {0} has not been installed correctlry', req)
                 continue
         logger.indent = 0
         logger.info('Finished installing dependencies')

@@ -113,10 +113,33 @@ class ReqManager(object):
                 self.downloaded_version = v
 
 
-## OLD! We are using xmlrpclib to communicate with pypi.
+## OLD! We are using Json to interoperate with pypi.
 ## Maybe we can use it in the future.
 class LinkFinder(object):
 
-    base_url = 'http://pypi.python.org/simple/'
-    file_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)">(?P<name>[^\<]+)</a><br/>')
-    link_regex = re.compile(r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<name>[^\<]+)</a><br/>')
+    INDEX = 'http://pypi.python.org/'
+    FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
+    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+)(?P<name>[^\<]+)</a><br/>'
+
+    def __init__(self, package_name):
+        self.package_name = package_name
+
+    def find_best_link(self):
+        data = request('{0}/{1}/{2}'.format(self.INDEX, 'simple', self.package_name))
+        d = {}
+        for href, rel, version, name in re.compile(self.LINK).findall(data):
+            if rel == 'download':
+                d[Version(version)] = href
+
+        ## Find highest version and returns its link
+        v = max(d)
+        return v, d[v]
+
+    def find_files(self, url, version):
+        data = request(url)
+        r = re.compile(self.FILE.format(self.package_name, version))
+        return (l for _, l in r.findall(data))
+
+    def find(self):
+        version, link = self.find_best_link()
+        return self.find_files(link, version)

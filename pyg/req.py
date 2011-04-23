@@ -4,7 +4,7 @@ import cStringIO
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg
-from pyg.web import ReqManager, request
+from pyg.web import ReqManager, LinkFinder, request
 from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
 from pyg.log import logger
 
@@ -72,13 +72,14 @@ class Requirement(object):
     #    ## The highest version possible
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
-    def _download_and_install(self, url, hash, filename, packname):
+    def _download_and_install(self, url, filename, packname, hash=None):
         logger.info('Downloading {0}', self.name)
         fobj = cStringIO.StringIO(request(url))
-        logger.info('Checking md5 sum')
-        if md5(fobj.getvalue()).hexdigest() != hash:
-            logger.fatal('Error: {0} appears to be corrupted', self.name)
-            return
+        if hash is not None:
+            logger.info('Checking md5 sum')
+            if md5(fobj.getvalue()).hexdigest() != hash:
+                logger.fatal('Error: {0} appears to be corrupted', self.name)
+                return
         e = ext(filename)
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(fobj, e, packname, self.reqset)
@@ -98,7 +99,7 @@ class Requirement(object):
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
                     continue
                 logger.info('Best match: {0}=={1}', self.name, v)
-                self._download_and_install(url, hash, name, p.name)
+                self._download_and_install(url, name, p.name, hash)
                 if not self.version:
                     self.version = v
                 success = True
@@ -106,4 +107,11 @@ class Requirement(object):
             if success:
                 break
         if not success:
-            raise InstallationError('Error: Did not find files on PyPI for {0}'.format(self.name))
+            logger.warn('Warning: did not find files on PyPI for {0}', self.name)
+            logger.info('Looking for links on PyPI')
+            link_finder = LinkFinder(self.name)
+            for url in link_finder.find():
+                filename = url.split('/')[-1]
+                logger.info('Found: {0}', filename)
+                self._download_and_install(url, filename, self.name)
+                break
