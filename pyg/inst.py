@@ -27,14 +27,12 @@ class Installer(object):
     def __init__(self, req):
         if is_installed(req):
             if not args_manager['upgrade']:
-                logger.info('{0} is already installed', req)
-                raise AlreadyInstalled
-            else:
-                logger.info('{0} is already installed, upgrading...', req)
+                    logger.info('{0} is already installed', req)
+                    raise AlreadyInstalled
+            ## We don't set args_manager['upgrade'] = False
+            ## because we want to propagate this to dependencies
+            logger.info('{0} is already installed, upgrading...', req)
 
-                ## Without this hack this would propagate
-                ## to package's dependencies
-                args_manager['upgrade'] = False
         self.req = req
 
     @ staticmethod
@@ -45,7 +43,6 @@ class Installer(object):
             logger.info('Skipping dependencies for {0}', name)
             return
         logger.info('Installing dependencies...')
-        print rs.reqs
         for req in rs:
             logger.indent = 0
             logger.info('Installing {0}', req)
@@ -79,15 +76,16 @@ class Installer(object):
         not_installed = set()
         parser = init_parser()
         with open(path) as f:
+            logger.info('{0}:', path)
             for line in f:
                 line = line.strip()
                 if line.startswith('#'):
                     logger.debug('Comment found: {0}', line)
                     continue
                 try:
-                    logger.indent = 0
-                    logger.info('Installing: {0}', line)
                     logger.indent = 8
+                    logger.info('Installing: {0}', line)
+                    logger.indent = 16
                     parser.dispatch(argv=['install'] + line.split())
                 except AlreadyInstalled:
                     continue

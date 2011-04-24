@@ -49,8 +49,24 @@ or
     http://pyg-installer.co.nr
 '''.format(__import__('pyg').locations.INSTALL_DIR))
 
-def install_from_name(name):
-    return Installer(name).install()
+def _install_package_from_name(package):
+    if os.path.exists(package):
+        path = os.path.abspath(package)
+        if os.path.isfile(path):
+            return Installer.from_file(path)
+        elif os.path.isdir(path):
+            if not os.path.exists(os.path.join(path, 'setup.py')):
+                raise PygError('{0} must contain the setup.py file', path)
+            return Installer.from_dir(path)
+        else:
+            raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
+    if package.startswith('http'):
+        return Installer.from_url(package)
+    for s in ('git+', 'hg+', 'bzr+', 'svn+'):
+        if package.startswith(s):
+            with TempDir() as tempdir:
+                return vcs(package, tempdir).install()
+    return Installer(package).install()
 
 def install_func(args):
     check_and_exit()
@@ -70,24 +86,13 @@ def install_func(args):
     if args.editable:
         return vcs(args.packname).develop()
     if args.req_file:
-        return Installer.from_req_file(os.path.abspath(args.packname))
-    if os.path.exists(args.packname):
-        path = os.path.abspath(args.packname)
-        if os.path.isfile(path):
-            return Installer.from_file(path)
-        elif os.path.isdir(path):
-            if not os.path.exists(os.path.join(path, 'setup.py')):
-                raise PygError('{0} must contain the setup.py file', path)
-            return Installer.from_dir(path)
-        else:
-            raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
-    if args.packname.startswith('http'):
-        return Installer.from_url(args.packname)
-    for s in ('git+', 'hg+', 'bzr+', 'svn+'):
-        if args.packname.startswith(s):
-            with TempDir() as tempdir:
-                return vcs(args.packname, tempdir).install()
-    return install_from_name(args.packname)
+        logger.info('Installing from requirements file')
+        for req_file in args.req_file:
+            Installer.from_req_file(os.path.abspath(req_file))
+        return
+    if args.packname:
+        for package in args.packname:
+            _install_package_from_name(package)
 
 def uninst_func(args):
     check_and_exit()

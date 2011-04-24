@@ -126,9 +126,12 @@ class Requirement(object):
             try:
                 link_finder = LinkFinder(self.name)
                 links = link_finder.find()
+                if not links:
+                    raise InstallationError('Error: did not find any files')
             except Exception as e:
                 raise InstallationError(str(e))
-            for url in link_finder.find():
+            logger.indent = 8
+            for url in links:
                 filename = url.split('/')[-1]
                 logger.info('Found: {0}', filename)
                 try:
@@ -137,5 +140,6 @@ class Requirement(object):
                     logger.error('Error: {0}', e)
                     continue
                 break
+            logger.indent = 0
             if not self.success:
                 raise InstallationError('Fatal: cannot install {0}'.format(self.name))
