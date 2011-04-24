@@ -6,7 +6,7 @@ import HTMLParser
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.types import PygError, Version, args_manager
-from pyg.utils import FileMapper, name_ext, ext, right_egg, version_egg
+from pyg.utils import FileMapper, name_ext, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 
@@ -15,6 +15,8 @@ __all__ = ['ReqManager', 'get_version', 'request', 'PREFERENCES']
 
 ## This constants holds files priority
 PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
+if is_windows():
+    PREFERENCES = ('.exe', '.msi') + PREFERENCES
 
 
 def get_versions(req):
@@ -55,7 +57,7 @@ class ReqManager(object):
         if pref is None:
             pref = PREFERENCES
         pref = list(pref)
-        if len(pref) < 4:
+        if len(pref) < len(PREFERENCES):
             for p in PREFERENCES:
                 if p not in pref:
                     pref.append(p)

@@ -1,15 +1,19 @@
 import operator
+import platform
 import cStringIO
 
 from hashlib import md5
 
-from pyg.utils import PYTHON_VERSION, ext, right_egg
+from pyg.utils import PYTHON_VERSION, ext, right_egg, is_windows
 from pyg.web import ReqManager, LinkFinder, request
-from pyg.types import Version, Egg, Archive, ReqSet, InstallationError
+from pyg.types import Version, Egg, Archive, Binary, ReqSet, InstallationError
 from pyg.log import logger
 
 
-__all__ = ['Requirement']
+__all__ = ['Requirement', 'WINDOWS_EXT']
+
+
+WINDOWS_EXT = ('.exe', '.msi') if platform.system() == 'Windows' else ()
 
 
 class Requirement(object):
@@ -86,7 +90,11 @@ class Requirement(object):
         elif e == '.egg':
             installer = Egg(fobj, filename, self.reqset, packname)
         else:
-            logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
+            if is_windows():
+                if e in WINDOWS_EXT:
+                    installer = Binary(fobj, e, packname)
+                else:
+                    logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
 
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
@@ -100,7 +108,7 @@ class Requirement(object):
             for v, name, hash, url in p.files()[pext]:
                 if pext == '.egg' and not right_egg(name):
                     continue
-                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
                     continue
                 logger.info('Best match: {0}=={1}', self.name, v)
                 try:

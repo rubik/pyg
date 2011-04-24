@@ -4,6 +4,7 @@ import sys
 import shutil
 import zipfile
 import tarfile
+import platform
 import tempfile
 import subprocess
 import collections
@@ -24,6 +25,9 @@ def is_installed(req):
         return False
     else:
         return True
+
+def is_windows():
+    return platform.system() == 'Windows'
 
 def name_from_egg(eggname):
     egg = re.compile(r'([\w\d_]+)-.+')

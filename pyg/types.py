@@ -13,7 +13,7 @@ from pyg.log import logger
 
 
 __all__ = ['PygError', 'InstallationError', 'AlreadyInstalled', 'Version', 'ReqSet',
-           'Egg', 'Archive', 'Dir', 'Bundle', 'args_manager']
+           'Egg', 'Archive', 'Dir', 'Bundle', 'Binary', 'args_manager']
 
 
 ## A generic error thrown by Pyg
@@ -248,6 +248,22 @@ class Bundle(object):
                 fullpath = os.path.join(location, f)
                 Dir(fullpath, f, tempdir).install()
             logger.info('Bundle installed successfully')
+
+
+class Binary(object):
+    def __init__(self, fobj, e, packname):
+        self.fobj = fobj
+        self.ext = e
+        self.name = packname
+
+    def install(self):
+        with TempDir() as tempdir:
+            filename = 'pyg-installer' + self.ext
+            installer = os.path.join(tempdir, filename)
+            with open(installer, 'w') as i:
+                i.write(self.fobj.getvalue())
+            with ChDir(tempdir):
+                call_subprocess(['./' + filename])
 
 
 class ArgsManager(object):
