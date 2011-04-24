@@ -85,12 +85,15 @@ class Requirement(object):
             installer = Archive(fobj, e, packname, self.reqset)
         elif e == '.egg':
             installer = Egg(fobj, filename, self.reqset, packname)
+        else:
+            logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
 
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
         self.success = True
 
     def install(self):
+        logger.info('Looking for {0} releases on PyPI', self.name)
         p = ReqManager(self)
         self.success = False
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
@@ -100,7 +103,10 @@ class Requirement(object):
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
                     continue
                 logger.info('Best match: {0}=={1}', self.name, v)
-                self._download_and_install(url, name, p.name, hash)
+                try:
+                    self._download_and_install(url, name, p.name, hash)
+                except InstallationError:
+                    continue
                 if not self.version:
                     self.version = v
                 break
@@ -109,11 +115,19 @@ class Requirement(object):
         if not self.success:
             logger.warn('Warning: did not find files on PyPI for {0}', self.name)
             logger.info('Looking for links on PyPI')
-            link_finder = LinkFinder(self.name)
+            try:
+                link_finder = LinkFinder(self.name)
+                links = link_finder.find()
+            except Exception as e:
+                raise InstallationError(str(e))
             for url in link_finder.find():
                 filename = url.split('/')[-1]
                 logger.info('Found: {0}', filename)
-                self._download_and_install(url, filename, self.name)
+                try:
+                    self._download_and_install(url, filename, self.name)
+                except Exception as e:
+                    logger.error('Error: {0}', e)
+                    continue
                 break
             if not self.success:
                 raise InstallationError('Fatal: cannot install {0}'.format(self.name))

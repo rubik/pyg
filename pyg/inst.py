@@ -124,8 +124,7 @@ class Installer(object):
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         else:
-            logger.fatal('Error: Cannot install {0}', packname)
-            raise InstallationError
+            logger.fatal('Error: Cannot install {0}', packname, exc=InstallationError)
         installer.install()
         Installer._install_deps(reqset, packname)
         logger.info('{0} installed successfully', packname)
