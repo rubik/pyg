@@ -2,8 +2,8 @@ import re
 import os
 import sys
 import shutil
-import zipfile
 import tarfile
+import zipfile
 import platform
 import tempfile
 import subprocess
@@ -83,14 +83,15 @@ def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code]
     with ChDir(path):
-        stdout = open('pyg-proc-stdout', 'w')
-        stderr = open('pyg-proc-stderr', 'w')
+        with TempDir() as tempdir:
+            stdout = open(os.path.join(tempdir, 'pyg-proc-stdout'), 'w')
+            stderr = open(os.path.join(tempdir, 'pyg-proc-stderr'), 'w')
         return call_subprocess(args + a, stdout=stdout, stderr=stderr)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
     if call_setup(path, global_args + ['install', '--single-version-externally-managed',
-                                       '--record', '.pyg-install-record'] + args):
+                                       '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args):
         logger.fatal('setup.py did not install {0}', name, exc=exc)
 
 def glob(dir, pattern):
