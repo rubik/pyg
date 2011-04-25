@@ -71,18 +71,18 @@ def _install_package_from_name(package):
 def install_func(args):
     check_and_exit()
     if args.no_deps:
-        args_manager['deps'] = False
+        args_manager['install']['no_deps'] = True
     if args.upgrade:
-        args_manager['upgrade'] = True
+        args_manager['install']['upgrade'] = True
     if args.no_scripts:
-        args_manager['scripts'] = False
+        args_manager['install']['no_scripts'] = True
     if args.no_data:
-        args_manager['data'] = False
+        args_manager['install']['no_data'] = True
     if args.user:
-        args_manager['install_dir'] = USER_SITE
+        args_manager['install']['install_dir'] = USER_SITE
     if args.install_dir != INSTALL_DIR:
-        args_manager['install_dir'] = args.install_dir
-    args_manager['index_url'] = args.index_url
+        args_manager['install']['install_dir'] = args.install_dir
+    args_manager['install']['index_url'] = args.index_url
     if args.editable:
         return vcs(args.packname).develop()
     if args.req_file:
@@ -96,7 +96,7 @@ def install_func(args):
 
 def uninst_func(args):
     check_and_exit()
-    yes = True if args.yes else False
+    yes = True if args.yes or (args_manager['uninstall']['yes'] or args_manager['rm']['yes']) else False
     if args.req_file:
         with open(os.path.abspath(args.req_file)) as f:
             for line in f:
@@ -114,7 +114,7 @@ def link_func(path):
     return link(path)
 
 def unlink_func(args):
-    if args.all:
+    if args.all or args_manager['unlink']['all']:
         try:
             os.remove(PYG_LINKS)
         except OSError:
@@ -127,12 +127,13 @@ def check_func(name):
 
 def freeze_func(args):
     f = freeze()
-    if args.count:
+    if args.count or args_manager['freeze']['count']:
         sys.stdout.write(str(len(freeze())) + '\n')
         return
     f = '\n'.join(f) + '\n'
-    if args.file:
-        with open(os.path.abspath(args.file), 'w') as req_file:
+    if args.file or args_manager['freeze']['file']:
+        path = args.file or args_manager['freeze']['file']
+        with open(os.path.abspath(path), 'w') as req_file:
             req_file.write(f)
     return sys.stdout.write(f)
 
@@ -155,8 +156,12 @@ def download_func(args):
     if args.prefer:
         pref = ['.' + args.prefer.strip('.')]
     name = args.packname
-    dest = args.download_dir
-    unpk = args.unpack
+    dest = args_manager['download']['download_dir']
+    if args.download_dir != dest:
+        dest = args.download_dir
+    unpk = args_manager['download']['unpack']
+    if args.unpack != unpk:
+        unpk = args.unpack
     downloader = ReqManager(Requirement(name), pref)
     downloader.download(dest)
     if unpk:
@@ -166,7 +171,7 @@ def download_func(args):
 
 def update_func(args):
     if args.yes:
-        args_manager['yes'] = True
+        args_manager['update']['yes'] = True
     check_and_exit()
     logger.info('Loading list of installed packages...')
     up = Updater()

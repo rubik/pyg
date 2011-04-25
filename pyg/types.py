@@ -147,7 +147,7 @@ class Egg(object):
         self.eggname = os.path.basename(eggname)
         self.reqset = reqset
         self.packname = packname or name_from_egg(eggname)
-        self.idir = args_manager['install_dir']
+        self.idir = args_manager['install']['install_dir']
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
@@ -169,7 +169,7 @@ class Egg(object):
             except IndexError:
                 pass
         dist = EggDir(eggpath)
-        if args_manager['scripts']:
+        if not args_manager['install']['no_scripts']:
             for name, content, mode in script_args(dist):
                 logger.info('Installing {0} script to {1}', name, BIN)
                 target = os.path.join(BIN, name)
@@ -203,11 +203,11 @@ class Dir(object):
             except (KeyError, ConfigParser.MissingSectionHeaderError):
                 logger.debug('requires.txt not found')
         args = []
-        if args_manager['install_dir'] != INSTALL_DIR:
-            args += ['--install-base', args_manager['install_dir']]
-        if not args_manager['scripts']:
+        if args_manager['install']['install_dir'] != INSTALL_DIR:
+            args += ['--install-base', args_manager['install']['install_dir']]
+        if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
-        if not args_manager['data']:
+        if args_manager['install']['no_data']:
             args += ['--install-data', self.tempdir]
         run_setup(self.path, self.name, args=args, exc=InstallationError)
 
@@ -269,28 +269,64 @@ class Binary(object):
 class ArgsManager(object):
 
     _OPTS = {
-            ## Install dependencies?
-            'deps': True,
-            ## Package Index Url
-            'index_url': 'http://pypi.python.org/pypi',
-            ## Force installation?
+        'install': {
             'upgrade': False,
-            ## Install base directory for all installations
+            'no_deps': False,
+            'index_url': 'http://pypi.python.org/pypi',
             'install_dir': INSTALL_DIR,
-            ## Install scripts?
-            'scripts': True,
-            ## Install data?
-            'data': True,
-            ## Ask confirmation of uninstall deletions?
-            'yes': False,
-            ## Use cache when updating?
-            'use_cache': True,
-            }
+            'user': False,
+            'no_scripts': False,
+            'no_data': False,
+        },
+        'uninstall': {
+            'yes': False
+        },
+        'rm': {
+            'yes': False
+        },
+        'freeze': {
+            'count': False,
+            'file': None
+        },
+        'unlink': {
+            'all': True
+        },
+        'download': {
+            'unpack': False,
+            'download_dir': '.',
+            'prefer': None
+        },
+        'update': {
+            'yes': False
+        }
+    }
+
+    NOT_BOOL = set(['index_url', 'install_dir', 'file', 'download_dir', 'prefer'])
 
     def __getitem__(self, item):
         return ArgsManager._OPTS[item]
 
-    def __setitem__(self, item, v):
-        ArgsManager._OPTS[item] = v
+    def load(self, path):
+        cp = ConfigParser.ConfigParser()
+        with open(path) as f:
+            cp.readfp(f, os.path.basename(path))
+        for section in cp.sections():
+            if '&' in section:
+                sections = [part.strip() for part in section.split('&')]
+            else:
+                sections = [section]
+            for s in sections:
+                if s not in self._OPTS:
+                    logger.warn('Warning: section does not exist: {0}', section)
+                    continue
+                for option, value in cp.items(section):
+                    option = option.replace('-', '_')
+                    if option not in self._OPTS[s]:
+                        logger.warn('Warning: option does not exist in section {0}: {1}', option, s)
+                        continue
+                    if value not in self.NOT_BOOL:
+                        value = bool(value)
+                    self._OPTS[s][option] = value
+
 
 args_manager = ArgsManager()

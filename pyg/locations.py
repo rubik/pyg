@@ -73,7 +73,7 @@ else:
 ## environment variable will be set. We can use that to get the user's home
 ## We also set to None all the variables that depend on HOME.
 HOME = os.getenv('HOME')
-PYG_HOME = PACKAGES_CACHE = None
+PYG_HOME = PACKAGES_CACHE = CFG_FILES = None
 _sudo_uid = os.getenv('SUDO_UID')
 if _sudo_uid:
     _sudo_uid = int(_sudo_uid)
@@ -90,3 +90,4 @@ if HOME:
     ## At the moment we don't care wheter it exists or not,
     ## this will be checked by `pyg.inst.Updater`
     PACKAGES_CACHE = os.path.join(PYG_HOME, 'installed_packages.txt')
+    CFG_FILES = (os.path.join(HOME, 'pyg.conf'), os.path.join(PYG_HOME, 'pyg.conf'))

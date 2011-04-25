@@ -3,14 +3,20 @@ __version__ = '0.3.1'
 
 
 def main():
+    import os
     import sys
     import urllib2
     from parser.parser import init_parser
-    from types import PygError, InstallationError, AlreadyInstalled
+    from locations import CFG_FILES
+    from types import PygError, InstallationError, AlreadyInstalled, args_manager
 
     try:
         parser = init_parser(__version__)
-        args = parser.dispatch()
+        for cfg in CFG_FILES:
+            if os.path.exists(cfg):
+                break
+        args_manager.load(cfg)
+        parser.dispatch()
     except (PygError, InstallationError, ValueError):
         sys.exit(1)
     except AlreadyInstalled:

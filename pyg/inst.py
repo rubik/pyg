@@ -26,11 +26,11 @@ __all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
 class Installer(object):
     def __init__(self, req):
         if is_installed(req):
-            if not args_manager['upgrade']:
+            if not args_manager['install']['upgrade']:
                     logger.info('{0} is already installed', req)
                     raise AlreadyInstalled
             ## We don't set args_manager['upgrade'] = False
-            ## because we want to propagate this to dependencies
+            ## because we want to propagate it to dependencies
             logger.info('{0} is already installed, upgrading...', req)
 
         self.req = req
@@ -39,7 +39,7 @@ class Installer(object):
     def _install_deps(rs, name=None):
         if not rs:
             return
-        if not args_manager['deps']:
+        if args_manager['install']['no_deps']:
             logger.info('Skipping dependencies for {0}', name)
             return
         logger.info('Installing dependencies...')
@@ -111,7 +111,7 @@ class Installer(object):
         packname = os.path.basename(filepath).split('-')[0]
         reqset = ReqSet()
 
-        if is_installed(packname) and not args_manager['upgrade']:
+        if is_installed(packname) and not args_manager['install']['upgrade']:
             logger.info('{0} is already installed', packname)
             raise AlreadyInstalled
 
@@ -256,7 +256,7 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self):
-        if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE) or not args_manager['use_cache']:
+        if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE):
             open(PACKAGES_CACHE, 'w').close()
             logger.info('Cache file not found: $HOME/.pyg/installed_packages.txt')
             self.working_set = list(WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug))
@@ -288,7 +288,7 @@ class Updater(object):
         #logger.indent += 8
         #Uninstaller(package_name, True).uninstall()
         #logger.indent = 0
-        args_manager['upgrade'] = True
+        args_manager['install']['upgrade'] = True
         logger.info('Upgrading {0} to {1}', package_name, version)
         logger.indent += 8
         for release in json['urls']:
@@ -328,7 +328,7 @@ class Updater(object):
 
             logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)
             while True:
-                if args_manager['yes']:
+                if args_manager['update']['yes']:
                     u = 'y'
                 else:
                     u = raw_input('Do you want to upgrade? (y/[n]) ').lower()
