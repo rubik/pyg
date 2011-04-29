@@ -44,6 +44,9 @@ class Installer(object):
             return
         logger.info('Installing dependencies...')
         for req in rs:
+            if is_installed(req):
+                logger.info('{0} is already installed', req)
+                continue
             logger.indent = 0
             logger.info('Installing {0}', req)
             logger.indent = 8

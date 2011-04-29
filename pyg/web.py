@@ -163,9 +163,9 @@ class LinkFinder(object):
         data = request(url).split('</a>')
         links = set()
         for item in data:
-            if '<a href' in item:
-                i = item.index('<a href="')
-                item = item[i + 9:]
+            if 'href' in item:
+                i = item.index('href="')
+                item = item[i + 6:]
                 link = item[:item.index('">')]
                 if not link.startswith('http'):
                     link = base + link
