@@ -1,4 +1,4 @@
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 
 
@@ -14,8 +14,8 @@ def main():
         parser = init_parser(__version__)
         for cfg in CFG_FILES:
             if os.path.exists(cfg):
+                args_manager.load(cfg)
                 break
-        args_manager.load(cfg)
         parser.dispatch()
     except (PygError, InstallationError, ValueError):
         sys.exit(1)
