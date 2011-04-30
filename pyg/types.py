@@ -2,8 +2,8 @@ import os
 import sys
 import tarfile
 import pkg_resources
-import ConfigParser
-from cStringIO import StringIO
+import configparser
+from io import StringIO
 
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
@@ -116,7 +116,7 @@ class ReqSet(object):
         for r in self.reqs:
             yield r
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.reqs)
 
     def __bool__(self):
@@ -175,7 +175,7 @@ class Egg(object):
                 target = os.path.join(BIN, name)
                 with open(target, 'w' + mode) as f:
                     f.write(content)
-                    os.chmod(target, 0755)
+                    os.chmod(target, 0o755)
         else:
             logger.info('Scripts not installed')
         logger.info('Looking for requirements...')
@@ -200,7 +200,7 @@ class Dir(object):
             try:
                 for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
-            except (KeyError, ConfigParser.MissingSectionHeaderError):
+            except (KeyError, configparser.MissingSectionHeaderError):
                 logger.debug('requires.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
@@ -307,7 +307,7 @@ class ArgsManager(object):
         return ArgsManager._OPTS[item]
 
     def load(self, path):
-        cp = ConfigParser.ConfigParser()
+        cp = configparser.ConfigParser()
         with open(path) as f:
             cp.readfp(f, os.path.basename(path))
         for section in cp.sections():

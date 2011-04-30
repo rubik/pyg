@@ -49,7 +49,7 @@ class VCS(object):
             return
         if os.path.exists(self.dest):
             while True:
-                u = raw_input('The destination already exists: {0}\nWhat do you want to do?\n\n' \
+                u = input('The destination already exists: {0}\nWhat do you want to do?\n\n' \
                               '(d)elete, (b)ackup, e(x)it\n> '.format(self.dest)).lower()
                 if u == 'd':
                     logger.info('Removing {0}...', self.dest)

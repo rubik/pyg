@@ -6,7 +6,7 @@ used as a library.
 
 
 def init_parser(version=None):
-    import _opts as opts
+    from . import _opts as opts
     from pyg.locations import INSTALL_DIR as _loc_install_dir
     from argh import ArghParser, arg, command
 

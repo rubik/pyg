@@ -59,7 +59,7 @@ class Gist(object):
             path = os.path.abspath(os.path.join(dest, filename))
             if os.path.exists(path):
                 while True:
-                    u = raw_input('\tThe destination already exists: {0}\n\tWhat do you want to do?\n\n\t' \
+                    u = input('\tThe destination already exists: {0}\n\tWhat do you want to do?\n\n\t' \
                                   '(d)elete (b)ackup e(x)it\n\t> '.format(path)).lower()
                     if u == 'd':
                         logger.info('Removing {0}', path)
@@ -101,7 +101,7 @@ class GistInstaller(object):
                 self.mod = p[4:].split(',')
         self.gist = Gist(gist_id)
         if not self.bin and not self.mod:
-            self.mod = map(name, self.gist.files)
+            self.mod = list(map(name, self.gist.files))
 
     def setup_py(self):
         code = []

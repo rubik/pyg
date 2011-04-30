@@ -30,12 +30,12 @@ Additional commands:
 def command_hook(attr):
     def wrapper(*args, **kwargs):
         if attr == 'EOF':
-            print '\n'
+            print('\n')
             return True
-        print '*** Unknown command: {0}'.format(attr)
+        print('*** Unknown command: {0}'.format(attr))
         close = difflib.get_close_matches(attr, SUPPORTED_COMMANDS, n=1, cutoff=0.5)
         if close:
-            print 'Did you mean this?\n\t{0}'.format(close[0])
+            print('Did you mean this?\n\t{0}'.format(close[0]))
     return wrapper
 
 def command(parser, cmd_name):
@@ -45,7 +45,7 @@ def command(parser, cmd_name):
         except (SystemExit, AlreadyInstalled, PygError):
             pass
         except Exception as e:
-            print e
+            print(e)
     return inner
 
 
@@ -65,7 +65,7 @@ class PygShell(cmd.Cmd, object):
         return command(self.parser, attr)
 
     def do_help(self, line):
-        print HELP.format('  '.join(SUPPORTED_COMMANDS), '   '.join(ADDITIONAL_COMMANDS))
+        print(HELP.format('  '.join(SUPPORTED_COMMANDS), '   '.join(ADDITIONAL_COMMANDS)))
 
     def do_exit(self, line):
         return self.do_EOF()
@@ -78,12 +78,12 @@ class PygShell(cmd.Cmd, object):
             path = os.path.abspath(paths[0])
             os.chdir(path)
         except OSError as e:
-            print 'cd: {0}'.format(e.strerror)
+            print('cd: {0}'.format(e.strerror))
         else:
             self.prompt = 'pyg:{0}$ '.format(path)
 
     def do_pwd(self, line):
-        print os.getcwd()
+        print(os.getcwd())
 
     #def do_rm(self, line):
     #    if not line.split():
@@ -104,4 +104,4 @@ class PygShell(cmd.Cmd, object):
         ls = os.listdir(path)
         if not '-a' in args and not '--all' in args:
             ls = [p for p in ls if not p.startswith('.')]
-        print '  '.join(sorted(ls))
+        print('  '.join(sorted(ls)))

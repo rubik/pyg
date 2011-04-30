@@ -4,7 +4,7 @@ __version__ = '0.4'
 def main():
     import os
     import sys
-    import urllib2
+    import urllib.request, urllib.error, urllib.parse
 
     from pyg.parser.parser import init_parser
     from pyg.locations import CFG_FILES
@@ -21,9 +21,9 @@ def main():
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         sys.exit(e.msg)
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         sys.exit('urllib error: {0}'.format(e.reason))
     sys.exit(0)
 

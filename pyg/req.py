@@ -1,6 +1,6 @@
 import operator
 import platform
-import cStringIO
+import io
 
 from hashlib import md5
 
@@ -41,7 +41,7 @@ class Requirement(object):
     def split(self):
         for c in ('==', '>=', '>', '<=', '<'):
             if c in self.req:
-                self.name, self.op, self.version = map(str.strip, self.req.partition(c))
+                self.name, self.op, self.version = list(map(str.strip, self.req.partition(c)))
                 self.version = Version(self.version)
                 break
         else:
@@ -78,7 +78,7 @@ class Requirement(object):
 
     def _download_and_install(self, url, filename, packname, hash=None):
         logger.info('Downloading {0}', self.name)
-        fobj = cStringIO.StringIO(request(url))
+        fobj = io.StringIO(request(url))
         if hash is not None:
             logger.info('Checking md5 sum')
             if md5(fobj.getvalue()).hexdigest() != hash:

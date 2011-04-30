@@ -4,8 +4,8 @@ import sys
 import site
 import shutil
 import zipfile
-import urlparse
-import ConfigParser
+import urllib.parse
+import configparser
 import pkg_resources
 
 from pkgtools.pypi import PyPIJson
@@ -151,7 +151,7 @@ class Installer(object):
     @ staticmethod
     def from_url(url, packname=None):
         with TempDir() as t:
-            packname = packname if packname is not None else urlparse.urlsplit(url).path.split('/')[-1]
+            packname = packname if packname is not None else urllib.parse.urlsplit(url).path.split('/')[-1]
             path = os.path.join(t, packname)
             logger.info('Installing {0}', packname)
             with open(path, 'w') as f:
@@ -210,7 +210,7 @@ class Uninstaller(object):
         ## Very important!
         ## We want to remove all files: even console scripts!
         if dist.has_metadata('entry_points.txt'):
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.readfp(File(dist.get_metadata_lines('entry_points.txt')))
             if config.has_section('console_scripts'):
                 for name, value in config.items('console_scripts'):
@@ -234,7 +234,7 @@ class Uninstaller(object):
             if self.yes:
                 u = 'y'
             else:
-                u = raw_input('Proceed? (y/[n]) ').lower()
+                u = input('Proceed? (y/[n]) ').lower()
             if u in ('n', ''):
                 logger.info('{0} has not been uninstalled', self.name)
                 break
@@ -337,7 +337,7 @@ class Updater(object):
                 if args_manager['update']['yes']:
                     u = 'y'
                 else:
-                    u = raw_input('Do you want to upgrade? (y/[n]) ').lower()
+                    u = input('Do you want to upgrade? (y/[n]) ').lower()
                 if u in ('n', ''):
                     logger.info('{0} has not been upgraded', package)
                     break
@@ -422,7 +422,7 @@ class Bundler(object):
                 logger.indent = 8
                 try:
                     dist = SDist(self._download(build, r))
-                except ConfigParser.MissingSectionHeaderError:
+                except configparser.MissingSectionHeaderError:
                     continue
                 try:
                     logger.info('Looking for {0} dependencies', r)

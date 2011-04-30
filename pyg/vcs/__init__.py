@@ -1,4 +1,4 @@
-from vcs import *
+from .vcs import *
 
 from pyg.log import logger
 

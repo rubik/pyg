@@ -1,7 +1,7 @@
 import os
 import sys
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 
 from pkgtools.pypi import PyPIXmlRpc
 

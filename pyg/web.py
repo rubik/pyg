@@ -1,7 +1,7 @@
 import re
 import os
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
@@ -23,21 +23,21 @@ def get_versions(req):
     _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
     name = req.name
     pypi = PyPIXmlRpc()
-    versions = map(Version, pypi.package_releases(name, True))
+    versions = list(map(Version, pypi.package_releases(name, True)))
 
     ## Slow way: we need to search versions by ourselves
     if not versions:
         _vre = re.compile(_versions_re.format(name), re.I)
         data = request('http://pypi.python.org/simple/{0}'.format(name))
-        versions = map(Version, set(v.strip('.') for v in _vre.findall(data)))
+        versions = list(map(Version, set(v.strip('.') for v in _vre.findall(data))))
     return (v for v in versions if req.match(v))
 
 def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    r = urllib2.Request(url)
-    return urllib2.urlopen(r).read()
+    r = urllib.request.Request(url)
+    return urllib.request.urlopen(r).read()
 
 
 class ReqManager(object):
@@ -94,7 +94,7 @@ class ReqManager(object):
                     continue
                 try:
                     data = request(url)
-                except (urllib2.URLError, urllib2.HTTPError) as e:
+                except (urllib.error.URLError, urllib.error.HTTPError) as e:
                     logger.debug('urllib2 error: {0}', e.args)
                     continue
                 if not data:
@@ -157,7 +157,7 @@ class LinkFinder(object):
 
     def find_files(self, url, version):
         url = url + '/'[:not url.endswith('/')]
-        base = '{0}://{1}/'.format(*urlparse.urlparse(url)[:2])
+        base = '{0}://{1}/'.format(*urllib.parse.urlparse(url)[:2])
         logger.info('Reading {0}', url)
         ## This is horrible, but there is no alternative...
         data = request(url).split('</a>')
