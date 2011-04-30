@@ -76,7 +76,8 @@ def init_parser(version=None):
         opts.shell_func()
 
     @ arg('bundlename', help='Name of the bundle to create')
-    @ arg('packname', help='Name of the package to bundle')
+    @ arg('packages', nargs='*', help='Name of the package to bundle')
+    @ arg('-r', '--req-file', action='append', help='Requirement files which contains packages to bundle')
     def bundle(args):
         opts.bundle_func(args)
 

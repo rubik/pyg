@@ -356,8 +356,8 @@ class Bundler(object):
 {0}
 '''
 
-    def __init__(self, req, bundle_name):
-        self.req = req
+    def __init__(self, reqs, bundle_name):
+        self.reqs = reqs
         if not bundle_name.endswith('.pybundle') and not bundle_name.endswith('.pyb'):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
@@ -413,7 +413,7 @@ class Bundler(object):
 
             ## Step 2: we recursively download all required packages
             #####
-            reqs = [self.req]
+            reqs = list(self.reqs)
             already_downloaded = set()
             while reqs:
                 r = reqs.pop()

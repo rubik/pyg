@@ -46,6 +46,9 @@ def is_installed(req):
 def is_windows():
     return platform.system() == 'Windows'
 
+def under_virtualenv():
+    return hasattr(sys, 'real_prefix')
+
 def name_from_egg(eggname):
     egg = re.compile(r'([\w\d_]+)-.+')
     return egg.search(eggname).group(1)
@@ -98,12 +101,15 @@ def call_subprocess(args, stdout, stderr):
 
 def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
-    args =  [sys.executable, '-c', code]
+    args =  [sys.executable, '-c', code] + a
+    if under_virtualenv():
+        logger.debug('virtualenv detected')
+        args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
     with ChDir(path):
         with TempDir() as tempdir:
             stdout = open(os.path.join(tempdir, 'pyg-proc-stdout'), 'w')
             stderr = open(os.path.join(tempdir, 'pyg-proc-stderr'), 'w')
-        return call_subprocess(args + a, stdout=stdout, stderr=stderr)
+        return call_subprocess(args, stdout=stdout, stderr=stderr)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
