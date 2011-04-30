@@ -18,6 +18,23 @@ from pyg.log import logger
 
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 
+try:
+    check_output = subprocess.check_output
+except AttributeError:
+    def check_output(*popenargs, **kwargs):
+        '''Copied from Python2.7 subprocess.py'''
+        if 'stdout' in kwargs:
+            raise ValueError('stdout argument not allowed, it will be overridden.')
+        process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            raise subprocess.CalledProcessError(retcode, cmd, output=output)
+        return output
+
 def is_installed(req):
     try:
         pkg_resources.get_distribution(req)
@@ -28,6 +45,9 @@ def is_installed(req):
 
 def is_windows():
     return platform.system() == 'Windows'
+
+def under_virtualenv():
+    return hasattr(sys, 'real_prefix')
 
 def name_from_egg(eggname):
     egg = re.compile(r'([\w\d_]+)-.+')
@@ -71,7 +91,7 @@ def unlink(path):
 def call_subprocess(args, stdout, stderr):
     try:
         keywords = ('fatal:', 'error:')
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        output = check_output(args, stderr=subprocess.STDOUT)
         for line in output.split('\n'):
             if any(keyword in line for keyword in keywords):
                 logger.error(line)
@@ -81,12 +101,15 @@ def call_subprocess(args, stdout, stderr):
 
 def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
-    args =  [sys.executable, '-c', code]
+    args =  [sys.executable, '-c', code] + a
+    if under_virtualenv():
+        logger.debug('virtualenv detected')
+        args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
     with ChDir(path):
         with TempDir() as tempdir:
             stdout = open(os.path.join(tempdir, 'pyg-proc-stdout'), 'w')
             stderr = open(os.path.join(tempdir, 'pyg-proc-stderr'), 'w')
-        return call_subprocess(args + a, stdout=stdout, stderr=stderr)
+        return call_subprocess(args, stdout=stdout, stderr=stderr)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)

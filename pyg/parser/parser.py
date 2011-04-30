@@ -31,14 +31,8 @@ def init_parser(version=None):
     @ arg('packname', nargs='+')
     @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
-    def uninstall(args):
-        opts.uninst_func(args)
-
-    @ arg('packname', nargs='+')
-    @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
-    @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
-    def rm(args):
-        uninstall(args)
+    def remove(args):
+        opts.remove_func(args)
 
     @ command
     def list(packname):
@@ -82,10 +76,11 @@ def init_parser(version=None):
         opts.shell_func()
 
     @ arg('bundlename', help='Name of the bundle to create')
-    @ arg('packname', help='Name of the package to bundle')
+    @ arg('packages', nargs='*', help='Name of the package to bundle')
+    @ arg('-r', '--req-file', action='append', help='Requirement files which contains packages to bundle')
     def bundle(args):
         opts.bundle_func(args)
 
-    parser.add_commands([install, uninstall, rm, freeze, link, unlink, list,
+    parser.add_commands([install, remove, freeze, link, unlink, list,
                          search, check, download, update, shell, bundle])
     return parser

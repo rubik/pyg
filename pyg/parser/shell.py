@@ -11,8 +11,8 @@ from pyg.types import PygError, InstallationError, AlreadyInstalled
 __all__ = ['PygShell']
 
 
-SUPPORTED_COMMANDS = ['install', 'uninstall', 'rm', 'list', 'freeze', 'link',
-                      'unlink', 'search', 'download', 'check', 'update', 'bundle']
+SUPPORTED_COMMANDS = ['install', 'remove', 'list', 'freeze', 'link', 'unlink',
+                      'search', 'download', 'check', 'update', 'bundle']
 ADDITIONAL_COMMANDS = ['cd', 'pwd', 'ls']
 HELP = '''Supported commands:
 ===================
