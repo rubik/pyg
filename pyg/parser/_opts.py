@@ -94,9 +94,11 @@ def install_func(args):
         for package in args.packname:
             _install_package_from_name(package)
 
-def uninst_func(args):
+def remove_func(args):
     check_and_exit()
     yes = True if args.yes or (args_manager['uninstall']['yes'] or args_manager['rm']['yes']) else False
+    if len(args.packname) == 0 and args.packname[0] == 'yourself':
+        return Uninstaller('pyg', yes).uninstall()
     if args.req_file:
         with open(os.path.abspath(args.req_file)) as f:
             for line in f:

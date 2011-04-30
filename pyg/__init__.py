@@ -6,9 +6,9 @@ def main():
     import sys
     import urllib2
 
-    from pyg.parser.parser import init_parser
-    from pyg.locations import CFG_FILES
-    from pyg.types import PygError, InstallationError, AlreadyInstalled, args_manager
+    from .parser.parser import init_parser
+    from .locations import CFG_FILES
+    from .types import PygError, InstallationError, AlreadyInstalled, args_manager
 
     try:
         parser = init_parser(__version__)
