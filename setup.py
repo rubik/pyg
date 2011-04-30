@@ -2,7 +2,7 @@ import pyg
 from setuptools import setup
 
 
-requires = ['setuptools', 'pkgtools>=0.3', 'argh>=0.14']
+requires = ['setuptools', 'pkgtools>=0.3.1', 'argh>=0.14']
 
 long_desc = '''Pyg
 ===

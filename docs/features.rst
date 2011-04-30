@@ -7,10 +7,13 @@ Pyg can:
     * Uninstall packages.
     * Define fixed sets of requirement.
     * Perform searches on PyPI.
-
-Currently Pyg cannot:
-    * Install from binaries (e.g. from :file:`.exe` or :file:`.msi`).
+    * Install from binaries (e.g. from :file:`.exe` or :file:`.msi`) on Windows.
     * Install packages in editable mode from VCS (Git, Mercurial, Bazaar, Svn).
+
+Currently Pyg don't:
+
+    * understand Setuptools extras (like ``package[extra]``)
+    * integrate with virtualenv (planned for `Pyg v0.5`)
 
 
 Pyg compared to easy_install
@@ -43,6 +46,8 @@ Pyg is very similar to Pip but tries to improve something. Specifically:
     * Pyg supports Python Eggs installation, while Pip doesn't.
     * A better uninstallation of packages (Pip cannot install packages installed with ``python setup.py install``).
 
+But Pyg is not yet tested under virtualenv, unlike Pip.
+
 
 Uninstall
 ---------
@@ -54,8 +59,7 @@ Pyg can uninstall most installed packages with::
 It tries to detect the directory where the packages have been installed and delete them.
 Pyg can uninstall all packages, except those that have been installed in editable mode.
 
-.. seealso::
-    :ref:`uninst`
+See also: :ref:`uninst`
 
 
 Package upgrading
@@ -64,6 +68,29 @@ Package upgrading
 This is a feature unique to Pyg: by running ``pyg update`` you can check all your installed packages and upgrade those for which there is a newer release.
 Pyg collects all packages that can upgrade and then check for updates.
 
-.. seealso::
+See also: :ref:`upd`
 
-    :ref:`upd`
+
+Pyg Shell
+---------
+
+You can launch Pyg Shell with::
+
+    $ pyg shell
+
+and it will open a shell where you can use all Pyg's command. This is particularly useful on system where you need root privileges to installs packages (e.g. *\*nix*): if you need to execute many commands you can fire up the shell and then use Pyg without worrying about root privileges.
+
+See also: :ref:`shell`
+
+
+Bundles
+-------
+
+Pyg supports Pip's bundles. The bundle format is specific to Pip (see `Pip documentation <http://www.pip-installer.org/en/latest/index.html#bundles>`_).
+Once you have one you can install it like::
+
+    $ pyg install yourbundle.pyb
+
+The internet access is not necessary.
+
+See also: :ref:`bundles`

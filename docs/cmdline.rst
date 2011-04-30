@@ -3,6 +3,8 @@ Using Pyg from the command line
 
 Pyg should be used mostly from the command line, as it requires root's privileges to install and remove packages.
 
+On some systems (e.g. on \*nix systems), you may need root privileges to execute some commands such as :command:`install`, :command:`uninstall`, 
+
 Installing
 ----------
 
@@ -168,13 +170,14 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
 
     ::
 
-        $ cat r.txt
+        $ echo -e 'itertools_recipes\niterutils' > reqfile.txt
+        $ cat reqfile.txt
         itertools_recipes
         iterutils
 
     ::
 
-        $ pyg uninstall -r r.txt
+        $ pyg uninstall -r reqfile.txt
         Uninstalling itertools_recipes
                 /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
                 /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
@@ -195,6 +198,38 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
         Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.pyc...
         Removing egg path from easy_install.pth...
         iterutils uninstalled succesfully
+
+You can supply both ``packname`` (one or more) and requirement files::
+
+    $ pyg uninstall -r reqfile.txt docutils
+    Uninstalling itertools_recipes
+            /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
+            /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
+            /usr/local/lib/python2.7/dist-packages/itertools_recipes-0.1.egg-info
+    Proceed? (y/[n]) y
+    Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
+    Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
+    Deleting: /usr/local/lib/python2.7/dist-packages/itertools_recipes-0.1.egg-info
+    Removing egg path from easy_install.pth...
+    itertools_recipes uninstalled succesfully
+    Uninstalling iterutils
+            /usr/local/lib/python2.7/dist-packages/iterutils.py
+            /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info
+            /usr/local/lib/python2.7/dist-packages/iterutils.pyc
+    Proceed? (y/[n]) y
+    Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.py
+    Deleting: /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info
+    Deleting: /usr/local/lib/python2.7/dist-packages/iterutils.pyc
+    Removing egg path from easy_install.pth...
+    iterutils uninstalled succesfully
+    Uninstalling docutils
+            /usr/local/lib/python2.7/dist-packages/docutils
+            /usr/local/lib/python2.7/dist-packages/docutils-0.7.egg-info
+    Proceed? (y/[n]) y
+    Deleting: /usr/local/lib/python2.7/dist-packages/docutils
+    Deleting: /usr/local/lib/python2.7/dist-packages/docutils-0.7.egg-info
+    Removing egg path from easy_install.pth...
+    docutils uninstalled succesfully
 
 
 The ``rm`` command
@@ -267,7 +302,7 @@ Pyg tries to detect all installed packages and prints requirements on Standard O
 Linking directories
 -------------------
 
-If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` command is what do you need::
+If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` command is what you need::
 
     $ pyg link dirname
 
@@ -437,3 +472,62 @@ Before loading the entire list of installed packages, Pyg checks the :file:`~/.p
     Do you want to upgrade? (y/[n]) n
     launchpadlib has not been upgraded
     Updating finished successfully
+
+.. _shell:
+
+Pyg Shell
+---------
+
+.. versionadded:: 0.4
+
+If you need to execute many Pyg commands and you need root privileges (for example on *\*nix* systems), you can fire up Pyg Shell and you are done::
+
+    $ pyg shell
+
+Now you can use all Pyg's commands plus 3 shell commands: :command:`cd`, :command:`pwd`, and :command:`ls`::
+
+    pyg:/home/user$ check pyg
+    True
+    pyg:/home/user$ check pyg==0.3.2
+    True
+    pyg:/home/user$ ls
+    pkgtools  pyg
+    pyg:/home/user$ pwd
+    /home/user
+    pyg:/home/user$ cd pyg
+    pyg:/home/user/pyg$ pwd
+    /home/user/pyg
+    pyg:/home/user/pyg$ install sphinx
+    sphinx is already installed
+    pyg:/home/user/pyg$ install -U sphinx
+    sphinx is already installed, upgrading...
+    Looking for sphinx releases on PyPI
+    Best match: Sphinx==1.0.7
+    Downloading Sphinx
+    Checking md5 sum
+    Running setup.py egg_info for Sphinx
+    Running setup.py install for Sphinx
+    Installing dependencies...
+        Jinja2>=2.2 is already installed
+        docutils>=0.5 is already installed
+        Pygments>=0.8 is already installed
+    Finished installing dependencies
+    Sphinx installed successfully
+    pyg:/home/user/pyg$ cd
+    pyg:/home/user$ exit
+
+
+.. _bundles:
+
+Bundles
+-------
+
+The bundle format is specific to Pip (see `Pip documentation <http://www.pip-installer.org/en/latest/index.html#bundles>`_).
+To create a bundle do::
+
+    $ pyg bundle app.pyb package_name
+
+This will download all packages (including dependencies) and put them in a bundle file.
+Install packages from a bundle is dead simple, and you don't need internet access::
+
+    $ pyg install app.pyb

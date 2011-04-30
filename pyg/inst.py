@@ -15,7 +15,7 @@ from pyg.types import *
 from pyg.web import ReqManager
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
-from pyg.utils import TempDir, File, name, ext, is_installed, unpack, glob
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, glob
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -45,6 +45,7 @@ class Installer(object):
         logger.info('Installing dependencies...')
         for req in rs:
             if is_installed(req):
+                logger.indent = 8
                 logger.info('{0} is already installed', req)
                 continue
             logger.indent = 0
@@ -109,8 +110,6 @@ class Installer(object):
 
     @ staticmethod
     def from_file(filepath):
-        e = ext(filepath)
-        path = os.path.abspath(filepath)
         packname = os.path.basename(filepath).split('-')[0]
         reqset = ReqSet()
 
@@ -118,14 +117,18 @@ class Installer(object):
             logger.info('{0} is already installed', packname)
             raise AlreadyInstalled
 
+        e = ext(filepath)
+        path = os.path.abspath(filepath)
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(open(path), e, packname, reqset)
         elif e in ('.pybundle', '.pyb'):
             installer = Bundle(filepath, reqset)
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
+        elif e in ('.exe', '.msi') and is_windows():
+            installer = Binary(open(path), e, packname)
         else:
-            logger.fatal('Error: Cannot install {0}', packname, exc=InstallationError)
+            logger.fatal('Error: Cannot install {0}: unknown extension: {1}', packname, e, exc=InstallationError)
         installer.install()
         Installer._install_deps(reqset, packname)
         logger.info('{0} installed successfully', packname)

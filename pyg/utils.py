@@ -70,7 +70,7 @@ def unlink(path):
 
 def call_subprocess(args, stdout, stderr):
     try:
-        keywords = ('fatal', 'error')
+        keywords = ('fatal:', 'error:')
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         for line in output.split('\n'):
             if any(keyword in line for keyword in keywords):

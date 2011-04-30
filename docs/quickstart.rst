@@ -16,10 +16,10 @@ And then you should no longer need them.
 
 .. _get:
 
-Getting the Source
+Getting the source
 ------------------
 
-You can also install Pyg from the source. The lastest release is avaiable on GitHub:
+You can also install Pyg from source. The lastest release is avaiable on GitHub:
 
     * `tarball <https://github.com/rubik/pyg/tarball/master>`_
     * `zipball <https://github.com/rubik/pyg/zipball/master>`_

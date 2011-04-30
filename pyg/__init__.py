@@ -1,11 +1,11 @@
 __version__ = '0.3.2'
 
 
-
 def main():
     import os
     import sys
     import urllib2
+
     from pyg.parser.parser import init_parser
     from pyg.locations import CFG_FILES
     from pyg.types import PygError, InstallationError, AlreadyInstalled, args_manager

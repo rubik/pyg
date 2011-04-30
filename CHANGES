@@ -1,18 +1,28 @@
 CHANGELOG
 =========
 
+0.5 (planning)
+--------------
+
+Not yet implemented:
+
++ #29: Create bundles from requirements files.
++ #30: Keep track of why requirements are needed.
++ #31: Replace :command:`uninstall` and :command:`rm` with a new :command:`remove` command.
 
 0.4 (in development)
 --------------------
 
 + #19: Added :class:`pyg.inst.Bundler`: now Pyg can create bundles!
-+ #26: Added Pyg Shell.
-
-Planned (but not yet implemented):
-
 + #20: Installation from binaries (on Windows).
 + #22: Support a config file somewhere.
 + #25: Link following: when a package does not have any file on PyPI, Pyg have to follow links (e.g. package's home page, etc.) to find download links.
++ #26: Added Pyg Shell.
+
+0.3.2 (Apr 29, 2011)
+--------------------
+
++ Fixed :file:`setup.py`: didn't create Eggs properly.
 
 0.3.1 (Apr 22, 2011)
 --------------------
