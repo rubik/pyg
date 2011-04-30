@@ -18,6 +18,23 @@ from pyg.log import logger
 
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 
+try:
+    check_output = subprocess.check_output
+except AttributeError:
+    def check_output(*popenargs, **kwargs):
+        '''Copied from Python2.7 subprocess.py'''
+        if 'stdout' in kwargs:
+            raise ValueError('stdout argument not allowed, it will be overridden.')
+        process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            raise subprocess.CalledProcessError(retcode, cmd, output=output)
+        return output
+
 def is_installed(req):
     try:
         pkg_resources.get_distribution(req)
@@ -71,7 +88,7 @@ def unlink(path):
 def call_subprocess(args, stdout, stderr):
     try:
         keywords = ('fatal:', 'error:')
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        output = check_output(args, stderr=subprocess.STDOUT)
         for line in output.split('\n'):
             if any(keyword in line for keyword in keywords):
                 logger.error(line)
