@@ -180,3 +180,9 @@ def update_func(args):
 def bundle_func(args):
     b = Bundler(Requirement(args.packname), args.bundlename)
     b.bundle()
+
+def shell_func():
+    check_and_exit()
+
+    from pyg.parser.shell import PygShell
+    PygShell().cmdloop()

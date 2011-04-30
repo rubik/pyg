@@ -79,8 +79,7 @@ def init_parser(version=None):
 
     @ command
     def shell():
-        from pyg.parser.shell import PygShell
-        PygShell().cmdloop()
+        opts.shell_func()
 
     @ arg('bundlename', help='Name of the bundle to create')
     @ arg('packname', help='Name of the package to bundle')

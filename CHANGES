@@ -4,11 +4,14 @@ CHANGELOG
 0.5 (planning)
 --------------
 
-Not yet implemented:
+Planned but not yet implemented:
 
 + #29: Create bundles from requirements files.
 + #30: Keep track of why requirements are needed.
 + #31: Replace :command:`uninstall` and :command:`rm` with a new :command:`remove` command.
++ #32: Follow links in :file:`dependency_links.txt` file.
++ #33: Fix option :option:`--index-url`.
++ #34: ``pyg remove yourself``.
 
 0.4 (in development)
 --------------------

@@ -531,3 +531,36 @@ This will download all packages (including dependencies) and put them in a bundl
 Install packages from a bundle is dead simple, and you don't need internet access::
 
     $ pyg install app.pyb
+
+For example, here is ``Pyg`` bundle::
+
+    $ pyg bundle pyg.pyb pyg==0.4
+    pyg==0.4:
+            Retrieving data for pyg
+            Writing data into pyg-0.4.tar.gz
+            pyg downloaded successfully
+            Looking for pyg dependencies
+                    Found: setuptools
+                    Found: pkgtools>=0.3.1
+                    Found: argh>=0.14
+    argh>=0.14:
+            Retrieving data for argh
+            Writing data into argh-0.14.0.tar.gz
+            argh downloaded successfully
+            Looking for argh>=0.14 dependencies
+    pkgtools>=0.3.1:
+            Retrieving data for pkgtools
+            Writing data into pkgtools-0.3.1.tar.gz
+            pkgtools downloaded successfully
+            Looking for pkgtools>=0.3.1 dependencies
+    setuptools:
+            Retrieving data for setuptools
+            Writing data into setuptools-0.6c11.tar.gz
+            setuptools downloaded successfully
+            Looking for setuptools dependencies
+    Finished processing dependencies
+    Adding packages to the bundle
+    Adding the manifest file
+
+
+You can download the generated bundle :download:`here <../../pyg.pyb>` (direct link to download).
