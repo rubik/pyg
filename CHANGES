@@ -10,8 +10,8 @@ Already implemented:
 + #30: Keep track of why requirements are needed.
 + #31: Replace :command:`uninstall` and :command:`rm` with a new :command:`remove` command.
 + #34: ``pyg remove yourself``.
-+ #38: Add a :option:`-A, --upgrade-all` option for the :command:`install` command.
-+ #39: Add a :option:`-e, --exclude` option for the :command:`bundle` command.
++ #38: Add :option:`-A, --upgrade-all` option for the :command:`install` command.
++ #39: Add :option:`-e, --exclude` option for the :command:`bundle` command.
 
 Planned but not yet implemented:
 

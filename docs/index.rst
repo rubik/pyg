@@ -38,7 +38,6 @@ Using Pyg
    :maxdepth: 2
 
    cmdline
-   library
 
 
 Development
