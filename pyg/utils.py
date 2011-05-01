@@ -12,7 +12,7 @@ import pkg_resources
 import glob as glob_mod
 
 
-from pyg.locations import PYG_LINKS
+from pyg.locations import PYG_LINKS, under_virtualenv
 from pyg.log import logger
 
 
@@ -45,9 +45,6 @@ def is_installed(req):
 
 def is_windows():
     return platform.system() == 'Windows'
-
-def under_virtualenv():
-    return hasattr(sys, 'real_prefix')
 
 def name_from_egg(eggname):
     egg = re.compile(r'([\w\d_]+)-.+')
