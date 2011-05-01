@@ -111,7 +111,7 @@ class Installer(object):
     @ staticmethod
     def from_file(filepath):
         packname = os.path.basename(filepath).split('-')[0]
-        reqset = ReqSet()
+        reqset = ReqSet(packname)
 
         if is_installed(packname) and not args_manager['install']['upgrade']:
             logger.info('{0} is already installed', packname)
@@ -136,7 +136,7 @@ class Installer(object):
     @ staticmethod
     def from_dir(path, name=None):
         name = name or os.path.basename(path)
-        reqset = ReqSet()
+        reqset = ReqSet(name)
         try:
             with TempDir() as tempdir:
                 logger.info('Installing {0}', name)
