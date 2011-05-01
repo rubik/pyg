@@ -1,19 +1,30 @@
 CHANGELOG
 =========
 
-0.5 (planning)
---------------
+0.5 (in development)
+--------------------
 
-Planned but not yet implemented:
+Already implemented:
 
 + #29: Create bundles from requirements files.
 + #30: Keep track of why requirements are needed.
 + #31: Replace :command:`uninstall` and :command:`rm` with a new :command:`remove` command.
++ #34: ``pyg remove yourself``.
++ #38: Add a :option:`-A, --upgrade-all` option for the :command:`install` command.
++ #39: Add a :option:`-e, --exclude` option for the :command:`bundle` command.
+
+Planned but not yet implemented:
+
 + #32: Follow links in :file:`dependency_links.txt` file.
 + #33: Fix option :option:`--index-url`.
-+ #34: ``pyg remove yourself``.
++ #36: Add ``virtualenv`` support.
 
-0.4 (in development)
+0.4.1 (May 01, 2011)
+--------------------
+
++ Fixed an issue with the :mod:`subprocess` module.
+
+0.4 (May 01, 2011)
 --------------------
 
 + #19: Added :class:`pyg.inst.Bundler`: now Pyg can create bundles!
