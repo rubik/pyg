@@ -44,12 +44,12 @@ class Installer(object):
             return
         logger.info('Installing dependencies...')
         for req in rs:
-            if is_installed(req):
+            if is_installed(req) and not args_manager['install']['upgrade_all']:
                 logger.indent = 8
                 logger.info('{0} is already installed', req)
                 continue
             logger.indent = 0
-            logger.info('Installing {0}', req)
+            logger.info('Installing {0} (from {1})', req, rs.comes_from)
             logger.indent = 8
             try:
                 Installer(req).install()
@@ -356,12 +356,13 @@ class Bundler(object):
 {0}
 '''
 
-    def __init__(self, reqs, bundle_name):
+    def __init__(self, reqs, bundle_name, exclude=[]):
         self.reqs = reqs
         if not bundle_name.endswith('.pybundle') and not bundle_name.endswith('.pyb'):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
         self.bundled = [] # To keep track of the all bundled packages
+        self.exclude = exclude
 
     def _download(self, dir, req):
         '''
@@ -417,6 +418,9 @@ class Bundler(object):
             already_downloaded = set()
             while reqs:
                 r = reqs.pop()
+                if any(rq.name == r.name and rq.match(r.version) for rq in self.exclude):
+                    logger.info('Excluding {0}', r)
+                    continue
                 logger.indent = 0
                 logger.info('{0}:', r)
                 logger.indent = 8

@@ -74,6 +74,9 @@ def install_func(args):
         args_manager['install']['no_deps'] = True
     if args.upgrade:
         args_manager['install']['upgrade'] = True
+    if args.upgrade_all:
+        args_manager['install']['upgrade_all'] = True
+        args_manager['install']['upgrade'] = True
     if args.no_scripts:
         args_manager['install']['no_scripts'] = True
     if args.no_data:
