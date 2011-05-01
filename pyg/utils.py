@@ -12,7 +12,7 @@ import pkg_resources
 import glob as glob_mod
 
 
-from pyg.locations import PYG_LINKS, under_virtualenv
+from pyg.locations import PYG_LINKS, INSTALL_DIR, under_virtualenv
 from pyg.log import logger
 
 
@@ -36,6 +36,9 @@ except AttributeError:
         return output
 
 def is_installed(req):
+    if under_virtualenv():
+        ## It is not the best way ever but I think it can do it
+        return os.path.exists(os.path.join(INSTALL_DIR, name))
     try:
         pkg_resources.get_distribution(req)
     except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict, ValueError):

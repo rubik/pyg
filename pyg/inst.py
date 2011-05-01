@@ -186,7 +186,7 @@ class Uninstaller(object):
             dist = FakeDist()
 
         if sys.version_info[:2] < (2, 7):
-            guesses = [os.path.dirname(dist.location)]
+            guesses = [dist.location]
         else:
             guesses = site.getsitepackages() + [site.getusersitepackages()]
         for d in guesses:

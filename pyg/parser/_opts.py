@@ -11,7 +11,7 @@ from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.types import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
-from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
+from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR, under_virtualenv
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import ReqManager
 
