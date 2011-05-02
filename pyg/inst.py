@@ -12,7 +12,7 @@ from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import WorkingSet, Installed, SDist
 
 from pyg.types import *
-from pyg.web import ReqManager
+from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
 from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, glob
