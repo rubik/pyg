@@ -117,7 +117,7 @@ class ReqManager(object):
 
 
 ## OLD! We are using Json to interoperate with pypi.
-## Maybe we can use it in the future.
+## We use it only if we don't find any files with the Json API
 class LinkFinder(object):
 
     INDEX = 'http://pypi.python.org/'
@@ -156,6 +156,8 @@ class LinkFinder(object):
             return None, None
 
     def find_files(self, url, version):
+        if ext(url) in PREFERENCES:
+            return [url]
         url = url + '/'[:not url.endswith('/')]
         base = '{0}://{1}/'.format(*urlparse.urlparse(url)[:2])
         logger.info('Reading {0}', url)
