@@ -1,9 +1,26 @@
 '''
-This module contains the command-line parser. All imports are inside the function
+This module contains the command-line parser. All imports are inside the functions
 because we don't want to execute code before the parser is created and when Pyg is
 used as a library.
 '''
 
+
+def load_options(path):
+    import os.path
+
+    from pyg.types import args_manager
+    from pyg.locations import CFG_FILES
+    from pyg.log import logger
+
+    for cfg in CFG_FILES:
+        if os.path.exists(cfg):
+            logger.info('Loading options from {0}', cfg)
+
+            ## This is for potential warnings
+            logger.indent = 8
+            args_manager.load(cfg)
+            logger.indent = 0
+            break
 
 def init_parser(version=None):
     import _opts as opts
