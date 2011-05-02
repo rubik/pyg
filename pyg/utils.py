@@ -38,7 +38,7 @@ except AttributeError:
 def is_installed(req):
     if under_virtualenv():
         ## It is not the best way ever but I think it can do it
-        return os.path.exists(os.path.join(INSTALL_DIR, name))
+        return os.path.exists(os.path.join(INSTALL_DIR, str(req)))
     try:
         pkg_resources.get_distribution(req)
     except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict, ValueError):
