@@ -25,9 +25,12 @@ except AttributeError:
         '''Copied from Python2.7 subprocess.py'''
         if 'stdout' in kwargs:
             raise ValueError('stdout argument not allowed, it will be overridden.')
+        print 'hele'
         process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+        print 'here'
         output, unused_err = process.communicate()
         retcode = process.poll()
+        print 'not here'
         if retcode:
             cmd = kwargs.get("args")
             if cmd is None:
@@ -101,8 +104,8 @@ def unlink(path):
 def call_subprocess(args):
     try:
         output = check_output(args, stderr=subprocess.STDOUT)
-    except CalledProcessError as e:
-        return e.returncode, output
+    except (subprocess.CalledProcessError, CalledProcessError) as e:
+        return e.returncode, e.output
     return 0, output
 
 def call_setup(path, a):
@@ -121,9 +124,8 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)
         logger.info('Complete output from command setup.py install:')
-        logger.indent = 8
-        logger.info(output)
-        logger.indent = 0
+        logger.info(('\n' + ' ' * (logger.indent + 8)).join(output.split('\n')))
+        raise exc('setup.py did not install {0}'.format(name))
 
 def glob(dir, pattern):
     with ChDir(dir):
