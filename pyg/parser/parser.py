@@ -5,7 +5,7 @@ used as a library.
 '''
 
 
-def load_options(path):
+def load_options():
     import os.path
 
     from pyg.types import args_manager
