@@ -99,7 +99,7 @@ def install_func(args):
 
 def remove_func(args):
     check_and_exit()
-    yes = True if args.yes or (args_manager['remove']['yes'] or args_manager['rm']['yes']) else False
+    yes = True if args.yes or args_manager['remove']['yes'] else False
     if len(args.packname) == 1 and args.packname[0] == 'yourself':
         return Uninstaller('pyg', yes).uninstall()
     if args.req_file:

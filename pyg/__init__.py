@@ -14,7 +14,10 @@ def main():
         parser = init_parser(__version__)
         for cfg in CFG_FILES:
             if os.path.exists(cfg):
+                logger.info('Loading options from {0}', cfg)
+                logger.indent = 8
                 args_manager.load(cfg)
+                logger.indent = 0
                 break
         parser.dispatch()
     except (PygError, InstallationError, ValueError):
