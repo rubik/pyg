@@ -49,9 +49,6 @@ class CalledProcessError(Exception):
             return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
 
 def is_installed(req):
-    if under_virtualenv():
-        ## It is not the best way ever but I think it can do it
-        return os.path.exists(os.path.join(INSTALL_DIR, str(req)))
     try:
         pkg_resources.get_distribution(req)
     except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict, ValueError):
@@ -105,7 +102,6 @@ def call_subprocess(args, stdout, stderr):
     try:
         keywords = ('fatal:', 'error:')
         output = check_output(args, stderr=subprocess.STDOUT)
-        print output
         for line in output.split('\n'):
             if any(keyword in line for keyword in keywords):
                 logger.error(line)
