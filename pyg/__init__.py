@@ -9,6 +9,7 @@ def main():
     from .parser.parser import init_parser
     from .locations import CFG_FILES
     from .types import PygError, InstallationError, AlreadyInstalled, args_manager
+    from .log import logger
 
     try:
         parser = init_parser(__version__)
