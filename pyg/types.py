@@ -201,7 +201,7 @@ class Dir(object):
             try:
                 for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
-            except (KeyError, ConfigParser.MissingSectionHeaderError):
+            except (IndexError, KeyError, ConfigParser.MissingSectionHeaderError):
                 logger.debug('requires.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
@@ -280,10 +280,7 @@ class ArgsManager(object):
             'no_scripts': False,
             'no_data': False,
         },
-        'uninstall': {
-            'yes': False
-        },
-        'rm': {
+        'remove': {
             'yes': False
         },
         'freeze': {
