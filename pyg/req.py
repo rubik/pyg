@@ -29,8 +29,8 @@ class Requirement(object):
 
     def __init__(self, req):
         self.req = req
-        self.reqset = ReqSet()
         self.split()
+        self.reqset = ReqSet(self.name)
 
     def __repr__(self):
         return 'Requirement({0})'.format(self.req)

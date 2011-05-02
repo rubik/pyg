@@ -109,8 +109,9 @@ class ReqSet(object):
     A requirement set, used by :class:`~pyg.types.Archive` and :class:`~pyg.types.Egg` to keep trace of package's requirements.
     '''
 
-    def __init__(self):
+    def __init__(self, comes_from):
         self._reqs = set()
+        self.comes_from = comes_from
 
     def __iter__(self):
         for r in self.reqs:
@@ -200,7 +201,7 @@ class Dir(object):
             try:
                 for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
                     self.reqset.add(r)
-            except (KeyError, configparser.MissingSectionHeaderError):
+            except (IndexError, KeyError, ConfigParser.MissingSectionHeaderError):
                 logger.debug('requires.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
@@ -271,6 +272,7 @@ class ArgsManager(object):
     _OPTS = {
         'install': {
             'upgrade': False,
+            'upgrade_all': False,
             'no_deps': False,
             'index_url': 'http://pypi.python.org/pypi',
             'install_dir': INSTALL_DIR,
@@ -278,10 +280,7 @@ class ArgsManager(object):
             'no_scripts': False,
             'no_data': False,
         },
-        'uninstall': {
-            'yes': False
-        },
-        'rm': {
+        'remove': {
             'yes': False
         },
         'freeze': {
@@ -298,10 +297,13 @@ class ArgsManager(object):
         },
         'update': {
             'yes': False
+        },
+        'bundle': {
+            'exclude': None,
         }
     }
 
-    NOT_BOOL = set(['index_url', 'install_dir', 'file', 'download_dir', 'prefer'])
+    NOT_BOOL = set(['index_url', 'install_dir', 'file', 'download_dir', 'prefer', 'exclude'])
 
     def __getitem__(self, item):
         return ArgsManager._OPTS[item]

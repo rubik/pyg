@@ -11,7 +11,7 @@ from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.types import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
-from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR
+from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR, under_virtualenv
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import ReqManager
 
@@ -74,6 +74,9 @@ def install_func(args):
         args_manager['install']['no_deps'] = True
     if args.upgrade:
         args_manager['install']['upgrade'] = True
+    if args.upgrade_all:
+        args_manager['install']['upgrade_all'] = True
+        args_manager['install']['upgrade'] = True
     if args.no_scripts:
         args_manager['install']['no_scripts'] = True
     if args.no_data:
@@ -96,8 +99,8 @@ def install_func(args):
 
 def remove_func(args):
     check_and_exit()
-    yes = True if args.yes or (args_manager['uninstall']['yes'] or args_manager['rm']['yes']) else False
-    if len(args.packname) == 0 and args.packname[0] == 'yourself':
+    yes = True if args.yes or args_manager['remove']['yes'] else False
+    if len(args.packname) == 1 and args.packname[0] == 'yourself':
         return Uninstaller('pyg', yes).uninstall()
     if args.req_file:
         with open(os.path.abspath(args.req_file)) as f:

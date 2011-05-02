@@ -4,6 +4,7 @@ from pkgtools.pypi import PyPIXmlRpc
 from pyg.req import Requirement
 from pyg.web import get_versions
 from pyg.utils import is_installed
+from pyg.locations import INSTALL_DIR, under_virtualenv
 
 
 __all__ = ['freeze', 'list_releases']

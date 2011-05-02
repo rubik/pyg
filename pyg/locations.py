@@ -5,6 +5,9 @@ import site
 import platform
 
 
+def under_virtualenv():
+    return hasattr(sys, 'real_prefix')
+
 if sys.version_info[:2] < (2, 7):
     ## Since the site module hasn't the getsitepackages() function (in Python < 2.7)
     ## we have to guess it.
@@ -44,6 +47,10 @@ else:
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
 
+## Under virtualenv the USER_SITE has to be the same as INSTALL_DIR
+if under_virtualenv():
+    USER_SITE = INSTALL_DIR
+
 EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
 if not os.path.exists(EASY_INSTALL):
     d = os.path.dirname(EASY_INSTALL)
@@ -58,6 +65,7 @@ if not os.path.exists(EASY_INSTALL):
 
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
 
+## FIXME: Or is better `platform.system`?
 if sys.platform == 'win32':
     BIN = os.path.join(sys.prefix, 'Scripts')
     if not os.path.exists(BIN):
@@ -87,7 +95,9 @@ if HOME:
         os.makedirs(PYG_HOME)
 
     ## Now let's look for `installed_packages.txt` file
-    ## At the moment we don't care wheter it exists or not,
+    ## At the moment we don't care whether it exists or not,
     ## this will be checked by `pyg.inst.Updater`
     PACKAGES_CACHE = os.path.join(PYG_HOME, 'installed_packages.txt')
-    CFG_FILES = (os.path.join(HOME, 'pyg.conf'), os.path.join(PYG_HOME, 'pyg.conf'))
+    CFG_FILES = (os.path.join(HOME, 'pyg.conf'), os.path.join(PYG_HOME, 'pyg.conf'),
+                 os.path.join(os.getcwd(), 'pyg.conf')
+                 )

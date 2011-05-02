@@ -1,9 +1,26 @@
 '''
-This module contains the command-line parser. All imports are inside the function
+This module contains the command-line parser. All imports are inside the functions
 because we don't want to execute code before the parser is created and when Pyg is
 used as a library.
 '''
 
+
+def load_options(path):
+    import os.path
+
+    from pyg.types import args_manager
+    from pyg.locations import CFG_FILES
+    from pyg.log import logger
+
+    for cfg in CFG_FILES:
+        if os.path.exists(cfg):
+            logger.info('Loading options from {0}', cfg)
+
+            ## This is for potential warnings
+            logger.indent = 8
+            args_manager.load(cfg)
+            logger.indent = 0
+            break
 
 def init_parser(version=None):
     from . import _opts as opts
@@ -18,7 +35,8 @@ def init_parser(version=None):
     @ arg('packname', nargs='*')
     @ arg('-e', '--editable', action='store_true', help='Install a package from an online repository in editable mode')
     @ arg('-r', '--req-file', metavar='<path>', action='append', help='Install packages from the specified requirement file')
-    @ arg('-U', '--upgrade', action='store_true', help='If the package is already installed')
+    @ arg('-U', '--upgrade', action='store_true', help='If the package is already installed re-install it again')
+    @ arg('-A', '--upgrade-all', action='store_true', help='Install again dependencies too')
     @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @ arg('-d', '--install-dir', default=_loc_install_dir, metavar='<path>', help='Base installation directory')
@@ -77,7 +95,8 @@ def init_parser(version=None):
 
     @ arg('bundlename', help='Name of the bundle to create')
     @ arg('packages', nargs='*', help='Name of the package to bundle')
-    @ arg('-r', '--req-file', action='append', help='Requirement files which contains packages to bundle')
+    @ arg('-r', '--req-file', action='append', metavar='<path>', help='Requirement files which contains packages to bundle')
+    @ arg('-e', '--exclude', action='append', metavar='<requirement>', help='Exclude packages matching `requirement`')
     def bundle(args):
         opts.bundle_func(args)
 
