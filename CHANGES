@@ -10,6 +10,7 @@ Already implemented:
 + #30: Keep track of why requirements are needed.
 + #31: Replace :command:`uninstall` and :command:`rm` with a new :command:`remove` command.
 + #34: ``pyg remove yourself``.
++ #36: Add ``virtualenv`` support.
 + #38: Add :option:`-A, --upgrade-all` option for the :command:`install` command.
 + #39: Add :option:`-e, --exclude` option for the :command:`bundle` command.
 
@@ -17,7 +18,6 @@ Planned but not yet implemented:
 
 + #32: Follow links in :file:`dependency_links.txt` file.
 + #33: Fix option :option:`--index-url`.
-+ #36: Add ``virtualenv`` support.
 
 0.4.1 (May 01, 2011)
 --------------------
