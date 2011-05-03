@@ -216,7 +216,7 @@ class Dir(object):
                     logger.debug('dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
-            args += ['--install-base', args_manager['install']['install_dir']]
+            args += ['--prefix', args_manager['install']['install_dir']]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
