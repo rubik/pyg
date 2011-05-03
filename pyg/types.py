@@ -199,10 +199,16 @@ class Dir(object):
             logger.info('Running setup.py egg_info for {0}', self.name)
             call_setup(self.path, ['egg_info', '--egg-base', self.tempdir])
             try:
-                for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
+                dist = DirTools(self.path)
+                for r in dist.file('requires.txt'):
                     self.reqset.add(r)
-            except (IndexError, KeyError, ConfigParser.MissingSectionHeaderError):
+            except (KeyError, ConfigParser.MissingSectionHeaderError):
                 logger.debug('requires.txt not found')
+            try:
+                for r in dist.file('dependency_links.txt'):
+                    self.reqset.add(r)
+            except KeyError:
+                logger.debug('dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
             args += ['--install-base', args_manager['install']['install_dir']]
