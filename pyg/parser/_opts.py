@@ -52,6 +52,7 @@ or
 def _install_package_from_name(package):
     if os.path.exists(package):
         path = os.path.abspath(package)
+        logger.info('Installing {0}', path)
         if os.path.isfile(path):
             return Installer.from_file(path)
         elif os.path.isdir(path):

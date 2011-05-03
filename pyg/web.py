@@ -120,12 +120,17 @@ class ReqManager(object):
 ## We use it only if we don't find any files with the Json API
 class LinkFinder(object):
 
-    INDEX = 'http://pypi.python.org/'
+    INDEX = None
     FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
     LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.-]+)(?P<name>[^\<]+)</a><br/>'
 
-    def __init__(self, package_name):
+    def __init__(self, package_name, index=None):
         self.package_name = package_name
+        if index is None:
+            index = 'http://pypi.python.org/simple/'
+        if not index.endswith('/'):
+            index += '/'
+        self.INDEX = index
 
     def _check_link(self, link, version):
         '''
@@ -142,7 +147,7 @@ class LinkFinder(object):
         return '{0}-{1}{2}'.format(self.package_name, version, e) == base
 
     def find_best_link(self):
-        data = request('{0}/{1}/{2}'.format(self.INDEX, 'simple', self.package_name))
+        data = request('{0}{1}'.format(self.INDEX, self.package_name))
         d = {}
         for href, rel, version, name in re.compile(self.LINK).findall(data):
             if rel == 'download':

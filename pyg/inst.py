@@ -15,7 +15,7 @@ from pyg.types import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, glob
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -49,7 +49,7 @@ class Installer(object):
                 logger.info('{0} is already installed', req)
                 continue
             logger.indent = 0
-            logger.info('Installing {0} (from {1})', req, rs.comes_from)
+            logger.info('Installing {0} (from {1.name}=={1.version})', req, rs.comes_from)
             logger.indent = 8
             try:
                 Installer(req).install()

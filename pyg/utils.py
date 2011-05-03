@@ -9,7 +9,6 @@ import tempfile
 import subprocess
 import collections
 import pkg_resources
-import glob as glob_mod
 
 
 from pyg.locations import PYG_LINKS, INSTALL_DIR, under_virtualenv
@@ -126,10 +125,6 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
         logger.info('Complete output from command setup.py install:')
         logger.info(('\n' + ' ' * (logger.indent + 8)).join(output.split('\n')))
         raise exc('setup.py did not install {0}'.format(name))
-
-def glob(dir, pattern):
-    with ChDir(dir):
-        return glob_mod.glob(pattern)
 
 def name_ext(path):
     p, e = os.path.splitext(path)
