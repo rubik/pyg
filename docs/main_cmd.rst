@@ -417,7 +417,7 @@ Pyg Shell
 
 .. versionadded:: 0.4
 
-If you need to execute many Pyg commands and you need root privileges (for example on *\*nix* systems), you can fire up Pyg Shell and you are done::
+If you need to execute many Pyg commands and you need root privileges (for example on Unix systems), you can fire up Pyg Shell and you are done::
 
     $ pyg shell
 

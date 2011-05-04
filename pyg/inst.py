@@ -41,6 +41,10 @@ class Installer(object):
             return
         if args_manager['install']['no_deps']:
             logger.info('Skipping dependencies for {0}', name)
+            logger.indent = 8
+            for req in rs:
+                logger.info(req)
+            logger.indent = 0
             return
         logger.info('Installing dependencies...')
         for req in rs:
@@ -59,7 +63,7 @@ class Installer(object):
                 logger.warn('Error: {0} has not been installed correctlry', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies')
+        logger.info('Finished installing dependencies for {1.name}=={1.version}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)
