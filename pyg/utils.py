@@ -122,10 +122,13 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
                             '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)
-        logger.info('Complete output from command setup.py install:')
-        indt = logger.indent + 8
-        logger.info(' ' * indt + ('\n' + ' ' * indt).join(output.split('\n')))
+        print_output(output, 'setup.py install')
         raise exc('setup.py did not install {0}'.format(name))
+
+def print_output(output, cmd):
+    logger.info('Complete output from command {0}:', cmd)
+    indt = logger.indent + 8
+    logger.info(' ' * indt + ('\n' + ' ' * indt).join(output.split('\n')))
 
 def name_ext(path):
     p, e = os.path.splitext(path)
