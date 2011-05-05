@@ -64,7 +64,7 @@ Pyg supports these files:
 .. option:: -U, --upgrade
 
     If the package is already installed, install it again.
-    For example, you install ``pypol_`` v0.4::
+    For example, one day you install ``pypol_ v0.4``::
 
         $ pyg install pypol_==0.4
         Best match: pypol_==0.4
@@ -74,7 +74,7 @@ Pyg supports these files:
         Running setup.py install for pypol_
         pypol_ installed successfully
 
-    Later you may want to re-install the package. Instead of running ``uninstall`` and then ``install``, you can use the :option:`-U` option::
+    Later you may want to re-install the package. Instead of running :command:`remove`` and then :command:`install`, you can use the :option:`-U` option::
 
         $ pyg install -U pypol_
         Best match: pypol_==0.5
@@ -83,7 +83,15 @@ Pyg supports these files:
         Installing pypol_ egg file
         pypol_ installed successfully
 
+    This command **does not** upgrade dependencies.
+
     .. versionadded:: 0.2
+
+.. option:: -A, --upgrade-all
+
+    Like, :option:`install --upgrade`, but upgrade dependencies too.
+
+    .. versionadded:: 0.5
 
 .. option:: -n, --no-deps
 
@@ -107,13 +115,17 @@ Pyg supports these files:
 Uninstalling
 ============
 
+.. versionchanged:: 0.5
+
+    Replaced :command:`uninstall` and :command:`rm` with :command:`remove`.
+
 Removing a package is dead simple::
 
-    $ pyg uninstall packname
+    $ pyg remove packname
 
 Pyg tries to detect the package's folder and delete it::
 
-    $ pyg uninstall sphinx
+    $ pyg remove sphinx
     Uninstalling sphinx
             /usr/bin/sphinx-build
             /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7-py2.7.egg
@@ -124,7 +136,7 @@ Pyg tries to detect the package's folder and delete it::
 
 If *packname* is a module and not a package, Pyg will automatically detect it::
 
-    $ pyg uninstall roman
+    $ pyg remove roman
     Uninstalling roman
             /usr/local/lib/python2.7/dist-packages/roman.pyc
             /usr/local/lib/python2.7/dist-packages/roman.py
@@ -132,7 +144,7 @@ If *packname* is a module and not a package, Pyg will automatically detect it::
 
 If your answer is *yes* the files will be deleted. This operation is **not undoable**::
 
-    $ pyg uninstall itertools_recipes
+    $ pyg remove itertools_recipes
     Uninstalling itertools_recipes
             /usr/local/lib/python2.7/dist-packages/itertools_recipes-0.1-py2.7.egg
     Proceed? (y/[n]) y
@@ -146,7 +158,7 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
 
     Do not ask confirmation of uninstall deletions::
 
-        $ pyg uninstall -y iterutils
+        $ pyg remove -y iterutils
         Uninstalling iterutils
                 /usr/local/lib/python2.7/dist-packages/iterutils.py
                 /usr/local/lib/python2.7/dist-packages/iterutils-0.1.6.egg-info
@@ -170,7 +182,7 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
 
     ::
 
-        $ pyg uninstall -r reqfile.txt
+        $ pyg remove -r reqfile.txt
         Uninstalling itertools_recipes
                 /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
                 /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
@@ -194,7 +206,7 @@ If your answer is *yes* the files will be deleted. This operation is **not undoa
 
 You can supply both ``packname`` (one or more) and requirement files::
 
-    $ pyg uninstall -r reqfile.txt docutils
+    $ pyg remove -r reqfile.txt docutils
     Uninstalling itertools_recipes
             /usr/local/lib/python2.7/dist-packages/itertools_recipes.py
             /usr/local/lib/python2.7/dist-packages/itertools_recipes.pyc
@@ -224,21 +236,11 @@ You can supply both ``packname`` (one or more) and requirement files::
     Removing egg path from easy_install.pth...
     docutils uninstalled succesfully
 
+.. note::
 
-The ``rm`` command
-==================
+    You can remove Pyg either with ``pyg remove pyg`` or ``pyg remove yourself``!
 
-Since package uninstallation is very common the ``rm`` command is an alias for the :ref:`uninstall <uninst>` command::
-
-    $ sudo pyg rm sphinx
-    Uninstalling sphinx
-            /usr/bin/sphinx-build
-            /usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7-py2.7.egg
-            /usr/bin/sphinx-quickstart
-            /usr/bin/sphinx-autogen
-    Proceed? (y/[n]) 
-    sphinx has not been uninstalled
-
+    .. versionadded:: 0.5
 
 .. _reqs:
 
@@ -459,6 +461,8 @@ Now you can use all Pyg's commands plus 3 shell commands: :command:`cd`, :comman
 Bundles
 =======
 
+.. program:: bundle
+
 The bundle format is specific to Pip (see `Pip documentation <http://www.pip-installer.org/en/latest/index.html#bundles>`_).
 To create a bundle do::
 
@@ -501,3 +505,19 @@ For example, here is ``Pyg`` bundle::
 
 
 You can download the generated bundle :download:`here <../../pyg.pyb>` (direct link to download).
+
+.. option:: -r <path>, --req-file <path>
+
+    Specify requirement files containing packages to add. This option can be repeated many times::
+
+        $ pyg bundle bundlename.pybundle -r myreqs.txt -r other_reqs ...
+
+    .. versionadded:: 0.5
+
+.. option:: -e <requirement>, --exclude <requirement>
+
+    Specify packages to exclude from the bundle (can be repeated many times)::
+
+        $ pyg bundle pyg -e argh -e pkgtools<=0.3
+
+    .. versionadded:: 0.5

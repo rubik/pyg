@@ -73,6 +73,8 @@ See also: :ref:`upd`
 Pyg and virtualenv
 ------------------
 
+.. versionadded:: 0.5
+
 From Pyg 0.5 onwards, virtualenv is completely supported. You can easily manage packages from inside it.
 A little example::
 
