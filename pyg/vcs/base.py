@@ -85,7 +85,7 @@ class VCS(object):
             logger.fatal('Error: The repository must have a top-level setup.py file', exc=InstallationError)
         logger.info('Running setup.py develop for {0}', self.package_name)
         if call_setup(self.dir, ['develop']) != 0:
-            logger.fatal('Error: setup.py did not install {0}', self.package_name, exc=InstallationError)
+            return
         logger.info('{0} installed succesfully', self.package_name)
 
     def install(self):

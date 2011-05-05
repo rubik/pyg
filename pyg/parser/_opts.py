@@ -16,9 +16,9 @@ from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import ReqManager
 
 
-def check_permissions():
+def check_permissions(dir):
     try:
-        path = os.path.join(INSTALL_DIR, 'pyg-permissions-test.pth')
+        path = os.path.join(dir, 'pyg-permissions-test.pth')
         with open(path, 'w'):
             pass
         os.remove(path)
@@ -29,7 +29,8 @@ def check_permissions():
         return True
 
 def check_and_exit():
-    if not check_permissions():
+    dir = args_manager['install']['install_dir']
+    if not check_permissions(dir):
         sys.exit('''Pyg cannot create new files in the installation directory.
 Installation directory was:
 
@@ -47,11 +48,12 @@ If you need further information about Pyg command-line options visit:
     http://pyg.readthedocs.org/en/latest/cmdline.html
 or
     http://pyg-installer.co.nr
-'''.format(__import__('pyg').locations.INSTALL_DIR))
+'''.format(dir))
 
 def _install_package_from_name(package):
     if os.path.exists(package):
         path = os.path.abspath(package)
+        logger.info('Installing {0}', path)
         if os.path.isfile(path):
             return Installer.from_file(path)
         elif os.path.isdir(path):
@@ -69,7 +71,6 @@ def _install_package_from_name(package):
     return Installer(package).install()
 
 def install_func(args):
-    check_and_exit()
     if args.no_deps:
         args_manager['install']['no_deps'] = True
     if args.upgrade:
@@ -86,6 +87,7 @@ def install_func(args):
     if args.install_dir != INSTALL_DIR:
         args_manager['install']['install_dir'] = args.install_dir
     args_manager['install']['index_url'] = args.index_url
+    check_and_exit()
     if args.editable:
         return vcs(args.packname).develop()
     if args.req_file:

@@ -9,7 +9,6 @@ import tempfile
 import subprocess
 import collections
 import pkg_resources
-import glob as glob_mod
 
 
 from pyg.locations import PYG_LINKS, INSTALL_DIR, under_virtualenv
@@ -98,16 +97,12 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_subprocess(args, stdout, stderr):
+def call_subprocess(args):
     try:
-        keywords = ('fatal:', 'error:')
         output = check_output(args, stderr=subprocess.STDOUT)
-        for line in output.split('\n'):
-            if any(keyword in line for keyword in keywords):
-                logger.error(line)
-        return 0
-    except CalledProcessError as e:
-        return e.returncode
+    except (subprocess.CalledProcessError, CalledProcessError) as e:
+        return e.returncode, e.output
+    return 0, output
 
 def call_setup(path, a):
     code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
@@ -116,20 +111,18 @@ def call_setup(path, a):
         logger.debug('virtualenv detected')
         args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
     with ChDir(path):
-        with TempDir() as tempdir:
-            stdout = open(os.path.join(tempdir, 'pyg-proc-stdout'), 'w')
-            stderr = open(os.path.join(tempdir, 'pyg-proc-stderr'), 'w')
-        return call_subprocess(args, stdout=stdout, stderr=stderr)
+        return call_subprocess(args)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
-    if call_setup(path, global_args + ['install', '--single-version-externally-managed',
-                                       '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args):
-        logger.fatal('setup.py did not install {0}', name, exc=exc)
-
-def glob(dir, pattern):
-    with ChDir(dir):
-        return glob_mod.glob(pattern)
+    code, output = call_setup(path, global_args + ['install', '--single-version-externally-managed',
+                            '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
+    if code != 0:
+        logger.fatal('Error: setup.py did not install {0}', name)
+        logger.info('Complete output from command setup.py install:')
+        indt = logger.indent + 8
+        logger.info(' ' * indt + ('\n' + ' ' * indt).join(output.split('\n')))
+        raise exc('setup.py did not install {0}'.format(name))
 
 def name_ext(path):
     p, e = os.path.splitext(path)

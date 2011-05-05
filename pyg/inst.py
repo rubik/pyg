@@ -12,10 +12,10 @@ from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import WorkingSet, Installed, SDist
 
 from pyg.types import *
-from pyg.web import ReqManager
+from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, glob
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -41,6 +41,10 @@ class Installer(object):
             return
         if args_manager['install']['no_deps']:
             logger.info('Skipping dependencies for {0}', name)
+            logger.indent = 8
+            for req in rs:
+                logger.info(req)
+            logger.indent = 0
             return
         logger.info('Installing dependencies...')
         for req in rs:
@@ -49,7 +53,7 @@ class Installer(object):
                 logger.info('{0} is already installed', req)
                 continue
             logger.indent = 0
-            logger.info('Installing {0} (from {1})', req, rs.comes_from)
+            logger.info('Installing {0} (from {1.name}=={1.version})', req, rs.comes_from)
             logger.indent = 8
             try:
                 Installer(req).install()
@@ -59,7 +63,7 @@ class Installer(object):
                 logger.warn('Error: {0} has not been installed correctlry', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies')
+        logger.info('Finished installing dependencies for {1.name}=={1.version}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)

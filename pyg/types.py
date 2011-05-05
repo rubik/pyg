@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import tarfile
 import pkg_resources
 import configparser
@@ -8,7 +9,7 @@ from io import StringIO
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
 from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN
-from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, glob, ext
+from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, ext
 from pyg.log import logger
 
 
@@ -199,13 +200,23 @@ class Dir(object):
             logger.info('Running setup.py egg_info for {0}', self.name)
             call_setup(self.path, ['egg_info', '--egg-base', self.tempdir])
             try:
-                for r in DirTools(os.path.join(self.tempdir, glob(self.tempdir, '*.egg-info')[0])).file('requires.txt'):
-                    self.reqset.add(r)
-            except (IndexError, KeyError, ConfigParser.MissingSectionHeaderError):
-                logger.debug('requires.txt not found')
+                dist = DirTools(glob.glob(os.path.join(self.path, '*egg-info'))[0])
+            except (IndexError, ValueError):
+                pass
+            else:
+                try:
+                    for r in dist.file('requires.txt'):
+                        self.reqset.add(r)
+                except (KeyError, ConfigParser.MissingSectionHeaderError):
+                    logger.debug('requires.txt not found')
+                try:
+                    for r in dist.file('dependency_links.txt'):
+                        self.reqset.add(r)
+                except (KeyError, ConfigParser.MissingSectionHeaderError):
+                    logger.debug('dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
-            args += ['--install-base', args_manager['install']['install_dir']]
+            args += ['--prefix', args_manager['install']['install_dir']]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:

@@ -6,7 +6,7 @@ from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg, is_windows
 from pyg.web import ReqManager, LinkFinder, request
-from pyg.types import Version, Egg, Archive, Binary, ReqSet, InstallationError
+from pyg.types import Version, Egg, Archive, Binary, ReqSet, InstallationError, args_manager
 from pyg.log import logger
 
 
@@ -27,10 +27,12 @@ class Requirement(object):
               None: lambda a,b: True, ##FIXME: does None really work?
              }
 
+    version = op = None
+
     def __init__(self, req):
         self.req = req
         self.split()
-        self.reqset = ReqSet(self.name)
+        self.reqset = ReqSet(self)
 
     def __repr__(self):
         return 'Requirement({0})'.format(self.req)
@@ -101,30 +103,34 @@ class Requirement(object):
         self.success = True
 
     def install(self):
-        logger.info('Looking for {0} releases on PyPI', self.name)
-        p = ReqManager(self)
-        self.success = False
-        for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-            for v, name, hash, url in p.files()[pext]:
-                if pext == '.egg' and not right_egg(name):
-                    continue
-                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
-                    continue
-                logger.info('Best match: {0}=={1}', self.name, v)
-                try:
-                    self._download_and_install(url, name, p.name, hash)
-                except InstallationError:
-                    continue
-                if not self.version:
-                    self.version = v
-                break
-            if self.success:
-                break
+        package_index = args_manager['install']['index_url']
+        if package_index == 'http://pypi.python.org/pypi':
+            logger.info('Looking for {0} releases on PyPI', self.name)
+            p = ReqManager(self)
+            self.success = False
+            for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+                for v, name, hash, url in p.files()[pext]:
+                    if pext == '.egg' and not right_egg(name):
+                        continue
+                    if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
+                        continue
+                    logger.info('Best match: {0}=={1}', self.name, v)
+                    try:
+                        self._download_and_install(url, name, p.name, hash)
+                    except InstallationError:
+                        continue
+                    if not self.version:
+                        self.version = v
+                    break
+                if self.success:
+                    break
+            if not self.success:
+                logger.warn('Warning: did not find files on PyPI for {0}', self.name)
+                package_index = 'http://pypi.python.org/simple/'
         if not self.success:
-            logger.warn('Warning: did not find files on PyPI for {0}', self.name)
-            logger.info('Looking for links on PyPI')
+            logger.info('Looking for links on {0}', package_index)
             try:
-                link_finder = LinkFinder(self.name)
+                link_finder = LinkFinder(self.name, package_index)
                 links = link_finder.find()
                 if not links:
                     raise InstallationError('Error: did not find any files')
