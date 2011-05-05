@@ -5,7 +5,7 @@ import urllib.parse
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
-from pyg.types import PygError, Version, args_manager
+from pyg.core import PygError, Version, args_manager
 from pyg.utils import FileMapper, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 

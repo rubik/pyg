@@ -8,7 +8,7 @@ used as a library.
 def load_options():
     import os.path
 
-    from pyg.types import args_manager
+    from pyg.core import args_manager
     from pyg.locations import CFG_FILES
     from pyg.log import logger
 
