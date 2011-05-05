@@ -1,10 +1,8 @@
 CHANGELOG
 =========
 
-0.5 (in development)
+0.5 (May 05, 2011)
 --------------------
-
-Already implemented:
 
 + #29: Create bundles from requirements files.
 + #30: Keep track of why requirements are needed.
