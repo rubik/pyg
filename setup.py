@@ -46,9 +46,11 @@ setup(name='pyg',
       platforms='any',
       packages=['pyg'],
       include_package_data=True,
-      keywords=['python', 'easy_install', 'setuptools', 'package manager'],
+      keywords=['python', 'easy_install', 'pip', 'setuptools', 'package manager', \
+                'command line', 'CLI'],
       install_requires=requires,
       provides=['pyg'],
+      zip_safe=False,
       entry_points={
         'console_scripts': [
             'pyg = pyg:main'

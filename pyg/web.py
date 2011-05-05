@@ -10,7 +10,8 @@ from pyg.utils import FileMapper, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 
-__all__ = ['ReqManager', 'get_version', 'request', 'PREFERENCES']
+__all__ = ['PREFERENCES', 'ReqManager', 'LinkFinder', 'get_versions', \
+           'highest_version', 'request']
 
 
 ## This constants holds files priority

@@ -7,7 +7,7 @@ import re
 import sys
 import pkg_resources
 
-SCRIPT_TEXT = '''# EASY-INSTALL-ENTRY-SCRIPT: {spec!r},{group!r},{name!r}
+SCRIPT_TEXT = '''# PYG-ENTRY-SCRIPT: {spec!r},{group!r},{name!r}
 __requires__ = {spec!r}
 import sys
 from pkg_resources import load_entry_point
