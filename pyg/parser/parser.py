@@ -12,15 +12,16 @@ def load_options():
     from pyg.locations import CFG_FILES
     from pyg.log import logger
 
-    for cfg in CFG_FILES:
-        if os.path.exists(cfg):
-            logger.info('Loading options from {0}', cfg)
+    if CFG_FILES:
+        for cfg in CFG_FILES:
+            if os.path.exists(cfg):
+                logger.info('Loading options from {0}', cfg)
 
-            ## This is for potential warnings
-            logger.indent = 8
-            args_manager.load(cfg)
-            logger.indent = 0
-            break
+                ## This is for potential warnings
+                logger.indent = 8
+                args_manager.load(cfg)
+                logger.indent = 0
+                break
 
 def init_parser(version=None):
     import _opts as opts

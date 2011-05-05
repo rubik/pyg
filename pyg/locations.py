@@ -1,5 +1,4 @@
 import os
-import pwd
 import sys
 import site
 import platform
@@ -84,6 +83,7 @@ HOME = os.getenv('HOME')
 PYG_HOME = PACKAGES_CACHE = CFG_FILES = None
 _sudo_uid = os.getenv('SUDO_UID')
 if _sudo_uid:
+    import pwd
     _sudo_uid = int(_sudo_uid)
     HOME = pwd.getpwuid(_sudo_uid).pw_dir
 
