@@ -97,11 +97,14 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_subprocess(args):
+def call_subprocess(args, all_output=False):
     try:
         output = check_output(args, stderr=subprocess.STDOUT)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
         return e.returncode, e.output
+    finally:
+        if all_output:
+            logger.info(output)
     return 0, output
 
 def call_setup(path, a):

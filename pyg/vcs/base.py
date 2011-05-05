@@ -76,7 +76,7 @@ class VCS(object):
                 if self.ARGS is not None:
                     args = ARGS + args
                 logger.info('Copying data from {0} to {1}', self.url, self.dest)
-                if call_subprocess([self.cmd, self.method] + args, sys.stdout, sys.stderr) != 0:
+                if call_subprocess([self.cmd, self.method] + args, True) != 0:
                     logger.fatal('Error: Cannot retrieve data', exc=InstallationError)
 
     def develop(self):

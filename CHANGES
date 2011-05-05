@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.5.1 (May 05, 2011)
+--------------------
+
++ Fixed :file:`setup.py`: added the ``zip-safe`` flag.
+
 0.5 (May 05, 2011)
 --------------------
 
