@@ -6,7 +6,7 @@ def main():
     import urllib2
 
     from .parser.parser import init_parser, load_options
-    from .types import PygError, InstallationError, AlreadyInstalled
+    from .core import PygError, InstallationError, AlreadyInstalled
 
     try:
         parser = init_parser(__version__)

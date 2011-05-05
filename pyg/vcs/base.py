@@ -4,7 +4,7 @@ import shutil
 
 from pyg.utils import TempDir, ChDir, call_subprocess, call_setup
 from pyg.inst import Installer
-from pyg.types import InstallationError
+from pyg.core import InstallationError
 from pyg.log import logger
 
 
