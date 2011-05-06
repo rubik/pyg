@@ -10,13 +10,15 @@ from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.core import args_manager, PygError
-from pyg.inst import Installer, Uninstaller, Updater, Bundler
+from pyg.inst import Installer, Uninstaller, Updater, Bundler, PygError
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR, under_virtualenv
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import ReqManager
 
 
 def check_permissions(dir):
+    if not os.path.exists(dir):
+        raise __import__('pyg').log.logger.fatal('Error: installation directory {0} does not exist', dir, exc=PygError)
     try:
         path = os.path.join(dir, 'pyg-permissions-test.pth')
         with open(path, 'w'):
@@ -29,7 +31,7 @@ def check_permissions(dir):
         return True
 
 def check_and_exit():
-    dir = args_manager['install']['install_dir']
+    dir = os.path.abspath(args_manager['install']['install_dir'])
     if not check_permissions(dir):
         sys.exit('''Pyg cannot create new files in the installation directory.
 Installation directory was:
@@ -51,7 +53,7 @@ or
 '''.format(dir))
 
 def _install_package_from_name(package):
-    if os.path.exists(package):
+    if os.path.exists(package) and not args_manager['install']['ignore']:
         path = os.path.abspath(package)
         logger.info('Installing {0}', path)
         if os.path.isfile(path):
@@ -82,6 +84,8 @@ def install_func(args):
         args_manager['install']['no_scripts'] = True
     if args.no_data:
         args_manager['install']['no_data'] = True
+    if args.ignore:
+        args_manager['install']['ignore'] = True
     if args.user:
         args_manager['install']['install_dir'] = USER_SITE
     if args.install_dir != INSTALL_DIR:

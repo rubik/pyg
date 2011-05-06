@@ -293,6 +293,7 @@ class ArgsManager(object):
             'user': False,
             'no_scripts': False,
             'no_data': False,
+            'ignore': False,
         },
         'remove': {
             'yes': False
