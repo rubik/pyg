@@ -230,11 +230,14 @@ class Archive(object):
         if e == '.zip':
             self.arch = ZipFile(fobj)
         else:
-            m = 'r:{0}'.format(e.split('.')[2])
-
-            ## A package should not be a tar file but we don't know
-            if e.endswith('.tar'):
+            if e is None:
                 m = 'r'
+            ## A package should not be a tar file but we don't know
+            elif e.endswith('.tar'):
+                m = 'r'
+            else:
+                m = 'r:{0}'.format(e.split('.')[2])
+
             self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 

@@ -62,7 +62,7 @@ def _install_package_from_name(package):
             return Installer.from_dir(path)
         else:
             raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
-    if package.startswith('http'):
+    if package.startswith(('http://', 'https://')):
         return Installer.from_url(package)
     for s in ('git+', 'hg+', 'bzr+', 'svn+'):
         if package.startswith(s):

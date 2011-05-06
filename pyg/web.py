@@ -37,8 +37,12 @@ def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    r = urllib2.Request(url)
-    return urllib2.urlopen(r).read()
+    import httplib2
+    h = httplib2.Http('.cache')
+    resp, content = h.request(url)
+    if resp['status'] == '404':
+        logger.error('Error: URL does not exist: {0}', url, exc=PygError)
+    return content
 
 
 class ReqManager(object):
@@ -51,6 +55,7 @@ class ReqManager(object):
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
             self.package_manager = PyPIJson(self.name, highest_version(self.req))
+        self.package_manager._request_func = request
 
         self._set_prefs(pref)
 

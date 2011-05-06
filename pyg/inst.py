@@ -3,6 +3,7 @@ import os
 import sys
 import site
 import shutil
+import tarfile
 import zipfile
 import urlparse
 import ConfigParser
@@ -63,7 +64,7 @@ class Installer(object):
                 logger.warn('Error: {0} has not been installed correctlry', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies for {1.name}=={1.version}', rs.comes_from)
+        logger.info('Finished installing dependencies for {0.name}=={0.version}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)
@@ -113,8 +114,8 @@ class Installer(object):
             raise InstallationError
 
     @ staticmethod
-    def from_file(filepath):
-        packname = os.path.basename(filepath).split('-')[0]
+    def from_file(filepath, packname=None):
+        packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
 
         if is_installed(packname) and not args_manager['install']['upgrade']:
@@ -132,7 +133,13 @@ class Installer(object):
         elif e in ('.exe', '.msi') and is_windows():
             installer = Binary(open(path), e, packname)
         else:
-            logger.fatal('Error: Cannot install {0}: unknown extension: {1}', packname, e, exc=InstallationError)
+            print path
+            if tarfile.is_tarfile(path):
+                installer = Archive(open(path), None, packname, reqset)
+            elif zipfile.is_zipfile(path):
+                installer = Archive(open(path), '.zip', packname, reqset)
+            else:
+                logger.fatal('Error: Cannot install {0}: unknown filetype', packname, exc=InstallationError)
         installer.install()
         Installer._install_deps(reqset, packname)
         logger.info('{0} installed successfully', packname)
@@ -154,13 +161,17 @@ class Installer(object):
 
     @ staticmethod
     def from_url(url, packname=None):
-        with TempDir() as t:
-            packname = packname if packname is not None else urlparse.urlsplit(url).path.split('/')[-1]
+        import tempfile
+        t = tempfile.mkdtemp()
+        if 1:
+            packname = packname or urlparse.urlsplit(url).path.split('/')[-1]
+            if '#egg=' in url:
+                url, packname = url.split('#egg=')
             path = os.path.join(t, packname)
-            logger.info('Installing {0}', packname)
+            logger.info('Installing {0} from {1}', packname, url)
             with open(path, 'w') as f:
                 f.write(request(url))
-            Installer.from_file(path)
+            Installer.from_file(path, packname)
 
 
 class Uninstaller(object):
