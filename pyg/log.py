@@ -52,7 +52,8 @@ class Logger(object):
             std.write(msg)
 
             ## Automatically adds a newline character
-            std.write('\n')
+            if kw.get('addn', True):
+                std.write('\n')
 
             ## flush() makes the log immediately readable
             std.flush()

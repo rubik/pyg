@@ -277,7 +277,7 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self):
-        logger.info('Loading list of installed packages...')
+        logger.info('Loading list of installed packages... ', addn=False)
         self.working_set = list(iter(pkg_resources.working_set))
         logger.info('{0} packages loaded', len(self.working_set))
 
@@ -308,7 +308,11 @@ class Updater(object):
                 logger.info('Trying another file...')
                 logger.indent -= 4
         else:
-            logger.fatal('Error: Did not find any release on PyPI for {0}', package_name)
+            logger.warn('Error: Did not find any installable release on PyPI for {0}', package_name)
+            try:
+                Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['index_url'])
+            except Exception as e:
+                logger.fatal('Error: {0}', e, exc=InstallationError)
         logger.indent = 0
 
     def update(self):

@@ -33,6 +33,7 @@ class Requirement(object):
         self.req = req
         self.split()
         self.reqset = ReqSet(self)
+        self.package_index = args_manager['install']['index_url']
 
     def __repr__(self):
         return 'Requirement({0})'.format(self.req)
@@ -102,9 +103,35 @@ class Requirement(object):
         installer.install()
         self.success = True
 
-    def install(self):
-        package_index = args_manager['install']['index_url']
+    def _install_from_links(self, package_index):
+        ## Monkey-patch for pyg.inst.Updater:
+        ## it does not know the real index url!
         if package_index == 'http://pypi.python.org/pypi':
+            package_index = 'http://pypi.python.org/simple'
+        logger.info('Looking for links on {0}', package_index)
+        try:
+            link_finder = LinkFinder(self.name, package_index)
+            links = link_finder.find()
+            if not links:
+                raise InstallationError('Error: did not find any files')
+        except Exception as e:
+            raise InstallationError(str(e))
+        logger.indent = 8
+        for url in links:
+            filename = url.split('/')[-1]
+            logger.info('Found: {0}', filename)
+            try:
+                self._download_and_install(url, filename, self.name)
+            except Exception as e:
+                logger.error('Error: {0}', e)
+                continue
+            break
+        logger.indent = 0
+        if not self.success:
+            raise InstallationError('Fatal: cannot install {0}'.format(self.name))
+
+    def install(self):
+        if self.package_index == 'http://pypi.python.org/pypi':
             logger.info('Looking for {0} releases on PyPI', self.name)
             p = ReqManager(self)
             self.success = False
@@ -126,26 +153,6 @@ class Requirement(object):
                     break
             if not self.success:
                 logger.warn('Warning: did not find files on PyPI for {0}', self.name)
-                package_index = 'http://pypi.python.org/simple/'
+                self.package_index = 'http://pypi.python.org/simple/'
         if not self.success:
-            logger.info('Looking for links on {0}', package_index)
-            try:
-                link_finder = LinkFinder(self.name, package_index)
-                links = link_finder.find()
-                if not links:
-                    raise InstallationError('Error: did not find any files')
-            except Exception as e:
-                raise InstallationError(str(e))
-            logger.indent = 8
-            for url in links:
-                filename = url.split('/')[-1]
-                logger.info('Found: {0}', filename)
-                try:
-                    self._download_and_install(url, filename, self.name)
-                except Exception as e:
-                    logger.error('Error: {0}', e)
-                    continue
-                break
-            logger.indent = 0
-            if not self.success:
-                raise InstallationError('Fatal: cannot install {0}'.format(self.name))
+            self._install_from_links(self.package_index)
