@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 import urllib2
@@ -18,7 +19,7 @@ from pyg.web import ReqManager
 
 def check_permissions(dir):
     if not os.path.exists(dir):
-        raise __import__('pyg').log.logger.fatal('Error: installation directory {0} does not exist', dir, exc=PygError)
+        logger.fatal('Error: installation directory {0} does not exist', dir, exc=PygError)
     try:
         path = os.path.join(dir, 'pyg-permissions-test.pth')
         with open(path, 'w'):
@@ -157,10 +158,17 @@ def list_func(name):
             res.append(v)
     return sys.stdout.write('\n'.join(res) + '\n')
 
-def search_func(name):
-    res = PyPIXmlRpc().search({'name': name})
-    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in \
-                            sorted(res, key=lambda i: i['_pypi_ordering'], reverse=True)) + '\n')
+def search_func(query, exact):
+    res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
+                 key=lambda i: i['_pypi_ordering'], reverse=True)
+    if exact:
+        pattern = re.compile('$|'.join(query) + '$')
+        results = []
+        for r in res:
+            if pattern.match(r['name']) is not None and r not in results:
+                results.append(r)
+        res = results
+    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in res) + '\n')
 
 def download_func(args):
     pref = None
@@ -184,7 +192,6 @@ def update_func(args):
     if args.yes:
         args_manager['update']['yes'] = True
     check_and_exit()
-    logger.info('Loading list of installed packages...')
     up = Updater()
     up.update()
 

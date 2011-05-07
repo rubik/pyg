@@ -29,6 +29,8 @@ def init_parser(version=None):
     from argh import ArghParser, arg, command
 
     parser = ArghParser(prog='pyg')
+    parser.add_argument('-d', '--debug', action='store_true', help='Set logger to DEBUG level')
+    parser.add_argument('--verbose', action='store_true', help='Set logger to VERBOSE level')
     if version is not None:
         parser.add_argument('-v', '--version', action='version', version=version)
 
@@ -72,9 +74,10 @@ def init_parser(version=None):
     def unlink(args):
         opts.unlink_func(args)
 
-    @ command
-    def search(packname):
-        opts.search_func(packname)
+    @ arg('query', nargs='+')
+    @ arg('-e', '--exact', action='store_true', help='List only exact hits')
+    def search(args):
+        opts.search_func(args.query, args.exact)
 
     @ command
     def check(packname):

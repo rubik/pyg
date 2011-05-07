@@ -97,9 +97,9 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_subprocess(args, all_output=False):
+def call_subprocess(args, all_output=False, cwd=None):
     try:
-        output = check_output(args, stderr=subprocess.STDOUT)
+        output = check_output(args, stderr=subprocess.STDOUT, cwd=cwd)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
         return e.returncode, e.output
     finally:
@@ -113,8 +113,7 @@ def call_setup(path, a):
     if under_virtualenv():
         logger.debug('virtualenv detected')
         args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
-    with ChDir(path):
-        return call_subprocess(args)
+    return call_subprocess(args, cwd=path)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)

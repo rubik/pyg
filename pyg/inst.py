@@ -277,23 +277,8 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self):
-        if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE):
-            open(PACKAGES_CACHE, 'w').close()
-            logger.info('Cache file not found: $HOME/.pyg/installed_packages.txt')
-            self.working_set = list(WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug))
-        else:
-            logger.info('Reading cache...')
-            with open(PACKAGES_CACHE, 'r') as f:
-                self.working_set = []
-                for line in f:
-                    line = line.strip()
-                    package, path = line.split()
-                    try:
-                        dist = Installed(package)
-                    except ValueError:
-                        dist = Installed(os.path.basename(path))
-                    self.working_set.append((package, (path, dist))
-                                            )
+        logger.info('Loading list of installed packages...')
+        self.working_set = list(iter(pkg_resources.working_set))
         logger.info('{0} packages loaded', len(self.working_set))
 
     def _pkgutil_onerror(self, pkgname):
@@ -333,18 +318,17 @@ class Updater(object):
         '''
 
         logger.info('Searching for updates')
-        if PACKAGES_CACHE:
-            with open(PACKAGES_CACHE, 'w') as f:
-                for package, data in self.working_set:
-                    f.write('{0} {1}\n'.format(package, data[0]))
-        for package, data in self.working_set:
-            path, dist = data
+        for dist in self.working_set:
+            package = dist.project_name
+            version = Version(dist.version)
+            logger.verbose('Found: {0}=={1}', package, version)
             try:
                 json = PyPIJson(package).retrieve()
                 new_version = Version(json['info']['version'])
             except Exception as e:
-                logger.error('Error: Failed to fetch data for {0}', package, exc=PygError)
-            if Version(dist.version) >= new_version:
+                logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
+                continue
+            if version >= new_version:
                 continue
 
             logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)

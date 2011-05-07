@@ -277,8 +277,7 @@ class Binary(object):
             installer = os.path.join(tempdir, filename)
             with open(installer, 'w') as i:
                 i.write(self.fobj.getvalue())
-            with ChDir(tempdir):
-                call_subprocess(['./' + filename])
+                call_subprocess(['./' + filename], cwd=tempdir)
 
 
 class ArgsManager(object):

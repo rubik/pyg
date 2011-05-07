@@ -7,9 +7,15 @@ def main():
 
     from .parser.parser import init_parser, load_options
     from .core import PygError, InstallationError, AlreadyInstalled
+    from .log import logger
 
     try:
         parser = init_parser(__version__)
+        args = parser.parse_args()
+        if args.verbose:
+            logger.level = logger.VERBOSE
+        if args.debug:
+            logger.level = logger.DEBUG
         load_options()
         parser.dispatch()
     except (PygError, InstallationError, ValueError):
