@@ -20,6 +20,9 @@ class Logger(object):
         self.last_msg = None
         self.enabled = True
 
+    def newline(self):
+        sys.stdout.write('\n')
+
     def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, *a, **kw)
 
@@ -49,7 +52,10 @@ class Logger(object):
             std = sys.stdout
             if level >= self.ERROR:
                 std = sys.stderr
-            msg = ' ' * self.indent + msg.format(*a)
+            if msg.startswith('\r'):
+                msg = '\r' + ' ' * self.indent + msg[1:].format(*a)
+            else:
+                msg = ' ' * self.indent + msg.format(*a)
             std.write(msg)
 
             ## Automatically adds a newline character

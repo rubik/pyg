@@ -1,7 +1,10 @@
 import re
 import os
+import urllib
 import urllib2
+import httplib2
 import urlparse
+import cStringIO
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
@@ -37,12 +40,42 @@ def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    import httplib2
     h = httplib2.Http('.cache')
     resp, content = h.request(url)
     if resp['status'] == '404':
         logger.error('Error: URL does not exist: {0}', url, exc=PygError)
     return content
+
+def convert_bytes(bytes):
+    ## FIXME: Use str.format!!
+    bytes = float(bytes)
+    if bytes >= 1099511627776:
+        terabytes = bytes / 1099511627776
+        size = '%.1f Tb' % terabytes
+    elif bytes >= 1073741824:
+        gigabytes = bytes / 1073741824
+        size = '%.1f Gb' % gigabytes
+    elif bytes >= 1048576:
+        megabytes = bytes / 1048576
+        size = '%.1f Mb' % megabytes
+    elif bytes >= 1024:
+        kilobytes = bytes / 1024
+        size = '%.1f Kb' % kilobytes
+    else:
+        size = '%.1f b' % bytes
+    return size
+
+def download(url, msg):
+    def hook(blocks, block_size, total_size):
+        if block_size > total_size:
+            logger.info('\r{0} [100% - {1}]', msg, convert_bytes(total_size), addn=False)
+            return
+        downloaded = block_size * blocks
+        logger.info('\r{0} [{1:.0%} - {2}]', msg, downloaded / float(total_size), convert_bytes(downloaded), addn=False)
+    path = urllib.urlretrieve(url, reporthook=hook)[0]
+    logger.newline()
+    with open(path) as f:
+        return cStringIO.StringIO(f.read())
 
 
 class ReqManager(object):

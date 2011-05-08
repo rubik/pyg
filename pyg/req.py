@@ -1,11 +1,9 @@
 import operator
-import platform
-import cStringIO
 
 from hashlib import md5
 
 from pyg.utils import PYTHON_VERSION, ext, right_egg, is_windows
-from pyg.web import ReqManager, LinkFinder, request
+from pyg.web import ReqManager, LinkFinder, download
 from pyg.core import Version, Egg, Archive, Binary, ReqSet, InstallationError, args_manager
 from pyg.log import logger
 
@@ -13,7 +11,7 @@ from pyg.log import logger
 __all__ = ['Requirement', 'WINDOWS_EXT']
 
 
-WINDOWS_EXT = ('.exe', '.msi') if platform.system() == 'Windows' else ()
+WINDOWS_EXT = ('.exe', '.msi') if is_windows() else ()
 
 
 class Requirement(object):
@@ -80,8 +78,7 @@ class Requirement(object):
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
     def _download_and_install(self, url, filename, packname, hash=None):
-        logger.info('Downloading {0}', self.name)
-        fobj = cStringIO.StringIO(request(url))
+        fobj = download(url, 'Downloading {0}'.format(self.name))
         if hash is not None:
             logger.info('Checking md5 sum')
             if md5(fobj.getvalue()).hexdigest() != hash:
