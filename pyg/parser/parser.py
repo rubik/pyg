@@ -53,6 +53,7 @@ def init_parser(version=None):
     @ arg('packname', nargs='+')
     @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
+    @ arg('-i', '--info', action='store_true', help='Only list files to delete')
     def remove(args):
         opts.remove_func(args)
 

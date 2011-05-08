@@ -107,6 +107,15 @@ def install_func(args):
             _install_package_from_name(package)
 
 def remove_func(args):
+    if args.info:
+        for p in args.packname:
+            logger.info('{0}:', p)
+            files = Uninstaller(p).find_files()
+            logger.indent = 8
+            for path in files:
+                logger.info(path)
+            logger.indent = 0
+        return
     check_and_exit()
     yes = True if args.yes or args_manager['remove']['yes'] else False
     if len(args.packname) == 1 and args.packname[0] == 'yourself':
