@@ -5,6 +5,7 @@ import site
 import shutil
 import tarfile
 import zipfile
+import tempfile
 import urlparse
 import ConfigParser
 import pkg_resources
@@ -179,11 +180,9 @@ class Uninstaller(object):
         self.name = packname
         self.yes = yes
 
-    def uninstall(self):
+    def find_files(self):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
         uninstall_re2 = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
-        path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
-        path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
 
         to_del = set()
         try:
@@ -218,8 +217,8 @@ class Uninstaller(object):
             for s in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
 
-                ## If we are on Win we have to remove *.bat files too
-                if sys.platform == 'win32':
+                ## If we are on Windows we have to remove *.bat files too
+                if is_windows():
                     to_del.add(os.path.join(BIN, script) + '.bat')
 
         ## Very important!
@@ -237,6 +236,13 @@ class Uninstaller(object):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
+
+        return to_del
+
+    def uninstall(self):
+        path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
+        path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
+        to_del = self.find_files()
         if not to_del:
             logger.warn('{0}: did not find any file to delete', self.name)
             raise PygError
@@ -256,13 +262,13 @@ class Uninstaller(object):
             elif u == 'y':
                 for d in to_del:
                     try:
+                        logger.info('Deleting: {0}', d)
                         shutil.rmtree(d)
                     except OSError: ## It is not a directory
                         try:
                             os.remove(d)
                         except OSError:
-                            logger.error('Error: Cannot delete: {0}', d)
-                    logger.info('Deleting: {0}', d)
+                            logger.error('Error: cannot delete {0}', d)
                 logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
@@ -276,24 +282,68 @@ class Uninstaller(object):
 
 
 class Updater(object):
-    def __init__(self):
-        logger.info('Loading list of installed packages... ', addn=False)
-        self.working_set = list(iter(pkg_resources.working_set))
-        logger.info('{0} packages loaded', len(self.working_set))
+    def __init__(self, skip=False):
+        ## You should use skip=True when you want to upgrade a single package.
+        ## Just do:
+        ## >>> u = Updater(skip=True)
+        ## >>> u.upgrade(package_name, json, version)
+        if not skip:
+            logger.info('Loading list of installed packages... ', addn=False)
+            self.working_set = list(iter(pkg_resources.working_set))
+            logger.info('{0} packages loaded', len(self.working_set))
+            self.removed = {}
 
-    def _pkgutil_onerror(self, pkgname):
-        logger.debug('Error while importing {0}', pkgname)
+    def remove_files(self, package):
+        uninst = Uninstaller(package)
+        to_del = uninst.find_files()
+        if not to_del:
+            logger.info('No files to remove found')
+            return
+        tempdir = tempfile.mktemp()
+        self.removed[package] = {}
+        self.removed[package][tempdir] = []
+        for path in to_del:
+            self.removed[package][tempdir].append(path)
+            ## We store files-to-delete into a temporary directory:
+            ## if something goes wrong during the upgrading we can
+            ## restore the original files!
+            p = os.path.join(tempdir, os.path.basename(path))
+            try:
+                shutil.copy2(path, p)
+            ## It is a directory
+            except IOError:
+                shutil.copytree(path, p)
+        logger.enabled = False
+        uninst.uninstall()
+        logger.enabled = True
+
+    def restore_files(self, package):
+        package = self.removed['package']
+        tempdir = package.keys()[0]
+        for path in package[tempdir]:
+            p = os.path.join(tempdir, os.path.basename(path))
+            try:
+                shutil.copy2(p, path)
+            ## It is a directory
+            except IOError:
+                shutil.copytree(p, path)
+
+    def _clean(self):
+        logger.debug('debug: Removing temporary directories')
+        for package, dirs in self.removed.iteritems():
+            try:
+                shutil.rmtree(dirs.keys()[0])
+            except shutil.Error:
+                logger.debug('debug: Error while removing {0}', dirs.keys()[0])
+                continue
 
     def upgrade(self, package_name, json, version):
         '''
         Upgrade a package to the most recent version.
         '''
 
-        ## FIXME: Do we have to remove the package old version?
-        #logger.info('Removing {0} old version', package_name)
-        #logger.indent += 8
-        #Uninstaller(package_name, True).uninstall()
-        #logger.indent = 0
+        logger.info('Removing {0} old version', package_name)
+        self.remove_files(package_name)
         args_manager['install']['upgrade'] = True
         logger.info('Upgrading {0} to {1}', package_name, version)
         logger.indent += 8
@@ -313,6 +363,8 @@ class Updater(object):
                 Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['index_url'])
             except Exception as e:
                 logger.fatal('Error: {0}', e, exc=InstallationError)
+                logger.info('Restoring uninstalled files')
+                self.restore_files(package_name)
         logger.indent = 0
 
     def update(self):
@@ -347,6 +399,7 @@ class Updater(object):
                 elif u == 'y':
                     self.upgrade(package, json, new_version)
                     break
+        self._clean()
         logger.info('Updating finished successfully')
 
 

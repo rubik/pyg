@@ -10,7 +10,7 @@ Already implemented:
     + #44: Added a :option:`install --ignore` option.
     + #45: Replaced :attr:`pkgtools.WorkingSet` with :attr:`pkg_resources.working_set` in :class:`pyg.inst.Updater`.
     + #46: Added two new global command-line option: :option:`-d, --debug` and :option:`--verbose`.
-    + #47: The Updater is now faster and looks for links on ``http://pypi.python.org/simple`` too.
+    + #47: The Updater is now faster and searches links on ``http://pypi.python.org/simple`` too.
 
 Not yet implemented:
 

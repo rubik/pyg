@@ -18,6 +18,7 @@ class Logger(object):
         self.indent = 0
         self.level = level or Logger.INFO
         self.last_msg = None
+        self.enabled = True
 
     def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, *a, **kw)
@@ -44,7 +45,7 @@ class Logger(object):
             raise exc(self.last_msg)
 
     def log(self, level, msg, *a, **kw):
-        if level >= self.level:
+        if level >= self.level and self.enabled:
             std = sys.stdout
             if level >= self.ERROR:
                 std = sys.stderr
