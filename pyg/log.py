@@ -17,10 +17,14 @@ class Logger(object):
     def __init__(self,level=None):
         self.indent = 0
         self.level = level or Logger.INFO
-        self.last_msg = None
+        self.last_msg = ''
         self.enabled = True
 
     def newline(self):
+        '''
+        Print a newline character (\n) on Standard Output.
+        '''
+
         sys.stdout.write('\n')
 
     def verbose(self, msg, *a, **kw):
@@ -48,11 +52,21 @@ class Logger(object):
             raise exc(self.last_msg)
 
     def log(self, level, msg, *a, **kw):
+        '''
+        This is the base function that logs all messages. This function prints a newline character too,
+        unless you specify ``addn=False``. When the message starts with a return character (\r) it automatically
+        cleans the line.
+        '''
+
         if level >= self.level and self.enabled:
             std = sys.stdout
             if level >= self.ERROR:
                 std = sys.stderr
             if msg.startswith('\r'):
+                ## We have to clear the line in case this message is longer than
+                ## the previous
+
+                std.write('\r' + ' ' * len(self.last_msg))
                 msg = '\r' + ' ' * self.indent + msg[1:].format(*a)
             else:
                 msg = ' ' * self.indent + msg.format(*a)

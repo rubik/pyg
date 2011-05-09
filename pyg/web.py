@@ -47,31 +47,50 @@ def request(url):
     return content
 
 def convert_bytes(bytes):
-    ## FIXME: Use str.format!!
     bytes = float(bytes)
     if bytes >= 1099511627776:
         terabytes = bytes / 1099511627776
-        size = '%.1f Tb' % terabytes
+        size = '{0:.1f} Tb'.format(terabytes)
     elif bytes >= 1073741824:
         gigabytes = bytes / 1073741824
-        size = '%.1f Gb' % gigabytes
+        size = '{0:.1f} Gb'.format(gigabytes)
     elif bytes >= 1048576:
         megabytes = bytes / 1048576
-        size = '%.1f Mb' % megabytes
+        size = '{0:.1f} Mb'.format(megabytes)
     elif bytes >= 1024:
         kilobytes = bytes / 1024
-        size = '%.1f Kb' % kilobytes
+        size = '{0:.1f} Kb'.format(kilobytes)
     else:
-        size = '%.1f b' % bytes
+        size = '{0:.1f} b'.format(bytes)
     return size
 
 def download(url, msg):
     def hook(blocks, block_size, total_size):
+        '''
+        Callback function for `urllib.urlretrieve` that is called when connection is
+        created and then once for each block.
+
+        Display the amount of data transferred so far and it percentage.
+
+        Use sys.stdout.write() instead of "print,", because it allows one more
+        symbol at the line end without linefeed on Windows
+
+        :param blocks: number of blocks transferred so far
+        :param block_size: in bytes
+        :param total_size: in bytes, can be -1 if server doesn't return it
+        '''
+
         if block_size > total_size:
             logger.info('\r{0} [100% - {1}]', msg, convert_bytes(total_size), addn=False)
             return
         downloaded = block_size * blocks
-        logger.info('\r{0} [{1:.0%} - {2}]', msg, downloaded / float(total_size), convert_bytes(downloaded), addn=False)
+        ratio = downloaded / float(total_size)
+
+        ## When the last block makes the downloaded size greater than the total size
+        if ratio > 1:
+            ratio = 1
+        logger.info('\r{0} [{1:.0%} - {2}]', msg, ratio, convert_bytes(downloaded), addn=False)
+
     path = urllib.urlretrieve(url, reporthook=hook)[0]
     logger.newline()
     with open(path) as f:
@@ -132,7 +151,7 @@ class ReqManager(object):
                     logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
                     continue
                 try:
-                    data = request(url)
+                    data = download(url, 'Retrieving data for {0}'.format(self.name)).getvalue()
                 except (urllib2.URLError, urllib2.HTTPError) as e:
                     logger.debug('urllib2 error: {0}', e.args)
                     continue
@@ -141,7 +160,6 @@ class ReqManager(object):
                     continue
                 if not os.path.exists(dest):
                     os.makedirs(dest)
-                logger.info('Retrieving data for {0}', self.name)
                 try:
                     logger.info('Writing data into {0}', name)
                     with open(os.path.join(dest, name), 'w') as f:

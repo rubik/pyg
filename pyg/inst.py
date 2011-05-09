@@ -494,7 +494,7 @@ class Bundler(object):
                 except KeyError:
                     logger.debug('requires.txt not found for {0}', dist)
                 try:
-                    as_req = dist.as_req()
+                    as_req = dist.as_req
                 except KeyError:
                     as_req = str(r)
                 already_downloaded.add(as_req)

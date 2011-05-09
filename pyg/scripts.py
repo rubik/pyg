@@ -77,7 +77,7 @@ def get_script_header(script_text, executable=sys.executable):
     return hdr
 
 def script_args(dist):
-    spec = dist.as_req()
+    spec = dist.as_req
     header = get_script_header("", sys.executable)
     for group in 'console_scripts', 'gui_scripts':
         for name, ep in dist.entry_points_map(group).items():
