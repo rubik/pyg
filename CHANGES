@@ -11,15 +11,13 @@ Already implemented:
     + #45: Replaced :attr:`pkgtools.WorkingSet` with :attr:`pkg_resources.working_set` in :class:`pyg.inst.Updater`.
     + #46: Added two new global command-line option: :option:`-d, --debug` and :option:`--verbose`.
     + #47: The Updater is now faster and searches links on ``http://pypi.python.org/simple`` too.
-
-Not yet implemented:
-
-    + #48: Implement a special uninstallation system for :class:`pyg.inst.Updater`
+    + #48: Implement a special uninstallation system for :class:`pyg.inst.Updater`.
+    + #53: Show download progress.
 
 0.5.2 (May 05, 2011)
 --------------------
 
-+ Fixed VCS install.
++ Fixed package installation from VCS.
 
 0.5.1 (May 05, 2011)
 --------------------

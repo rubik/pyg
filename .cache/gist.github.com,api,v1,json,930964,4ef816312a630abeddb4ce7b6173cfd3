@@ -1,0 +1,15 @@
+status: 304
+content-length: 215
+content-location: https://gist.github.com/api/v1/json/930964
+set-cookie: _gh_sess=BAh7BzoRbG9jYWxlX2d1ZXNzMCIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsABjoKQHVzZWR7AA%3D%3D--719def2ab2d99283383e374327fcdbb716c45c12;
+ path=/; expires=Fri, 01 Jan 2021 00:00:00 GMT; secure; HttpOnly
+x-runtime: 358ms
+server: nginx/0.7.67
+connection: keep-alive
+-content-encoding: gzip
+etag: "82e264b6116c7111a71c103ae15eca94"
+cache-control: private, max-age=0, must-revalidate
+date: Mon, 09 May 2011 16:20:04 GMT
+content-type: application/json; charset=utf-8
+
+{"gists":[{"files":["badmo.py","setup.py"],"comments":[],"public":true,"created_at":"2011/04/20 03:38:45 -0700","description":"Bad modules detector (modules imported but not used)","owner":"rubik","repo":"930964"}]}

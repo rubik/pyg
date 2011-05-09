@@ -13,13 +13,6 @@ from pyg.web import request
 from pyg.log import logger
 
 
-SETUP_PY = '''## setup.py created by Pyg to install a Github Gist
-from setuptools import setup
-
-setup({0})
-'''
-
-
 class Gist(object):
 
     _data = None
@@ -83,41 +76,18 @@ class GistInstaller(object):
     '''
     Install a Github Gist. ``url`` must be in the form::
 
-        gist+{gist_id}#bin={bin1,bin2,binn}#mod={m1,m2,mn}
+        gist+{gist_id}
     '''
 
     def __init__(self, url):
         if url.startswith('gist+'):
             url = url[5:]
-        parts = url.split('#')
-        gist_id = parts[0]
-        self.bin = self.mod = None
-        for p in parts[1:]:
-            if not p.strip():
-                continue
-            if p.startswith('bin='):
-                self.bin = p[4:].split(',')
-            elif p.startswith('mod='):
-                self.mod = p[4:].split(',')
-        self.gist = Gist(gist_id)
-        if not self.bin and not self.mod:
-            self.mod = map(name, self.gist.files)
-
-    def setup_py(self):
-        code = []
-        if self.mod:
-            code.append('py_modules=[{0}]'.format(repr(m) for m in self.mod))
-        if self.bin:
-            code.append('entry_points={\'console_scripts\': [{0}]}'.format(
-                ', '.join(repr('{0} = {0}:main'.format(b)) for b in self.bin)))
-        return SETUP_PY.format(', '.join(code))
+        self.gist = Gist(url)
 
     def install(self):
         with TempDir() as tempdir:
             acc = set()
             self.gist.download(tempdir, acc)
-            files = [os.path.join(tempdir, f) for f in self.gist.files]
-            filenames = self.gist.files
-            with open(os.path.join(tempdir, 'setup.py'), 'w') as f:
-                f.write(self.setup_py())
+            if 'setup.py' not in self.gist.files:
+                logger.fatal('Error: gist must contain at least the `setup.py` file')
             Installer.from_dir(tempdir, 'gist {0}'.format(self.gist.gist_id))

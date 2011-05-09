@@ -16,7 +16,7 @@ from pkgtools.pkg import WorkingSet, Installed, SDist
 from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN
 from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
@@ -162,9 +162,7 @@ class Installer(object):
 
     @ staticmethod
     def from_url(url, packname=None):
-        import tempfile
-        t = tempfile.mkdtemp()
-        if 1:
+        with TempDir() as tempdir:
             packname = packname or urlparse.urlsplit(url).path.split('/')[-1]
             if '#egg=' in url:
                 url, packname = url.split('#egg=')

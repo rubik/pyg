@@ -2,7 +2,7 @@ import operator
 
 from hashlib import md5
 
-from pyg.utils import PYTHON_VERSION, ext, right_egg, is_windows
+from pyg.utils import ext, right_egg, is_windows
 from pyg.web import ReqManager, LinkFinder, download
 from pyg.core import Version, Egg, Archive, Binary, ReqSet, InstallationError, args_manager
 from pyg.log import logger

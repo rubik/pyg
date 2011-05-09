@@ -11,7 +11,7 @@ import collections
 import pkg_resources
 
 
-from pyg.locations import PYG_LINKS, INSTALL_DIR, under_virtualenv
+from pyg.locations import PYG_LINKS, under_virtualenv
 from pyg.log import logger
 
 
