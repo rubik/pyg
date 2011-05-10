@@ -25,7 +25,6 @@ Minor commands:
 Other stuff:
 
 .. toctree::
-
    :maxdepth: 2
 
    config_files.rst
