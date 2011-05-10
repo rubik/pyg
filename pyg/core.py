@@ -385,7 +385,7 @@ class ArgsManager(object):
             cp.readfp(f, os.path.basename(path))
         for section in cp.sections():
             if '&' in section:
-                sections = [part.strip() for part in section.split('&')]
+                sections = [s.strip() for s in section.split('&')]
             else:
                 sections = [section]
             for s in sections:
@@ -395,7 +395,7 @@ class ArgsManager(object):
                 for option, value in cp.items(section):
                     option = option.replace('-', '_')
                     if option not in self._OPTS[s]:
-                        logger.warn('Warning: section {0} does not have option: {1}', s, option)
+                        logger.warn('Warning: section {0} does not have such option: {1}', s, option)
                         continue
                     if value not in self.NOT_BOOL:
                         value = bool(value)
