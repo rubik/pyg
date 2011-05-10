@@ -46,7 +46,7 @@ else:
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
 
-## Under virtualenv the USER_SITE has to be the same as INSTALL_DIR
+## Under virtualenv USER_SITE is the same as INSTALL_DIR
 if under_virtualenv():
     USER_SITE = INSTALL_DIR
 
@@ -59,13 +59,12 @@ if not os.path.exists(EASY_INSTALL):
         open(EASY_INSTALL, 'w').close()
     ## We do not have root permissions...
     except IOError:
-        ## So we do not create the file!
+        ## So we do nothing!
         pass
 
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
 
-## FIXME: Or is better `platform.system`?
-if sys.platform == 'win32':
+if platform.system() == 'Windows':
     BIN = os.path.join(sys.prefix, 'Scripts')
     if not os.path.exists(BIN):
         BIN = os.path.join(sys.prefix, 'bin')
@@ -76,11 +75,13 @@ else:
         BIN = '/usr/local/bin'
 
 
-## If we are running on a *nix system and we are in a SUDO session the `SUDO_UID`
+## If we are running on a Unix system and we are in a SUDO session the `SUDO_UID`
 ## environment variable will be set. We can use that to get the user's home
 ## We also set to None all the variables that depend on HOME.
+
 HOME = os.getenv('HOME')
-PYG_HOME = PACKAGES_CACHE = CFG_FILES = None
+PYG_HOME = None
+CFG_FILES = [os.path.join(os.getcwd(), 'pyg.conf')]
 _sudo_uid = os.getenv('SUDO_UID')
 if _sudo_uid:
     import pwd
@@ -89,15 +90,13 @@ if _sudo_uid:
 
 ## Here is Pyg's HOME directory
 ## If it does not exists we create it
-if HOME:
+if HOME is not None:
     PYG_HOME = os.path.join(HOME, '.pyg')
     if not os.path.exists(PYG_HOME):
         os.makedirs(PYG_HOME)
 
-    ## Now let's look for `installed_packages.txt` file
-    ## At the moment we don't care whether it exists or not,
-    ## this will be checked by `pyg.inst.Updater`
-    PACKAGES_CACHE = os.path.join(PYG_HOME, 'installed_packages.txt')
-    CFG_FILES = (os.path.join(HOME, 'pyg.conf'), os.path.join(PYG_HOME, 'pyg.conf'),
-                 os.path.join(os.getcwd(), 'pyg.conf')
-                 )
+    ## PACKAGES_CACHE has been removed because with `pkg_resources.working_set` we
+    ## don't need a cache
+    CFG_FILES.extend([os.path.join(HOME, 'pyg.conf'),
+                      os.path.join(PYG_HOME, 'pyg.conf')]
+                    )

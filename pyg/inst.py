@@ -90,7 +90,7 @@ class Installer(object):
             for line in f:
                 line = line.strip()
                 if line.startswith('#'):
-                    logger.debug('Comment found: {0}', line)
+                    logger.debug('debug: Comment found: {0}', line)
                     continue
                 try:
                     logger.indent = 8
@@ -166,7 +166,7 @@ class Installer(object):
             packname = packname or urlparse.urlsplit(url).path.split('/')[-1]
             if '#egg=' in url:
                 url, packname = url.split('#egg=')
-            path = os.path.join(t, packname)
+            path = os.path.join(tempdir, packname)
             logger.info('Installing {0} from {1}', packname, url)
             with open(path, 'w') as f:
                 f.write(request(url))
@@ -186,7 +186,7 @@ class Uninstaller(object):
         try:
             dist = pkg_resources.get_distribution(self.name)
         except pkg_resources.DistributionNotFound:
-            logger.debug('debug: dist not found: {0}', self.name)
+            logger.debug('debug: Distribution not found: {0}', self.name)
 
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
@@ -242,7 +242,7 @@ class Uninstaller(object):
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
         to_del = self.find_files()
         if not to_del:
-            logger.warn('{0}: did not find any file to delete', self.name)
+            logger.warn('{0}: did not find any files to delete', self.name)
             raise PygError
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
@@ -281,10 +281,11 @@ class Uninstaller(object):
 
 class Updater(object):
     def __init__(self, skip=False):
+
         ## You should use skip=True when you want to upgrade a single package.
         ## Just do:
-        ## >>> u = Updater(skip=True)
-        ## >>> u.upgrade(package_name, json, version)
+        ##>>> u = Updater(skip=True)
+        ##>>> u.upgrade(package_name, json, version)
         if not skip:
             logger.info('Loading list of installed packages... ', addn=False)
             self.working_set = list(iter(pkg_resources.working_set))
@@ -292,7 +293,7 @@ class Updater(object):
             self.removed = {}
 
     def remove_files(self, package):
-        uninst = Uninstaller(package)
+        uninst = Uninstaller(package, yes=True)
         to_del = uninst.find_files()
         if not to_del:
             logger.info('No files to remove found')
@@ -302,6 +303,7 @@ class Updater(object):
         self.removed[package][tempdir] = []
         for path in to_del:
             self.removed[package][tempdir].append(path)
+
             ## We store files-to-delete into a temporary directory:
             ## if something goes wrong during the upgrading we can
             ## restore the original files!
@@ -310,7 +312,11 @@ class Updater(object):
                 shutil.copy2(path, p)
             ## It is a directory
             except IOError:
-                shutil.copytree(path, p)
+                try:
+                    shutil.copytree(path, p)
+                except OSError:
+                    logger.debug('debug: shutil.copytree raised OSError')
+                    continue
         logger.enabled = False
         uninst.uninstall()
         logger.enabled = True
@@ -349,6 +355,7 @@ class Updater(object):
             logger.info('Installing {0}...', release['filename'])
             logger.indent += 4
             try:
+                import pdb; pdb.set_trace()
                 Installer.from_url(release['url'])
                 break
             except Exception as e:

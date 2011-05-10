@@ -8,7 +8,7 @@ from cStringIO import StringIO
 
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
-from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN
+from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN, USER_SITE
 from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, ext
 from pyg.log import logger
 
@@ -148,6 +148,8 @@ class Egg(object):
         self.reqset = reqset
         self.packname = packname or name_from_egg(eggname)
         self.idir = args_manager['install']['install_dir']
+        if args_manager['install']['user']:
+            self.idir = USER_SITE
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
@@ -231,6 +233,8 @@ class Dir(object):
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
             args += ['--install-data', self.tempdir]
+        if args_manager['install']['user']:
+            args += ['--user']
         run_setup(self.path, self.name, args=args, exc=InstallationError)
 
 

@@ -87,10 +87,6 @@ def install_func(args):
         args_manager['install']['no_data'] = True
     if args.ignore:
         args_manager['install']['ignore'] = True
-    if args.user:
-        args_manager['install']['install_dir'] = USER_SITE
-        if not os.path.exists(USER_SITE):
-            os.makedirs(USER_SITE)
     if args.install_dir != INSTALL_DIR:
         args_manager['install']['install_dir'] = args.install_dir
     args_manager['install']['index_url'] = args.index_url
