@@ -91,7 +91,8 @@ def download(url, msg):
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
-        logger.info('\r{0} [{1:.0%} - {2}]', msg, ratio, convert_bytes(downloaded), addn=False)
+        logger.info('\r{0} [{1:.0%} - {2} / {3}]', msg, ratio, convert_bytes(downloaded),
+                    convert_bytes(total_size), addn=False)
 
     path = urllib.urlretrieve(url, reporthook=hook)[0]
     logger.newline()

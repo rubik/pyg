@@ -13,6 +13,7 @@ Already implemented:
     + #47: The Updater is now faster and searches links on ``http://pypi.python.org/simple`` too.
     + #48: Implement a special uninstallation system for :class:`pyg.inst.Updater`.
     + #53: Show download progress.
+    + #55: You can install packages from Github Gists!
 
 0.5.2 (May 05, 2011)
 --------------------
