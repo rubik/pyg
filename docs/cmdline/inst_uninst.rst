@@ -19,12 +19,15 @@ To install a package, simply run::
     * a repository URL (like ``git+git@github.com/rubik/pyg``)
     * a gist URL (i.e. ``gist+928471``)
 
-Pyg supports these files:
+Pyg supports these file-types:
 
     * :file:`.tar.gz`
+    * :file:`.tgz`
     * :file:`.tar.bz2`
     * :file:`.zip`
     * :file:`.egg`
+    * :file:`.exe`
+    * :file:`.msi`
     * :file:`.pybundle`
     * :file:`.pyb` (an abbreviation of Pip's bundle files)
 

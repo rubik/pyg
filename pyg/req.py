@@ -1,4 +1,5 @@
 import operator
+import urlparse
 
 from hashlib import md5
 
@@ -115,7 +116,7 @@ class Requirement(object):
             raise InstallationError(str(e))
         logger.indent = 8
         for url in links:
-            filename = url.split('/')[-1]
+            filename = urlparse.urlparse(url).path.split('/')[-1]
             logger.info('Found: {0}', filename)
             try:
                 self._download_and_install(url, filename, self.name)
@@ -128,10 +129,10 @@ class Requirement(object):
             raise InstallationError('Fatal: cannot install {0}'.format(self.name))
 
     def install(self):
+        self.success = False
         if self.package_index == 'http://pypi.python.org/pypi':
             logger.info('Looking for {0} releases on PyPI', self.name)
             p = ReqManager(self)
-            self.success = False
             for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
                 for v, name, hash, url in p.files()[pext]:
                     if pext == '.egg' and not right_egg(name):

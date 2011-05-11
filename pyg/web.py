@@ -5,6 +5,8 @@ import urllib2
 import httplib2
 import urlparse
 import cStringIO
+import posixpath
+import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
@@ -179,7 +181,8 @@ class LinkFinder(object):
 
     INDEX = None
     FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
-    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.-]+)(?P<name>[^\<]+)</a><br/>'
+    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+[\w^.]+)(?P<name>[^\<]+)</a><br/>'
+    SIMPLE_LINK = r'<a\shref="(?P<href>[^"]+)">(?P<name>[^<]+)</a>'
 
     def __init__(self, package_name, index=None):
         self.package_name = package_name
@@ -206,6 +209,21 @@ class LinkFinder(object):
     def find_best_link(self):
         data = request('{0}{1}'.format(self.INDEX, self.package_name))
         d = {}
+        for href, name in re.compile(self.SIMPLE_LINK).findall(data):
+            e = ext(name)
+            if e in ('.tar', '.tar.gz', '.tar.bz2', '.zip'):
+                version = name.split('-')[-1][:-len(e)]
+            elif e in ('.exe', '.msi'):
+                version = '.'.join(name.split('-')[-2].split('.')[:-1])
+            else:
+                try:
+                    version = pkg_resources.Distribution.from_filename(name).version
+                except ValueError:
+                    logger.debug('debug: Failed to find version for {0}, continuing...', name)
+                    continue
+            if not href.startswith('http'):
+                href = '/'.join([self.INDEX, self.package_name, href])
+            d[Version(version)] = href
         for href, rel, version, name in re.compile(self.LINK).findall(data):
             if rel == 'download':
                 d[Version(version)] = href
@@ -218,12 +236,13 @@ class LinkFinder(object):
             return None, None
 
     def find_files(self, url, version):
-        if ext(url) in PREFERENCES:
-            return [url]
         url = url + '/'[:not url.endswith('/')]
         base = '{0}://{1}/'.format(*urlparse.urlparse(url)[:2])
         logger.info('Reading {0}', url)
+
         ## This is horrible, but there is no alternative...
+        ## We cannot use standard regex because on external sites HTML can be
+        ## different and we would run up against problems.
         data = request(url).split('</a>')
         links = set()
         for item in data:
@@ -240,4 +259,7 @@ class LinkFinder(object):
         version, link = self.find_best_link()
         if version is None:
             raise PygError('Error: did not find any files')
+        link = urlparse.urldefrag(link)[0]
+        if ext(link) in PREFERENCES:
+            return [link]
         return self.find_files(link, version)

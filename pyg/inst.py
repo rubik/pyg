@@ -119,7 +119,8 @@ class Installer(object):
         packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
 
-        if is_installed(packname) and not args_manager['install']['upgrade']:
+        if is_installed(packname) and (not args_manager['install']['upgrade'] or \
+                                       not args_manager['install']['upgrade_all']):
             logger.info('{0} is already installed', packname)
             raise AlreadyInstalled
 

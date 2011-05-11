@@ -125,11 +125,14 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
         raise exc('setup.py did not install {0}'.format(name))
 
 def print_output(output, cmd):
+    '''Print to sys.stderr the complete output of a failed command'''
     logger.info('Complete output from command {0}:', cmd)
-    indt = logger.indent + 8
-    logger.info(' ' * indt + ('\n' + ' ' * indt).join(output.split('\n')))
+    logger.indent += 8
+    for line in output.split('\n'):
+        logger.error(line)
 
 def name_ext(path):
+    '''Like os.path.splitext(), but split .tar too'''
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e
@@ -140,7 +143,12 @@ def name(path):
     return name_ext(path)[0]
 
 def ext(path):
-    return name_ext(path)[1]
+    e = name_ext(path)[1]
+
+    ## Little hack to support .tgz files too
+    if e == '.tgz':
+        return '.tar.gz'
+    return e
 
 def unpack(path):
     path = os.path.abspath(path)

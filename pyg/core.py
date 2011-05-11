@@ -399,6 +399,8 @@ class ArgsManager(object):
                         continue
                     if value not in self.NOT_BOOL:
                         value = bool(value)
+                    if s == 'install' and option == 'upgrade_all':
+                        self._OPTS['install']['upgrade'] = True
                     self._OPTS[s][option] = value
 
 

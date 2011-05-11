@@ -15,9 +15,12 @@ It can download, install, remove packages.
 Pyg supports almost all package filetypes:
 
  * .tar.gz
+ * .tgz
  * .tar.bz2
  * .zip
  * .egg
+ * .exe
+ * .msi
  * .pybundle
  * .pyb (an abbreviation for .pybundle)
 
