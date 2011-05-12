@@ -82,6 +82,7 @@ class Requirement(object):
         fobj = download(url, 'Downloading {0}'.format(self.name))
         if hash is not None:
             logger.info('Checking md5 sum')
+            #import pdb; pdb.set_trace()
             if md5(fobj.getvalue()).hexdigest() != hash:
                 logger.fatal('Error: {0} appears to be corrupted', self.name)
                 return
@@ -90,12 +91,10 @@ class Requirement(object):
             installer = Archive(fobj, e, packname, self.reqset)
         elif e == '.egg':
             installer = Egg(fobj, filename, self.reqset, packname)
+        elif is_windows() and e in WINDOWS_EXT:
+            installer = Binary(fobj, e, packname)
         else:
-            if is_windows():
-                if e in WINDOWS_EXT:
-                    installer = Binary(fobj, e, packname)
-                else:
-                    logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
+            logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
 
         ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
         installer.install()
@@ -143,6 +142,7 @@ class Requirement(object):
                     try:
                         self._download_and_install(url, name, p.name, hash)
                     except InstallationError:
+                        logger.info('Trying another file (if there is one)...')
                         continue
                     if not self.version:
                         self.version = v

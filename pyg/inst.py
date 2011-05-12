@@ -27,7 +27,9 @@ __all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
 
 class Installer(object):
     def __init__(self, req):
+        self.upgrading = False
         if is_installed(req):
+            self.upgrading = True
             if not args_manager['install']['upgrade']:
                     logger.info('{0} is already installed', req)
                     raise AlreadyInstalled
@@ -70,11 +72,17 @@ class Installer(object):
     def install(self):
         r = Requirement(self.req)
         try:
+            if self.upgrading:
+                updater = Updater(skip=True)
+                updater.remove_files(self.req)
             r.install()
-        except AlreadyInstalled:
-            logger.info('{0} is already installed', r.name)
         except InstallationError as e:
-            logger.error(e.args[0], exc=InstallationError)
+            if self.upgrading:
+                logger.warn('Error: An error occurred during the upgrading: {0}', e.args[0])
+                logger.info('Restoring uninstalled files...')
+                updater.restore_files(self.req)
+            else:
+                logger.error(e.args[0], exc=InstallationError)
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
@@ -110,7 +118,7 @@ class Installer(object):
             logger.warn('These packages have not been installed:')
             logger.indent = 8
             for req in not_installed:
-                logger.info(req)
+                logger.warn(req)
             logger.indent = 0
             raise InstallationError
 
@@ -118,11 +126,6 @@ class Installer(object):
     def from_file(filepath, packname=None):
         packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
-
-        if is_installed(packname) and (not args_manager['install']['upgrade'] or \
-                                       not args_manager['install']['upgrade_all']):
-            logger.info('{0} is already installed', packname)
-            raise AlreadyInstalled
 
         e = ext(filepath)
         path = os.path.abspath(filepath)
@@ -135,7 +138,6 @@ class Installer(object):
         elif e in ('.exe', '.msi') and is_windows():
             installer = Binary(open(path), e, packname)
         else:
-            print path
             if tarfile.is_tarfile(path):
                 installer = Archive(open(path), None, packname, reqset)
             elif zipfile.is_zipfile(path):
@@ -291,7 +293,7 @@ class Updater(object):
             logger.info('Loading list of installed packages... ', addn=False)
             self.working_set = list(iter(pkg_resources.working_set))
             logger.info('{0} packages loaded', len(self.working_set))
-            self.removed = {}
+        self.removed = {}
 
     def remove_files(self, package):
         uninst = Uninstaller(package, yes=True)

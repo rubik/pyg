@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import urllib
 import urllib2
 import httplib2
@@ -67,6 +68,11 @@ def convert_bytes(bytes):
     return size
 
 def download(url, msg):
+    def average(sample):
+        n = len(sample)
+        if n == 1:
+            return sample[0]
+        return sum(sample, .1) / (n - 1)
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -77,9 +83,9 @@ def download(url, msg):
         Use sys.stdout.write() instead of "print,", because it allows one more
         symbol at the line end without linefeed on Windows
 
-        :param blocks: number of blocks transferred so far
-        :param block_size: in bytes
-        :param total_size: in bytes, can be -1 if server doesn't return it
+        :param blocks: Number of blocks transferred so far.
+        :param block_size: Size of each block in bytes.
+        :param total_size: Total size of the HTTP object in bytes. Can be -1 if server doesn't return it.
         '''
 
         if block_size > total_size:
@@ -88,12 +94,22 @@ def download(url, msg):
         downloaded = block_size * blocks
         ratio = downloaded / float(total_size)
 
+        ## Calculate download speed
+        speed = downloaded / float(func() - starttime)
+        times.append(speed)
+
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
-        logger.info('\r{0} [{1:.0%} - {2} / {3}]', msg, ratio, convert_bytes(downloaded),
-                    convert_bytes(total_size), addn=False)
+        logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}/s', msg, ratio, \
+                    *map(convert_bytes, [downloaded, total_size, average(times)]), addn=False)
 
+    if is_windows():
+        func = time.clock
+    else:
+        func = time.time
+    starttime = func()
+    times = []
     path = urllib.urlretrieve(url, reporthook=hook)[0]
     logger.newline()
     with open(path) as f:

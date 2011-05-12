@@ -130,6 +130,7 @@ def print_output(output, cmd):
     logger.indent += 8
     for line in output.split('\n'):
         logger.error(line)
+    logger.indent -= 8
 
 def name_ext(path):
     '''Like os.path.splitext(), but split .tar too'''
