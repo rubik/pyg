@@ -8,6 +8,10 @@ def main():
     from .parser.parser import init_parser, load_options
     from .core import PygError, InstallationError, AlreadyInstalled
     from .log import logger
+    try:
+        import pyg
+    except ImportError:
+        sys.path.insert(0, '..')
 
     try:
         parser = init_parser(__version__)
