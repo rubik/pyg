@@ -17,8 +17,6 @@ def main():
         if args.debug:
             logger.level = logger.DEBUG
         load_options()
-        ##! REMOVE:
-        from pyg.core import args_manager
         parser.dispatch()
     except (PygError, InstallationError, ValueError):
         sys.exit(1)
