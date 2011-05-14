@@ -67,17 +67,18 @@ def convert_bytes(bytes):
         size = '{0:.1f} b'.format(bytes)
     return size
 
+def tm(seconds):
+    if seconds == '':
+        return ''
+    hours, minutes = seconds // 3600, seconds // 60
+    seconds -= int(3600 * hours + 60 * minutes)
+    if minutes:
+        if hours:
+            return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
+        return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
+    return '{0:02d}s remaining'.format(int(seconds))
+
 def download(url, msg):
-    def tm(seconds):
-        if seconds == '':
-            return ''
-        hours, minutes = seconds // 3600, seconds // 60
-        seconds -= int(3600 * hours + 60 * minutes)
-        if minutes:
-            if hours:
-                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
-            return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
-        return '{0:02d}s remaining'.format(int(seconds))
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -102,6 +103,7 @@ def download(url, msg):
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
+            downloaded = total_size
 
         ## Calculate elapsed and remaining time
         elapsed = func() - starttime
