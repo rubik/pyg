@@ -80,9 +80,10 @@ def init_parser(version=None):
     def search(args):
         opts.search_func(args.query, args.exact)
 
-    @ command
-    def check(packname):
-        opts.check_func(packname)
+    @ arg('packname')
+    @ arg('-i', '--info', action='store_true', help='Show infos for specified package')
+    def check(args):
+        opts.check_func(args.packname, args.info)
 
     @ arg('packname')
     @ arg('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')

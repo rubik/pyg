@@ -24,7 +24,8 @@ def main():
             logger.level = logger.DEBUG
         load_options()
         parser.dispatch()
-    except (PygError, InstallationError, ValueError):
+    except (PygError, InstallationError, ValueError) as e:
+        print e
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)

@@ -3,6 +3,7 @@ import os
 import sys
 import urllib2
 import urlparse
+import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
 
@@ -141,8 +142,17 @@ def unlink_func(args):
         return
     return unlink(args.path)
 
-def check_func(name):
-    return sys.stdout.write(str(is_installed(name)) + '\n')
+def check_func(name, info=False):
+    INFO = '{0.project_name} - {0.version}\nInstalled in {0.location}'
+    if not info:
+        logger.info(is_installed(name))
+        return
+    if info:
+        try:
+            dist = pkg_resources.get_distribution(name)
+            logger.info(INFO.format(dist))
+        except pkg_resources.DistributionNotFound:
+            logger.info(False)
 
 def freeze_func(args):
     f = freeze()

@@ -62,6 +62,10 @@ class Logger(object):
             std = sys.stdout
             if level >= self.ERROR:
                 std = sys.stderr
+
+            ## We can pass to logger.log any object: it only has to have
+            ## a __repr__ or a __str__ method.
+            msg = str(msg)
             if msg.startswith('\r'):
                 ## We have to clear the line in case this message is longer than
                 ## the previous

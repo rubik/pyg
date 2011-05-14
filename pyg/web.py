@@ -69,9 +69,15 @@ def convert_bytes(bytes):
 
 def download(url, msg):
     def tm(seconds):
-        hours, minutes = seconds / 3600, seconds / 60
-        seconds -= (3600*hours + 60 * minutes) 
-        return "%02d:%02d:%02d" % (hours, minutes, seconds)
+        if seconds == '':
+            return ''
+        hours, minutes = seconds // 3600, seconds // 60
+        seconds -= int(3600 * hours + 60 * minutes)
+        if minutes:
+            if hours:
+                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
+            return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
+        return '{0:02d}s remaining'.format(int(seconds))
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -93,14 +99,23 @@ def download(url, msg):
         downloaded = block_size * blocks
         ratio = downloaded / float(total_size)
 
-        ## Calculate elapsed time
-        elapsed = tm(-(func() - starttime))
-
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
+
+        ## Calculate elapsed and remaining time
+        elapsed = func() - starttime
+        speed = downloaded / float(elapsed)
+        try:
+            remaining = (total_size - downloaded) / float(speed)
+        except ZeroDivisionError:
+            remaining = ''
+        if ratio == 1:
+            ## When we finish the download we want this string to hide
+            remaining = ''
+
         logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded), \
-                    convert_bytes(total_size), elapsed, addn=False)
+                    convert_bytes(total_size), tm(remaining), addn=False)
 
     if is_windows():
         func = time.clock
