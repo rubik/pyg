@@ -5,13 +5,15 @@ def main():
     import sys
     import urllib2
 
-    from .parser.parser import init_parser, load_options
-    from .core import PygError, InstallationError, AlreadyInstalled
-    from .log import logger
     try:
+        ## If Python fails to import pyg we just add this directory to
+        ## sys.path so we don't worry wheter Pyg is installed or not.
         import pyg
     except ImportError:
         sys.path.insert(0, '..')
+    from pyg.parser.parser import init_parser, load_options
+    from pyg.core import PygError, InstallationError, AlreadyInstalled
+    from pyg.log import logger
 
     try:
         parser = init_parser(__version__)

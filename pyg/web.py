@@ -5,6 +5,7 @@ import urllib
 import urllib2
 import httplib2
 import urlparse
+import datetime
 import cStringIO
 import pkg_resources
 
@@ -67,11 +68,10 @@ def convert_bytes(bytes):
     return size
 
 def download(url, msg):
-    def average(sample):
-        n = len(sample)
-        if n == 1:
-            return sample[0]
-        return sum(sample, .1) / (n - 1)
+    def tm(seconds):
+        hours, minutes = seconds / 3600, seconds / 60
+        seconds -= (3600*hours + 60 * minutes) 
+        return "%02d:%02d:%02d" % (hours, minutes, seconds)
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -93,22 +93,20 @@ def download(url, msg):
         downloaded = block_size * blocks
         ratio = downloaded / float(total_size)
 
-        ## Calculate download speed
-        speed = downloaded / float(func() - starttime)
-        times.append(speed)
+        ## Calculate elapsed time
+        elapsed = tm(-(func() - starttime))
 
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
-        logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}/s', msg, ratio, \
-                    *map(convert_bytes, [downloaded, total_size, average(times)]), addn=False)
+        logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded), \
+                    convert_bytes(total_size), elapsed, addn=False)
 
     if is_windows():
         func = time.clock
     else:
         func = time.time
     starttime = func()
-    times = []
     path = urllib.urlretrieve(url, reporthook=hook)[0]
     logger.newline()
     with open(path) as f:
