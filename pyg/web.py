@@ -3,7 +3,6 @@ import os
 import time
 import urllib
 import urllib2
-import httplib2
 import urlparse
 import datetime
 import cStringIO
@@ -43,11 +42,7 @@ def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    h = httplib2.Http('.cache')
-    resp, content = h.request(url)
-    if resp['status'] == '404':
-        logger.error('Error: URL does not exist: {0}', url, exc=PygError)
-    return content
+    return urllib2.urlopen(url).read()
 
 def convert_bytes(bytes):
     bytes = float(bytes)
@@ -143,6 +138,8 @@ class ReqManager(object):
         self.package_manager._request_func = request
 
         self._set_prefs(pref)
+        downloaded_name = None
+        downloaded_version = None
 
     def _set_prefs(self, pref):
         if pref is None:
@@ -202,8 +199,8 @@ class ReqManager(object):
                     continue
                 logger.info('{0} downloaded successfully', self.name)
                 success = True
-                self.downloaded_name = name
-                self.downloaded_version = v
+            self.downloaded_name = name
+            self.downloaded_version = v
 
 
 ## OLD! We are using Json to interoperate with pypi.
