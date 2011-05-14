@@ -1,10 +1,32 @@
 CHANGELOG
 =========
 
-0.5 (in development)
+0.6 (in development)
 --------------------
 
 Already implemented:
+
+    + #40: Now Pyg can install packages from URL even if the URL does not end with a file-extension.
+    + #44: Added a :option:`install --ignore` option.
+    + #45: Replaced :attr:`pkgtools.WorkingSet` with :attr:`pkg_resources.working_set` in :class:`pyg.inst.Updater`.
+    + #46: Added two new global command-line option: :option:`-d, --debug` and :option:`--verbose`.
+    + #47: The Updater is now faster and searches links on ``http://pypi.python.org/simple`` too.
+    + #48: Implement a special uninstallation system for :class:`pyg.inst.Updater`.
+    + #53: Show download progress.
+    + #55: You can install packages from Github Gists!
+
+0.5.2 (May 05, 2011)
+--------------------
+
++ Fixed package installation from VCS.
+
+0.5.1 (May 05, 2011)
+--------------------
+
++ Fixed :file:`setup.py`: added the ``zip-safe`` flag.
+
+0.5 (May 05, 2011)
+--------------------
 
 + #29: Create bundles from requirements files.
 + #30: Keep track of why requirements are needed.
@@ -45,10 +67,10 @@ Already implemented:
 
 + #9: Added the :command:`update` command.
 + #11: Added VCS support.
-+ #12: Command-line options in requirements file are allowed.
++ #12: Command-line options in requirement file are allowed.
 + #16: Added the :option:`--no-scripts` and :option:`--no-data` options to the `install` command.
 + #17: Added the possibility to install packages from directories.
-+ #23: Comments in requirements file are allowed.
++ #23: Comments in requirement file are allowed.
 + Added :class:`pyg.inst.Updater`.
 + Added a new file for the command-line options parser.
 

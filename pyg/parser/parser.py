@@ -12,15 +12,16 @@ def load_options():
     from pyg.locations import CFG_FILES
     from pyg.log import logger
 
-    for cfg in CFG_FILES:
-        if os.path.exists(cfg):
-            logger.info('Loading options from {0}', cfg)
+    if CFG_FILES:
+        for cfg in CFG_FILES:
+            if os.path.exists(cfg):
+                logger.info('Loading options from {0}', cfg)
 
-            ## This is for potential warnings
-            logger.indent = 8
-            args_manager.load(cfg)
-            logger.indent = 0
-            break
+                ## This is for potential warnings
+                logger.indent = 8
+                args_manager.load(cfg)
+                logger.indent = 0
+                break
 
 def init_parser(version=None):
     from . import _opts as opts
@@ -28,6 +29,8 @@ def init_parser(version=None):
     from argh import ArghParser, arg, command
 
     parser = ArghParser(prog='pyg')
+    parser.add_argument('-d', '--debug', action='store_true', help='Set logger to DEBUG level')
+    parser.add_argument('--verbose', action='store_true', help='Set logger to VERBOSE level')
     if version is not None:
         parser.add_argument('-v', '--version', action='version', version=version)
 
@@ -38,6 +41,7 @@ def init_parser(version=None):
     @ arg('-U', '--upgrade', action='store_true', help='If the package is already installed re-install it again')
     @ arg('-A', '--upgrade-all', action='store_true', help='Install again dependencies too')
     @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
+    @ arg('-g', '--ignore', action='store_true', help='Ignore local files or directories')
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @ arg('-d', '--install-dir', default=_loc_install_dir, metavar='<path>', help='Base installation directory')
     @ arg('-u', '--user', action='store_true', help='Install to user site')
@@ -49,6 +53,7 @@ def init_parser(version=None):
     @ arg('packname', nargs='+')
     @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
+    @ arg('-i', '--info', action='store_true', help='Only list files to delete')
     def remove(args):
         opts.remove_func(args)
 
@@ -70,13 +75,15 @@ def init_parser(version=None):
     def unlink(args):
         opts.unlink_func(args)
 
-    @ command
-    def search(packname):
-        opts.search_func(packname)
+    @ arg('query', nargs='+')
+    @ arg('-e', '--exact', action='store_true', help='List only exact hits')
+    def search(args):
+        opts.search_func(args.query, args.exact)
 
-    @ command
-    def check(packname):
-        opts.check_func(packname)
+    @ arg('packname')
+    @ arg('-i', '--info', action='store_true', help='Show infos for specified package')
+    def check(args):
+        opts.check_func(args.packname, args.info)
 
     @ arg('packname')
     @ arg('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')

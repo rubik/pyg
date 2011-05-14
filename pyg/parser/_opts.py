@@ -1,7 +1,9 @@
+import re
 import os
 import sys
 import urllib.request, urllib.error, urllib.parse
 import urllib.parse
+import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
 
@@ -10,13 +12,15 @@ from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.core import args_manager, PygError
-from pyg.inst import Installer, Uninstaller, Updater, Bundler
+from pyg.inst import Installer, Uninstaller, Updater, Bundler, PygError
 from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR, under_virtualenv
 from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
 from pyg.web import ReqManager
 
 
 def check_permissions(dir):
+    if not os.path.exists(dir):
+        logger.fatal('Error: installation directory {0} does not exist', dir, exc=PygError)
     try:
         path = os.path.join(dir, 'pyg-permissions-test.pth')
         with open(path, 'w'):
@@ -29,7 +33,7 @@ def check_permissions(dir):
         return True
 
 def check_and_exit():
-    dir = args_manager['install']['install_dir']
+    dir = os.path.abspath(args_manager['install']['install_dir'])
     if not check_permissions(dir):
         sys.exit('''Pyg cannot create new files in the installation directory.
 Installation directory was:
@@ -51,7 +55,7 @@ or
 '''.format(dir))
 
 def _install_package_from_name(package):
-    if os.path.exists(package):
+    if os.path.exists(package) and not args_manager['install']['ignore']:
         path = os.path.abspath(package)
         logger.info('Installing {0}', path)
         if os.path.isfile(path):
@@ -62,7 +66,7 @@ def _install_package_from_name(package):
             return Installer.from_dir(path)
         else:
             raise PygError('Cannot install that package: {0} is neither a file nor a directory', path)
-    if package.startswith('http'):
+    if package.startswith(('http://', 'https://')):
         return Installer.from_url(package)
     for s in ('git+', 'hg+', 'bzr+', 'svn+'):
         if package.startswith(s):
@@ -82,8 +86,8 @@ def install_func(args):
         args_manager['install']['no_scripts'] = True
     if args.no_data:
         args_manager['install']['no_data'] = True
-    if args.user:
-        args_manager['install']['install_dir'] = USER_SITE
+    if args.ignore:
+        args_manager['install']['ignore'] = True
     if args.install_dir != INSTALL_DIR:
         args_manager['install']['install_dir'] = args.install_dir
     args_manager['install']['index_url'] = args.index_url
@@ -100,6 +104,15 @@ def install_func(args):
             _install_package_from_name(package)
 
 def remove_func(args):
+    if args.info:
+        for p in args.packname:
+            logger.info('{0}:', p)
+            files = Uninstaller(p).find_files()
+            logger.indent = 8
+            for path in files:
+                logger.info(path)
+            logger.indent = 0
+        return
     check_and_exit()
     yes = True if args.yes or args_manager['remove']['yes'] else False
     if len(args.packname) == 1 and args.packname[0] == 'yourself':
@@ -129,8 +142,17 @@ def unlink_func(args):
         return
     return unlink(args.path)
 
-def check_func(name):
-    return sys.stdout.write(str(is_installed(name)) + '\n')
+def check_func(name, info=False):
+    INFO = '{0.project_name} - {0.version}\nInstalled in {0.location}'
+    if not info:
+        logger.info(is_installed(name))
+        return
+    if info:
+        try:
+            dist = pkg_resources.get_distribution(name)
+            logger.info(INFO.format(dist))
+        except pkg_resources.DistributionNotFound:
+            logger.info(False)
 
 def freeze_func(args):
     f = freeze()
@@ -153,10 +175,17 @@ def list_func(name):
             res.append(v)
     return sys.stdout.write('\n'.join(res) + '\n')
 
-def search_func(name):
-    res = PyPIXmlRpc().search({'name': name})
-    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in \
-                            sorted(res, key=lambda i: i['_pypi_ordering'], reverse=True)) + '\n')
+def search_func(query, exact):
+    res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
+                 key=lambda i: i['_pypi_ordering'], reverse=True)
+    if exact:
+        pattern = re.compile('$|'.join(query) + '$')
+        results = []
+        for r in res:
+            if pattern.match(r['name']) is not None and r not in results:
+                results.append(r)
+        res = results
+    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in res) + '\n')
 
 def download_func(args):
     pref = None
@@ -180,7 +209,6 @@ def update_func(args):
     if args.yes:
         args_manager['update']['yes'] = True
     check_and_exit()
-    logger.info('Loading list of installed packages...')
     up = Updater()
     up.update()
 

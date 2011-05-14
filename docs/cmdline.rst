@@ -11,11 +11,20 @@ Main commands:
 .. toctree::
    :maxdepth: 2
 
-   main_cmd.rst
+   cmdline/inst_uninst.rst
+   cmdline/req_bund.rst
+   cmdline/upgr_down_shell.rst
 
 Minor commands:
 
 .. toctree::
    :maxdepth: 2
 
-   minor_cmd.rst
+   cmdline/minor_cmd.rst
+
+Other stuff:
+
+.. toctree::
+   :maxdepth: 2
+
+   config_files.rst

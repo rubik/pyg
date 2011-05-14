@@ -3,7 +3,7 @@ import pyg
 from setuptools import setup
 
 
-requires = ['setuptools', 'pkgtools>=0.4', 'argh>=0.14']
+requires = ['setuptools', 'pkgtools>=0.4', 'argh>=0.14', 'httplib2']
 if sys.version_info[:2] < (2, 7):
     requires.append('argparse>=1.2.1')
 
@@ -15,9 +15,12 @@ It can download, install, remove packages.
 Pyg supports almost all package filetypes:
 
  * .tar.gz
+ * .tgz
  * .tar.bz2
  * .zip
  * .egg
+ * .exe
+ * .msi
  * .pybundle
  * .pyb (an abbreviation for .pybundle)
 
@@ -46,9 +49,11 @@ setup(name='pyg',
       platforms='any',
       packages=['pyg'],
       include_package_data=True,
-      keywords=['python', 'easy_install', 'setuptools', 'package manager'],
+      keywords=['python', 'easy_install', 'pip', 'setuptools', 'package manager', \
+                'command line', 'CLI'],
       install_requires=requires,
       provides=['pyg'],
+      zip_safe=False,
       entry_points={
         'console_scripts': [
             'pyg = pyg:main'

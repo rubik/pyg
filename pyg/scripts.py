@@ -7,7 +7,7 @@ import re
 import sys
 import pkg_resources
 
-SCRIPT_TEXT = '''# EASY-INSTALL-ENTRY-SCRIPT: {spec!r},{group!r},{name!r}
+SCRIPT_TEXT = '''# PYG-ENTRY-SCRIPT: {spec!r},{group!r},{name!r}
 __requires__ = {spec!r}
 import sys
 from pkg_resources import load_entry_point
@@ -77,7 +77,7 @@ def get_script_header(script_text, executable=sys.executable):
     return hdr
 
 def script_args(dist):
-    spec = dist.as_req()
+    spec = dist.as_req
     header = get_script_header("", sys.executable)
     for group in 'console_scripts', 'gui_scripts':
         for name, ep in list(dist.entry_points_map(group).items()):

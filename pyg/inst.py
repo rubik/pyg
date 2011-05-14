@@ -3,7 +3,9 @@ import os
 import sys
 import site
 import shutil
+import tarfile
 import zipfile
+import tempfile
 import urllib.parse
 import configparser
 import pkg_resources
@@ -14,7 +16,7 @@ from pkgtools.pkg import WorkingSet, Installed, SDist
 from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN, PACKAGES_CACHE
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN
 from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
@@ -25,7 +27,9 @@ __all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
 
 class Installer(object):
     def __init__(self, req):
+        self.upgrading = False
         if is_installed(req):
+            self.upgrading = True
             if not args_manager['install']['upgrade']:
                     logger.info('{0} is already installed', req)
                     raise AlreadyInstalled
@@ -63,16 +67,22 @@ class Installer(object):
                 logger.warn('Error: {0} has not been installed correctlry', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies for {1.name}=={1.version}', rs.comes_from)
+        logger.info('Finished installing dependencies for {0.name}=={0.version}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)
         try:
+            if self.upgrading:
+                updater = Updater(skip=True)
+                updater.remove_files(self.req)
             r.install()
-        except AlreadyInstalled:
-            logger.info('{0} is already installed', r.name)
         except InstallationError as e:
-            logger.error(e.args[0], exc=InstallationError)
+            if self.upgrading:
+                logger.warn('Error: An error occurred during the upgrading: {0}', e.args[0])
+                logger.info('Restoring uninstalled files...')
+                updater.restore_files(self.req)
+            else:
+                logger.error(e.args[0], exc=InstallationError)
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
@@ -88,7 +98,7 @@ class Installer(object):
             for line in f:
                 line = line.strip()
                 if line.startswith('#'):
-                    logger.debug('Comment found: {0}', line)
+                    logger.debug('debug: Comment found: {0}', line)
                     continue
                 try:
                     logger.indent = 8
@@ -108,18 +118,14 @@ class Installer(object):
             logger.warn('These packages have not been installed:')
             logger.indent = 8
             for req in not_installed:
-                logger.info(req)
+                logger.warn(req)
             logger.indent = 0
             raise InstallationError
 
     @ staticmethod
-    def from_file(filepath):
-        packname = os.path.basename(filepath).split('-')[0]
+    def from_file(filepath, packname=None):
+        packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
-
-        if is_installed(packname) and not args_manager['install']['upgrade']:
-            logger.info('{0} is already installed', packname)
-            raise AlreadyInstalled
 
         e = ext(filepath)
         path = os.path.abspath(filepath)
@@ -132,7 +138,12 @@ class Installer(object):
         elif e in ('.exe', '.msi') and is_windows():
             installer = Binary(open(path), e, packname)
         else:
-            logger.fatal('Error: Cannot install {0}: unknown extension: {1}', packname, e, exc=InstallationError)
+            if tarfile.is_tarfile(path):
+                installer = Archive(open(path), None, packname, reqset)
+            elif zipfile.is_zipfile(path):
+                installer = Archive(open(path), '.zip', packname, reqset)
+            else:
+                logger.fatal('Error: Cannot install {0}: unknown filetype', packname, exc=InstallationError)
         installer.install()
         Installer._install_deps(reqset, packname)
         logger.info('{0} installed successfully', packname)
@@ -154,13 +165,15 @@ class Installer(object):
 
     @ staticmethod
     def from_url(url, packname=None):
-        with TempDir() as t:
-            packname = packname if packname is not None else urllib.parse.urlsplit(url).path.split('/')[-1]
-            path = os.path.join(t, packname)
-            logger.info('Installing {0}', packname)
+        with TempDir() as tempdir:
+            packname = packname or urllib.parse.urlsplit(url).path.split('/')[-1]
+            if '#egg=' in url:
+                url, packname = url.split('#egg=')
+            path = os.path.join(tempdir, packname)
+            logger.info('Installing {0} from {1}', packname, url)
             with open(path, 'w') as f:
                 f.write(request(url))
-            Installer.from_file(path)
+            Installer.from_file(path, packname)
 
 
 class Uninstaller(object):
@@ -168,17 +181,15 @@ class Uninstaller(object):
         self.name = packname
         self.yes = yes
 
-    def uninstall(self):
+    def find_files(self):
         uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
         uninstall_re2 = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
-        path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
-        path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
 
         to_del = set()
         try:
             dist = pkg_resources.get_distribution(self.name)
         except pkg_resources.DistributionNotFound:
-            logger.debug('debug: dist not found: {0}', self.name)
+            logger.debug('debug: Distribution not found: {0}', self.name)
 
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
@@ -207,8 +218,8 @@ class Uninstaller(object):
             for s in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
 
-                ## If we are on Win we have to remove *.bat files too
-                if sys.platform == 'win32':
+                ## If we are on Windows we have to remove *.bat files too
+                if is_windows():
                     to_del.add(os.path.join(BIN, script) + '.bat')
 
         ## Very important!
@@ -226,8 +237,15 @@ class Uninstaller(object):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
+
+        return to_del
+
+    def uninstall(self):
+        path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
+        path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
+        to_del = self.find_files()
         if not to_del:
-            logger.warn('{0}: did not find any file to delete', self.name)
+            logger.warn('{0}: did not find any files to delete', self.name)
             raise PygError
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
@@ -245,13 +263,13 @@ class Uninstaller(object):
             elif u == 'y':
                 for d in to_del:
                     try:
+                        logger.info('Deleting: {0}', d)
                         shutil.rmtree(d)
                     except OSError: ## It is not a directory
                         try:
                             os.remove(d)
                         except OSError:
-                            logger.error('Error: Cannot delete: {0}', d)
-                    logger.info('Deleting: {0}', d)
+                            logger.error('Error: cannot delete {0}', d)
                 logger.info('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
@@ -265,39 +283,74 @@ class Uninstaller(object):
 
 
 class Updater(object):
-    def __init__(self):
-        if not PACKAGES_CACHE or not os.path.exists(PACKAGES_CACHE):
-            open(PACKAGES_CACHE, 'w').close()
-            logger.info('Cache file not found: $HOME/.pyg/installed_packages.txt')
-            self.working_set = list(WorkingSet(onerror=self._pkgutil_onerror, debug=logger.debug))
-        else:
-            logger.info('Reading cache...')
-            with open(PACKAGES_CACHE, 'r') as f:
-                self.working_set = []
-                for line in f:
-                    line = line.strip()
-                    package, path = line.split()
-                    try:
-                        dist = Installed(package)
-                    except ValueError:
-                        dist = Installed(os.path.basename(path))
-                    self.working_set.append((package, (path, dist))
-                                            )
-        logger.info('{0} packages loaded', len(self.working_set))
+    def __init__(self, skip=False):
 
-    def _pkgutil_onerror(self, pkgname):
-        logger.debug('Error while importing {0}', pkgname)
+        ## You should use skip=True when you want to upgrade a single package.
+        ## Just do:
+        ##>>> u = Updater(skip=True)
+        ##>>> u.upgrade(package_name, json, version)
+        if not skip:
+            logger.info('Loading list of installed packages... ', addn=False)
+            self.working_set = list(iter(pkg_resources.working_set))
+            logger.info('{0} packages loaded', len(self.working_set))
+        self.removed = {}
+
+    def remove_files(self, package):
+        uninst = Uninstaller(package, yes=True)
+        to_del = uninst.find_files()
+        if not to_del:
+            logger.info('No files to remove found')
+            return
+        tempdir = tempfile.mktemp()
+        self.removed[package] = {}
+        self.removed[package][tempdir] = []
+        for path in to_del:
+            self.removed[package][tempdir].append(path)
+
+            ## We store files-to-delete into a temporary directory:
+            ## if something goes wrong during the upgrading we can
+            ## restore the original files!
+            p = os.path.join(tempdir, os.path.basename(path))
+            try:
+                shutil.copy2(path, p)
+            ## It is a directory
+            except IOError:
+                try:
+                    shutil.copytree(path, p)
+                except OSError:
+                    logger.debug('debug: shutil.copytree raised OSError')
+                    continue
+        logger.enabled = False
+        uninst.uninstall()
+        logger.enabled = True
+
+    def restore_files(self, package):
+        package = self.removed['package']
+        tempdir = package.keys()[0]
+        for path in package[tempdir]:
+            p = os.path.join(tempdir, os.path.basename(path))
+            try:
+                shutil.copy2(p, path)
+            ## It is a directory
+            except IOError:
+                shutil.copytree(p, path)
+
+    def _clean(self):
+        logger.debug('debug: Removing temporary directories')
+        for package, dirs in self.removed.iteritems():
+            try:
+                shutil.rmtree(dirs.keys()[0])
+            except shutil.Error:
+                logger.debug('debug: Error while removing {0}', dirs.keys()[0])
+                continue
 
     def upgrade(self, package_name, json, version):
         '''
         Upgrade a package to the most recent version.
         '''
 
-        ## FIXME: Do we have to remove the package old version?
-        #logger.info('Removing {0} old version', package_name)
-        #logger.indent += 8
-        #Uninstaller(package_name, True).uninstall()
-        #logger.indent = 0
+        logger.info('Removing {0} old version', package_name)
+        self.remove_files(package_name)
         args_manager['install']['upgrade'] = True
         logger.info('Upgrading {0} to {1}', package_name, version)
         logger.indent += 8
@@ -305,6 +358,7 @@ class Updater(object):
             logger.info('Installing {0}...', release['filename'])
             logger.indent += 4
             try:
+                import pdb; pdb.set_trace()
                 Installer.from_url(release['url'])
                 break
             except Exception as e:
@@ -312,7 +366,13 @@ class Updater(object):
                 logger.info('Trying another file...')
                 logger.indent -= 4
         else:
-            logger.fatal('Error: Did not find any release on PyPI for {0}', package_name)
+            logger.warn('Error: Did not find any installable release on PyPI for {0}', package_name)
+            try:
+                Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['index_url'])
+            except Exception as e:
+                logger.fatal('Error: {0}', e, exc=InstallationError)
+                logger.info('Restoring uninstalled files')
+                self.restore_files(package_name)
         logger.indent = 0
 
     def update(self):
@@ -322,18 +382,17 @@ class Updater(object):
         '''
 
         logger.info('Searching for updates')
-        if PACKAGES_CACHE:
-            with open(PACKAGES_CACHE, 'w') as f:
-                for package, data in self.working_set:
-                    f.write('{0} {1}\n'.format(package, data[0]))
-        for package, data in self.working_set:
-            path, dist = data
+        for dist in self.working_set:
+            package = dist.project_name
+            version = Version(dist.version)
+            logger.verbose('Found: {0}=={1}', package, version)
             try:
                 json = PyPIJson(package).retrieve()
                 new_version = Version(json['info']['version'])
             except Exception as e:
-                logger.error('Error: Failed to fetch data for {0}', package, exc=PygError)
-            if Version(dist.version) >= new_version:
+                logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
+                continue
+            if version >= new_version:
                 continue
 
             logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)
@@ -348,6 +407,7 @@ class Updater(object):
                 elif u == 'y':
                     self.upgrade(package, json, new_version)
                     break
+        self._clean()
         logger.info('Updating finished successfully')
 
 
@@ -442,7 +502,7 @@ class Bundler(object):
                 except KeyError:
                     logger.debug('requires.txt not found for {0}', dist)
                 try:
-                    as_req = dist.as_req()
+                    as_req = dist.as_req
                 except KeyError:
                     as_req = str(r)
                 already_downloaded.add(as_req)

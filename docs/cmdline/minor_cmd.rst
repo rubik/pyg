@@ -1,5 +1,24 @@
+Some minor stuff
+================
+
+The ``list`` command
+--------------------
+
+You can use this command to list all package's avaiable versions::
+
+    $ pyg list pypol_
+    0.5	installed
+    0.4
+    0.3
+    0.2
+
+    $ pyg list itertools_recipes
+    0.1
+
+If that package is installed, Pyg will add ``installed`` after the current version.
+
 Checking installed packages
-===========================
+---------------------------
 
 If you want to check if a package is installed, you can use the ``check`` command::
 
@@ -18,7 +37,7 @@ Some examples::
 
 
 Searching PyPI
-==============
+--------------
 
 Pyg can perform searches on PyPI with the ``search`` command::
 
@@ -32,7 +51,7 @@ Pyg can perform searches on PyPI with the ``search`` command::
 
 
 Linking directories
-===================
+-------------------
 
 If you want to add a directory to :envvar:`PYTHONPATH` permanently the ``link`` command is what you need::
 
@@ -42,7 +61,7 @@ When you link a directory Pyg add in a :file:`.pth` file the dir's path.
 
 
 Unlinking
-=========
+---------
 
 .. program:: unlink
 

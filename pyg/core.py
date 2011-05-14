@@ -8,7 +8,7 @@ from cStringIO import StringIO
 
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
-from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN
+from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN, USER_SITE
 from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, ext
 from pyg.log import logger
 
@@ -140,8 +140,6 @@ class Egg(object):
     :param eggname: the egg name (for example ``pyg-0.1.2-py2.7.egg``)
     :param reqset: a :class:`~pyg.types.ReqSet` object used to store requirements
     :param packname: the package name. If the egg name is ``pyg-0.1.2-py2.7.egg``, *packname* should be ``pyg``
-
-
     '''
 
     def __init__(self, fobj, eggname, reqset, packname=None):
@@ -150,6 +148,8 @@ class Egg(object):
         self.reqset = reqset
         self.packname = packname or name_from_egg(eggname)
         self.idir = args_manager['install']['install_dir']
+        if args_manager['install']['user']:
+            self.idir = USER_SITE
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
@@ -171,6 +171,8 @@ class Egg(object):
             except IndexError:
                 pass
         dist = EggDir(eggpath)
+
+        ## Install scripts in the setuptools' way
         if not args_manager['install']['no_scripts']:
             for name, content, mode in script_args(dist):
                 logger.info('Installing {0} script to {1}', name, BIN)
@@ -189,6 +191,11 @@ class Egg(object):
 
 
 class Dir(object):
+    '''
+    To install the package this class needs the *path*, a temporary directory's path, and a :class:`ReqSet` object
+    to store requirements.
+    '''
+
     def __init__(self, path, name, tempdir, reqset=None):
         self.path = path
         self.name = name
@@ -196,6 +203,11 @@ class Dir(object):
         self.reqset = reqset
 
     def install(self):
+        '''
+        Given a pathname containing a :file:`setup.py` file, install the package.
+        First runs `setup.py egg_info` to find out requirements, then runs ``setup.py install``.
+        '''
+
         if self.reqset is not None:
             logger.info('Running setup.py egg_info for {0}', self.name)
             call_setup(self.path, ['egg_info', '--egg-base', self.tempdir])
@@ -208,12 +220,12 @@ class Dir(object):
                     for r in dist.file('requires.txt'):
                         self.reqset.add(r)
                 except (KeyError, ConfigParser.MissingSectionHeaderError):
-                    logger.debug('requires.txt not found')
+                    logger.debug('debug: requires.txt not found')
                 try:
                     for r in dist.file('dependency_links.txt'):
                         self.reqset.add(r)
                 except (KeyError, ConfigParser.MissingSectionHeaderError):
-                    logger.debug('dependency_links.txt not found')
+                    logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
             args += ['--prefix', args_manager['install']['install_dir']]
@@ -221,6 +233,8 @@ class Dir(object):
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
             args += ['--install-data', self.tempdir]
+        if args_manager['install']['user']:
+            args += ['--user']
         run_setup(self.path, self.name, args=args, exc=InstallationError)
 
 
@@ -230,15 +244,22 @@ class Archive(object):
         if e == '.zip':
             self.arch = ZipFile(fobj)
         else:
-            m = 'r:{0}'.format(e.split('.')[2])
-
-            ## A package should not be a tar file but we don't know
-            if e.endswith('.tar'):
+            if e is None:
                 m = 'r'
+            ## A package should not be a tar file but we don't know
+            elif e.endswith('.tar'):
+                m = 'r'
+            else:
+                m = 'r:{0}'.format(e.split('.')[2])
+
             self.arch = tarfile.open(fileobj=fobj, mode=m)
         self.reqset = reqset
 
     def install(self):
+        '''
+        Install an archive. First it unpack the archive somewhere and then runs :file:`setup.py`
+        '''
+
         with TempDir() as tempdir:
             self.arch.extractall(tempdir)
             self.arch.close()
@@ -247,10 +268,18 @@ class Archive(object):
 
 
 class Bundle(object):
+    '''
+    This class only needs bundle's path. Run :meth:`~pyg.core.Bundle.install` to install packages in it.
+    '''
+
     def __init__(self, filepath):
         self.path = os.path.abspath(filepath)
 
     def install(self):
+        '''
+        Install a bundle. For every package runs ``setup.py install``.
+        '''
+
         with TempDir() as tempdir:
             with ZipFile(self.path) as z:
                 z.extractall(tempdir)
@@ -269,13 +298,17 @@ class Binary(object):
         self.name = packname
 
     def install(self):
+        '''
+        Install a binary package. Simply run it and hope it works...
+        (Still experimental.)
+        '''
+
         with TempDir() as tempdir:
             filename = 'pyg-installer' + self.ext
             installer = os.path.join(tempdir, filename)
             with open(installer, 'w') as i:
                 i.write(self.fobj.getvalue())
-            with ChDir(tempdir):
-                call_subprocess(['./' + filename])
+                call_subprocess(['./' + filename], cwd=tempdir)
 
 
 class ArgsManager(object):
@@ -290,6 +323,7 @@ class ArgsManager(object):
             'user': False,
             'no_scripts': False,
             'no_data': False,
+            'ignore': False,
         },
         'remove': {
             'yes': False
@@ -319,13 +353,39 @@ class ArgsManager(object):
     def __getitem__(self, item):
         return ArgsManager._OPTS[item]
 
+    @ property
+    def OPTS(self):
+        return self._OPTS
+
     def load(self, path):
+        '''
+        Load options from a config file. The syntax is as follow::
+
+            [section_name]
+            option=value
+
+        If a option is shared between two or more section you can also write::
+
+            [section1 & section2 & section_n]
+            option=value
+
+        Real example::
+
+            [install]
+            upgrade_all=True
+
+            [remove]
+            yes=True
+
+        The option tree is in the protected variable :attr:`OPTS`.
+        '''
+
         cp = ConfigParser.ConfigParser()
         with open(path) as f:
             cp.readfp(f, os.path.basename(path))
         for section in cp.sections():
             if '&' in section:
-                sections = [part.strip() for part in section.split('&')]
+                sections = [s.strip() for s in section.split('&')]
             else:
                 sections = [section]
             for s in sections:
@@ -335,10 +395,12 @@ class ArgsManager(object):
                 for option, value in cp.items(section):
                     option = option.replace('-', '_')
                     if option not in self._OPTS[s]:
-                        logger.warn('Warning: option does not exist in section {0}: {1}', option, s)
+                        logger.warn('Warning: section {0} does not have such option: {1}', s, option)
                         continue
                     if value not in self.NOT_BOOL:
                         value = bool(value)
+                    if s == 'install' and option == 'upgrade_all':
+                        self._OPTS['install']['upgrade'] = True
                     self._OPTS[s][option] = value
 
 

@@ -1,16 +1,22 @@
 import re
 import os
+import time
 import urllib.request, urllib.error, urllib.parse
 import urllib.parse
+import httplib2
+import datetime
+import StringIO
+import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
-from pyg.core import PygError, Version, args_manager
+from pyg.core import PygError, Version
 from pyg.utils import FileMapper, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 
-__all__ = ['ReqManager', 'get_version', 'request', 'PREFERENCES']
+__all__ = ['PREFERENCES', 'ReqManager', 'LinkFinder', 'get_versions', \
+           'highest_version', 'request']
 
 
 ## This constants holds files priority
@@ -36,8 +42,89 @@ def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    r = urllib.request.Request(url)
-    return urllib.request.urlopen(r).read()
+    h = httplib2.Http('.cache')
+    resp, content = h.request(url)
+    if resp['status'] == '404':
+        logger.error('Error: URL does not exist: {0}', url, exc=PygError)
+    return content
+
+def convert_bytes(bytes):
+    bytes = float(bytes)
+    if bytes >= 1099511627776:
+        terabytes = bytes / 1099511627776
+        size = '{0:.1f} Tb'.format(terabytes)
+    elif bytes >= 1073741824:
+        gigabytes = bytes / 1073741824
+        size = '{0:.1f} Gb'.format(gigabytes)
+    elif bytes >= 1048576:
+        megabytes = bytes / 1048576
+        size = '{0:.1f} Mb'.format(megabytes)
+    elif bytes >= 1024:
+        kilobytes = bytes / 1024
+        size = '{0:.1f} Kb'.format(kilobytes)
+    else:
+        size = '{0:.1f} b'.format(bytes)
+    return size
+
+def download(url, msg):
+    def tm(seconds):
+        if seconds == '':
+            return ''
+        hours, minutes = seconds // 3600, seconds // 60
+        seconds -= int(3600 * hours + 60 * minutes)
+        if minutes:
+            if hours:
+                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
+            return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
+        return '{0:02d}s remaining'.format(int(seconds))
+    def hook(blocks, block_size, total_size):
+        '''
+        Callback function for `urllib.urlretrieve` that is called when connection is
+        created and then once for each block.
+
+        Display the amount of data transferred so far and it percentage.
+
+        Use sys.stdout.write() instead of "print,", because it allows one more
+        symbol at the line end without linefeed on Windows
+
+        :param blocks: Number of blocks transferred so far.
+        :param block_size: Size of each block in bytes.
+        :param total_size: Total size of the HTTP object in bytes. Can be -1 if server doesn't return it.
+        '''
+
+        if block_size > total_size:
+            logger.info('\r{0} [100% - {1}]', msg, convert_bytes(total_size), addn=False)
+            return
+        downloaded = block_size * blocks
+        ratio = downloaded / float(total_size)
+
+        ## When the last block makes the downloaded size greater than the total size
+        if ratio > 1:
+            ratio = 1
+
+        ## Calculate elapsed and remaining time
+        elapsed = func() - starttime
+        speed = downloaded / float(elapsed)
+        try:
+            remaining = (total_size - downloaded) / float(speed)
+        except ZeroDivisionError:
+            remaining = ''
+        if ratio == 1:
+            ## When we finish the download we want this string to hide
+            remaining = ''
+
+        logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded), \
+                    convert_bytes(total_size), tm(remaining), addn=False)
+
+    if is_windows():
+        func = time.clock
+    else:
+        func = time.time
+    starttime = func()
+    path = urllib.urlretrieve(url, reporthook=hook)[0]
+    logger.newline()
+    with open(path) as f:
+        return StringIO.StringIO(f.read())
 
 
 class ReqManager(object):
@@ -50,6 +137,7 @@ class ReqManager(object):
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
             self.package_manager = PyPIJson(self.name, highest_version(self.req))
+        self.package_manager._request_func = request
 
         self._set_prefs(pref)
 
@@ -93,7 +181,7 @@ class ReqManager(object):
                     logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
                     continue
                 try:
-                    data = request(url)
+                    data = download(url, 'Retrieving data for {0}'.format(self.name)).getvalue()
                 except (urllib.error.URLError, urllib.error.HTTPError) as e:
                     logger.debug('urllib2 error: {0}', e.args)
                     continue
@@ -102,7 +190,6 @@ class ReqManager(object):
                     continue
                 if not os.path.exists(dest):
                     os.makedirs(dest)
-                logger.info('Retrieving data for {0}', self.name)
                 try:
                     logger.info('Writing data into {0}', name)
                     with open(os.path.join(dest, name), 'w') as f:
@@ -122,7 +209,8 @@ class LinkFinder(object):
 
     INDEX = None
     FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
-    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.-]+)(?P<name>[^\<]+)</a><br/>'
+    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+[\w^.]+)(?P<name>[^\<]+)</a><br/>'
+    SIMPLE_LINK = r'<a\shref="(?P<href>[^"]+)">(?P<name>[^<]+)</a>'
 
     def __init__(self, package_name, index=None):
         self.package_name = package_name
@@ -144,11 +232,27 @@ class LinkFinder(object):
         e = ext(base)
         if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             return False
+        print version
         return '{0}-{1}{2}'.format(self.package_name, version, e) == base
 
     def find_best_link(self):
         data = request('{0}{1}'.format(self.INDEX, self.package_name))
         d = {}
+        for href, name in re.compile(self.SIMPLE_LINK).findall(data):
+            e = ext(name)
+            if e in ('.tar', '.tar.gz', '.tar.bz2', '.zip'):
+                version = name.split('-')[-1][:-len(e)]
+            elif e in ('.exe', '.msi'):
+                version = '.'.join(name.split('-')[-2].split('.')[:-1])
+            else:
+                try:
+                    version = pkg_resources.Distribution.from_filename(name).version
+                except ValueError:
+                    logger.debug('debug: Failed to find version for {0}, continuing...', name)
+                    continue
+            if not href.startswith('http'):
+                href = '/'.join([self.INDEX, self.package_name, href])
+            d[Version(version)] = href
         for href, rel, version, name in re.compile(self.LINK).findall(data):
             if rel == 'download':
                 d[Version(version)] = href
@@ -161,12 +265,13 @@ class LinkFinder(object):
             return None, None
 
     def find_files(self, url, version):
-        if ext(url) in PREFERENCES:
-            return [url]
         url = url + '/'[:not url.endswith('/')]
         base = '{0}://{1}/'.format(*urllib.parse.urlparse(url)[:2])
         logger.info('Reading {0}', url)
+
         ## This is horrible, but there is no alternative...
+        ## We cannot use standard regex because on external sites HTML can be
+        ## different and we would run up against problems.
         data = request(url).split('</a>')
         links = set()
         for item in data:
@@ -183,4 +288,7 @@ class LinkFinder(object):
         version, link = self.find_best_link()
         if version is None:
             raise PygError('Error: did not find any files')
+        link = urlparse.urldefrag(link)[0]
+        if ext(link) in PREFERENCES:
+            return [link]
         return self.find_files(link, version)

@@ -11,7 +11,7 @@ import collections
 import pkg_resources
 
 
-from pyg.locations import PYG_LINKS, INSTALL_DIR, under_virtualenv
+from pyg.locations import PYG_LINKS, under_virtualenv
 from pyg.log import logger
 
 
@@ -97,11 +97,14 @@ def unlink(path):
                 continue
             f.write(line)
 
-def call_subprocess(args):
+def call_subprocess(args, all_output=False, cwd=None):
     try:
-        output = check_output(args, stderr=subprocess.STDOUT)
+        output = check_output(args, stderr=subprocess.STDOUT, cwd=cwd)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
         return e.returncode, e.output
+    finally:
+        if all_output:
+            logger.info(output)
     return 0, output
 
 def call_setup(path, a):
@@ -110,8 +113,7 @@ def call_setup(path, a):
     if under_virtualenv():
         logger.debug('virtualenv detected')
         args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
-    with ChDir(path):
-        return call_subprocess(args)
+    return call_subprocess(args, cwd=path)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
@@ -119,12 +121,19 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
                             '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)
-        logger.info('Complete output from command setup.py install:')
-        indt = logger.indent + 8
-        logger.info(' ' * indt + ('\n' + ' ' * indt).join(output.split('\n')))
+        print_output(output, 'setup.py install')
         raise exc('setup.py did not install {0}'.format(name))
 
+def print_output(output, cmd):
+    '''Print to sys.stderr the complete output of a failed command'''
+    logger.info('Complete output from command {0}:', cmd)
+    logger.indent += 8
+    for line in output.split('\n'):
+        logger.error(line)
+    logger.indent -= 8
+
 def name_ext(path):
+    '''Like os.path.splitext(), but split .tar too'''
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e
@@ -135,7 +144,12 @@ def name(path):
     return name_ext(path)[0]
 
 def ext(path):
-    return name_ext(path)[1]
+    e = name_ext(path)[1]
+
+    ## Little hack to support .tgz files too
+    if e == '.tgz':
+        return '.tar.gz'
+    return e
 
 def unpack(path):
     path = os.path.abspath(path)

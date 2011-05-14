@@ -13,7 +13,6 @@ Pyg can:
 Currently Pyg don't:
 
     * understand Setuptools extras (like ``package[extra]``)
-    * integrate with virtualenv (planned for `Pyg v0.5`)
 
 
 Pyg compared to easy_install
