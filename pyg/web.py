@@ -3,7 +3,6 @@ import os
 import time
 import urllib.request, urllib.error, urllib.parse
 import urllib.parse
-import httplib2
 import datetime
 import io
 import pkg_resources
@@ -42,11 +41,7 @@ def highest_version(req):
     return max(get_versions(req))
 
 def request(url):
-    h = httplib2.Http('.cache')
-    resp, content = h.request(url)
-    if resp['status'] == '404':
-        logger.error('Error: URL does not exist: {0}', url, exc=PygError)
-    return content
+    return urllib2.urlopen(url).read()
 
 def convert_bytes(bytes):
     bytes = float(bytes)
@@ -66,17 +61,18 @@ def convert_bytes(bytes):
         size = '{0:.1f} b'.format(bytes)
     return size
 
+def tm(seconds):
+    if seconds == '':
+        return ''
+    hours, minutes = seconds // 3600, seconds // 60
+    seconds -= int(3600 * hours + 60 * minutes)
+    if minutes:
+        if hours:
+            return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
+        return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
+    return '{0:02d}s remaining'.format(int(seconds))
+
 def download(url, msg):
-    def tm(seconds):
-        if seconds == '':
-            return ''
-        hours, minutes = seconds // 3600, seconds // 60
-        seconds -= int(3600 * hours + 60 * minutes)
-        if minutes:
-            if hours:
-                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*list(map(int, [hours, minutes, seconds])))
-            return '{0:02d}m {1:02d}s remaining'.format(*list(map(int, [minutes, seconds])))
-        return '{0:02d}s remaining'.format(int(seconds))
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -101,6 +97,7 @@ def download(url, msg):
         ## When the last block makes the downloaded size greater than the total size
         if ratio > 1:
             ratio = 1
+            downloaded = total_size
 
         ## Calculate elapsed and remaining time
         elapsed = func() - starttime
@@ -140,6 +137,8 @@ class ReqManager(object):
         self.package_manager._request_func = request
 
         self._set_prefs(pref)
+        downloaded_name = None
+        downloaded_version = None
 
     def _set_prefs(self, pref):
         if pref is None:
@@ -199,8 +198,8 @@ class ReqManager(object):
                     continue
                 logger.info('{0} downloaded successfully', self.name)
                 success = True
-                self.downloaded_name = name
-                self.downloaded_version = v
+            self.downloaded_name = name
+            self.downloaded_version = v
 
 
 ## OLD! We are using Json to interoperate with pypi.
