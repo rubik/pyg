@@ -62,7 +62,7 @@ def convert_bytes(bytes):
         size = '{0:.1f} b'.format(bytes)
     return size
 
-def tm(seconds):
+def format_time(seconds):
     if seconds == '':
         return ''
     hours, minutes = seconds // 3600, seconds // 60
@@ -112,7 +112,7 @@ def download(url, msg):
             remaining = ''
 
         logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded), \
-                    convert_bytes(total_size), tm(remaining), addn=False)
+                    convert_bytes(total_size), format_time(remaining), addn=False)
 
     if is_windows():
         func = time.clock
