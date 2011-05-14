@@ -200,6 +200,8 @@ def download_func(args):
         unpk = args.unpack
     downloader = ReqManager(Requirement(name), pref)
     downloader.download(dest)
+    if downloader.downloaded_name is None:
+        logger.fatal('Error: Did not find any files for {0}', name, exc=PygError)
     if unpk:
         path = os.path.abspath(downloader.downloaded_name)
         logger.info('Unpacking {0} to {1}', os.path.basename(path), os.getcwd())
