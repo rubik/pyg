@@ -4,7 +4,7 @@ import glob
 import tarfile
 import pkg_resources
 import configparser
-from io import StringIO
+from cStringIO import StringIO
 
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
@@ -118,7 +118,7 @@ class ReqSet(object):
         for r in self.reqs:
             yield r
 
-    def __bool__(self):
+    def __nonzero__(self):
         return bool(self.reqs)
 
     def __bool__(self):

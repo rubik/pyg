@@ -28,9 +28,9 @@ def main():
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)
-    except urllib.error.HTTPError as e:
+    except urllib2.HTTPError as e:
         sys.exit('HTTPError: {0}'.format(e.msg))
-    except urllib.error.URLError as e:
+    except urllib2.URLError as e:
         sys.exit('urllib error: {0}'.format(e.reason))
     sys.exit(0)
 

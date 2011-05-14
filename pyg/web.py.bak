@@ -5,7 +5,7 @@ import urllib.request, urllib.error, urllib.parse
 import urllib.parse
 import httplib2
 import datetime
-import io
+import StringIO
 import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
@@ -74,8 +74,8 @@ def download(url, msg):
         seconds -= int(3600 * hours + 60 * minutes)
         if minutes:
             if hours:
-                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*list(map(int, [hours, minutes, seconds])))
-            return '{0:02d}m {1:02d}s remaining'.format(*list(map(int, [minutes, seconds])))
+                return '{0:02d}h {1:02d}m {2:02d}s remaining'.format(*map(int, [hours, minutes, seconds]))
+            return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
         return '{0:02d}s remaining'.format(int(seconds))
     def hook(blocks, block_size, total_size):
         '''
@@ -121,10 +121,10 @@ def download(url, msg):
     else:
         func = time.time
     starttime = func()
-    path = urllib.request.urlretrieve(url, reporthook=hook)[0]
+    path = urllib.urlretrieve(url, reporthook=hook)[0]
     logger.newline()
     with open(path) as f:
-        return io.StringIO(f.read())
+        return StringIO.StringIO(f.read())
 
 
 class ReqManager(object):
@@ -232,7 +232,7 @@ class LinkFinder(object):
         e = ext(base)
         if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             return False
-        print(version)
+        print version
         return '{0}-{1}{2}'.format(self.package_name, version, e) == base
 
     def find_best_link(self):

@@ -326,7 +326,7 @@ class Updater(object):
 
     def restore_files(self, package):
         package = self.removed['package']
-        tempdir = list(package.keys())[0]
+        tempdir = package.keys()[0]
         for path in package[tempdir]:
             p = os.path.join(tempdir, os.path.basename(path))
             try:
@@ -337,11 +337,11 @@ class Updater(object):
 
     def _clean(self):
         logger.debug('debug: Removing temporary directories')
-        for package, dirs in self.removed.items():
+        for package, dirs in self.removed.iteritems():
             try:
-                shutil.rmtree(list(dirs.keys())[0])
+                shutil.rmtree(dirs.keys()[0])
             except shutil.Error:
-                logger.debug('debug: Error while removing {0}', list(dirs.keys())[0])
+                logger.debug('debug: Error while removing {0}', dirs.keys()[0])
                 continue
 
     def upgrade(self, package_name, json, version):

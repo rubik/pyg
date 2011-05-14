@@ -226,7 +226,7 @@ def bundle_func(args):
     reqs = []
     if args.req_file:
         reqs = [Requirement(r) for f in args.req_file for r in get_reqs(f)]
-    b = Bundler(list(map(Requirement, args.packages)) + reqs, args.bundlename)
+    b = Bundler(map(Requirement, args.packages) + reqs, args.bundlename)
     b.bundle()
 
 def shell_func():
