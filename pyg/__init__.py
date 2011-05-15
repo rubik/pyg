@@ -1,4 +1,4 @@
-__version__ = '0.5.2'
+__version__ = '0.6'
 
 
 def main():
@@ -25,7 +25,6 @@ def main():
         load_options()
         parser.dispatch()
     except (PygError, InstallationError, ValueError) as e:
-        print e
         sys.exit(1)
     except AlreadyInstalled:
         sys.exit(0)

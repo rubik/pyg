@@ -232,7 +232,6 @@ class LinkFinder(object):
         e = ext(base)
         if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             return False
-        print version
         return '{0}-{1}{2}'.format(self.package_name, version, e) == base
 
     def find_best_link(self):
