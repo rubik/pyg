@@ -4,10 +4,10 @@ import time
 import urllib
 import urllib2
 import urlparse
-import datetime
 import cStringIO
 import pkg_resources
 
+from setuptools.package_index import PackageIndex
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.core import PygError, Version
@@ -15,7 +15,7 @@ from pyg.utils import FileMapper, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 
-__all__ = ['PREFERENCES', 'ReqManager', 'LinkFinder', 'get_versions', \
+__all__ = ['PREFERENCES', 'ReqManager', 'get_versions', 'get_links', \
            'highest_version', 'request']
 
 
@@ -203,91 +203,124 @@ class ReqManager(object):
             self.downloaded_version = v
 
 
+class PygPackageIndex(PackageIndex):
+    class URL(Exception):
+        ## Fake Exception used by PygPackageIndex to immediately return download link.
+
+        pass
+
+    def _download_to(self, url, filename):
+        raise self.URL(url)
+
+    def download(self, spec, tmpdir=None):
+        raise self.URL(spec)
+
+
+def get_links(package, index_url='http://pypi.python.org/simple'):
+    urls = set()
+    package_index = PygPackageIndex(index_url)
+    req = pkg_resources.Requirement.parse(str(package))
+    for source in (True, False):
+        try:
+            package_index.fetch_distribution(req, None, force_scan=True, \
+                                             source=source, develop_ok=False)
+        except PygPackageIndex.URL as url:
+            urls.add(urlparse.urldefrag(url.args[0])[0])
+    return urls
+
+
 ## OLD! We are using Json to interoperate with pypi.
 ## We use it only if we don't find any files with the Json API
-class LinkFinder(object):
 
-    INDEX = None
-    FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
-    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+[\w^.]+)(?P<name>[^\<]+)</a><br/>'
-    SIMPLE_LINK = r'<a\shref="(?P<href>[^"]+)">(?P<name>[^<]+)</a>'
-
-    def __init__(self, package_name, index=None):
-        self.package_name = package_name
-        if index is None:
-            index = 'http://pypi.python.org/simple/'
-        if not index.endswith('/'):
-            index += '/'
-        self.INDEX = index
-
-    def _check_link(self, link, version):
-        '''
-        Check whether the link is good or not. The link must satisfy the following conditions:
-
-            * It have to end with a right extension (.tar.gz, .tar.bz2, .zip, or .egg).
-            * It have to be the newest (i.e. the version must be the one specified).
-        '''
-
-        base = link.split('/')[-1]
-        e = ext(base)
-        if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-            return False
-        return '{0}-{1}{2}'.format(self.package_name, version, e) == base
-
-    def find_best_link(self):
-        data = request('{0}{1}'.format(self.INDEX, self.package_name))
-        d = {}
-        for href, name in re.compile(self.SIMPLE_LINK).findall(data):
-            e = ext(name)
-            if e in ('.tar', '.tar.gz', '.tar.bz2', '.zip'):
-                version = name.split('-')[-1][:-len(e)]
-            elif e in ('.exe', '.msi'):
-                version = '.'.join(name.split('-')[-2].split('.')[:-1])
-            else:
-                try:
-                    version = pkg_resources.Distribution.from_filename(name).version
-                except ValueError:
-                    logger.debug('debug: Failed to find version for {0}, continuing...', name)
-                    continue
-            if not href.startswith('http'):
-                href = '/'.join([self.INDEX, self.package_name, href])
-            d[Version(version)] = href
-        for href, rel, version, name in re.compile(self.LINK).findall(data):
-            if rel == 'download':
-                d[Version(version)] = href
-
-        ## Find highest version and returns its link
-        try:
-            v = max(d)
-            return v, d[v]
-        except ValueError:
-            return None, None
-
-    def find_files(self, url, version):
-        url = url + '/'[:not url.endswith('/')]
-        base = '{0}://{1}/'.format(*urlparse.urlparse(url)[:2])
-        logger.info('Reading {0}', url)
-
-        ## This is horrible, but there is no alternative...
-        ## We cannot use standard regex because on external sites HTML can be
-        ## different and we would run up against problems.
-        data = request(url).split('</a>')
-        links = set()
-        for item in data:
-            if 'href' in item:
-                i = item.index('href="')
-                item = item[i + 6:]
-                link = item[:item.index('">')]
-                if not link.startswith('http'):
-                    link = base + link
-                links.add(link)
-        return [l for l in links if self._check_link(l, version)]
-
-    def find(self):
-        version, link = self.find_best_link()
-        if version is None:
-            raise PygError('Error: did not find any files')
-        link = urlparse.urldefrag(link)[0]
-        if ext(link) in PREFERENCES:
-            return [link]
-        return self.find_files(link, version)
+## Old link finder we used to retrieve packages' links.
+## Now we use setuptools' PackageIndex.
+## (above)
+##
+#######################################################################
+#
+#class LinkFinder(object):
+#
+#    INDEX = None
+#    FILE = r'href\s?=\s?("|\')(?P<file>.*{0}-{1}\.(?:tar\.gz|tar\.bz2|zip|egg))(?:\1)'
+#    LINK = r'<a\s?href="(?P<href>[^"]+)"\srel="(?P<rel>[^"]+)">(?P<version>[\d\.]+[\w^.]+)(?P<name>[^\<]+)</a><br/>'
+#    SIMPLE_LINK = r'<a\shref="(?P<href>[^"]+)">(?P<name>[^<]+)</a>'
+#
+#    def __init__(self, package_name, index=None):
+#        self.package_name = package_name
+#        if index is None:
+#            index = 'http://pypi.python.org/simple/'
+#        if not index.endswith('/'):
+#            index += '/'
+#        self.INDEX = index
+#
+#    def _check_link(self, link, version):
+#        '''
+#        Check whether the link is good or not. The link must satisfy the following conditions:
+#
+#            * It have to end with a right extension (.tar.gz, .tar.bz2, .zip, or .egg).
+#            * It have to be the newest (i.e. the version must be the one specified).
+#        '''
+#
+#        base = link.split('/')[-1]
+#        e = ext(base)
+#        if e not in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+#            return False
+#        return '{0}-{1}{2}'.format(self.package_name, version, e) == base
+#
+#    def find_best_link(self):
+#        data = request('{0}{1}'.format(self.INDEX, self.package_name))
+#        d = {}
+#        for href, name in re.compile(self.SIMPLE_LINK).findall(data):
+#            e = ext(name)
+#            if e in ('.tar', '.tar.gz', '.tar.bz2', '.zip'):
+#                version = name.split('-')[-1][:-len(e)]
+#            elif e in ('.exe', '.msi'):
+#                version = '.'.join(name.split('-')[-2].split('.')[:-1])
+#            else:
+#                try:
+#                    version = pkg_resources.Distribution.from_filename(name).version
+#                except ValueError:
+#                    logger.debug('debug: Failed to find version for {0}, continuing...', name)
+#                    continue
+#            if not href.startswith('http'):
+#                href = '/'.join([self.INDEX, self.package_name, href])
+#            d[Version(version)] = href
+#        for href, rel, version, name in re.compile(self.LINK).findall(data):
+#            if rel == 'download':
+#                d[Version(version)] = href
+#
+#        ## Find highest version and returns its link
+#        try:
+#            v = max(d)
+#            return v, d[v]
+#        except ValueError:
+#            return None, None
+#
+#    def find_files(self, url, version):
+#        url = url + '/'[:not url.endswith('/')]
+#        base = '{0}://{1}/'.format(*urlparse.urlparse(url)[:2])
+#        logger.info('Reading {0}', url)
+#
+#        ## This is horrible, but there is no alternative...
+#        ## We cannot use standard regex because on external sites HTML can be
+#        ## different and we would run up against problems.
+#        data = request(url).split('</a>')
+#        links = set()
+#        for item in data:
+#            if 'href' in item:
+#                i = item.index('href="')
+#                item = item[i + 6:]
+#                link = item[:item.index('">')]
+#                if not link.startswith('http'):
+#                    link = base + link
+#                links.add(link)
+#        return [l for l in links if self._check_link(l, version)]
+#
+#    def find(self):
+#        version, link = self.find_best_link()
+#        if version is None:
+#            raise PygError('Error: did not find any files')
+#        link = urlparse.urldefrag(link)[0]
+#        if ext(link) in PREFERENCES:
+#            return [link]
+#        return self.find_files(link, version)

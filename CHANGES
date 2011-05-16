@@ -22,11 +22,6 @@ To solve:
 + #53: Show download progress.
 + #55: You can install packages from Github Gists!
 
-0.5.3 (May 16, 2011)
---------------------
-
-+ Fixed a silly bug that involved *str.format*.
-
 0.5.2 (May 05, 2011)
 --------------------
 

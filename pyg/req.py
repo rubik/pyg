@@ -4,7 +4,7 @@ import urlparse
 from hashlib import md5
 
 from pyg.utils import ext, right_egg, is_windows
-from pyg.web import ReqManager, LinkFinder, download
+from pyg.web import ReqManager, get_links, download
 from pyg.core import Version, Egg, Archive, Binary, ReqSet, InstallationError, args_manager
 from pyg.log import logger
 
@@ -107,8 +107,7 @@ class Requirement(object):
             package_index = 'http://pypi.python.org/simple'
         logger.info('Looking for links on {0}', package_index)
         try:
-            link_finder = LinkFinder(self.name, package_index)
-            links = link_finder.find()
+            links = get_links(self, package_index)
             if not links:
                 raise InstallationError('Error: did not find any files')
         except Exception as e:
