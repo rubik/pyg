@@ -21,8 +21,8 @@ URL = 'http://pypi.python.org/pypi/pyg/json'
 def splitext(path):
     name, e = os.path.splitext(path)
     if name.endswith('.tar'):
-        return name[:-4], '.tar' + e
-    return name, e
+        return '.tar' + e
+    return e
 
 def unpack(path):
     filename = os.path.basename(path)
