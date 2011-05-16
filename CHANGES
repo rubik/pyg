@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.7 (in development)
+--------------------
+
+To solve:
+
+    + #57: Create an installer, like Pip's ``get-pip.py``.
+    + #58: Add a ``pygx.y`` program (where ``x.y`` is Python current version), in addition to ``pyg``.
+    + #59: Solve :class:`pyg.web.LinkFinder` issue once and for all.
+
 0.6 (May 15, 2011)
 ------------------
 

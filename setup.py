@@ -56,7 +56,8 @@ setup(name='pyg',
       zip_safe=False,
       entry_points={
         'console_scripts': [
-            'pyg = pyg:main'
+            'pyg = pyg:main',
+            'pyg{0}.{1} = pyg:main'.format(*sys.version_info[:2])
         ]
       }
       )
