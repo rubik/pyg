@@ -18,27 +18,18 @@ except ImportError:
 URL = 'http://pypi.python.org/pypi/pyg/json'
 
 
-def splitext(path):
-    name, e = os.path.splitext(path)
-    if name.endswith('.tar'):
-        return '.tar' + e
-    return e
+def log(msg):
+    return sys.stdout.write(msg + '\n')
 
 def unpack(path):
-    filename = os.path.basename(path)
-    ext = splitext(filename)
-    if ext in ('.tar', '.tar.gz', '.tar.bz2'):
-        if ext == '.tar':
-            mode = 'r'
-        else:
-            mode = 'r:{0}'.format(ext.split('.')[-1])
-        archive = tarfile.open(path, mode=mode)
-    elif ext == '.zip':
+    if tarfile.is_tarfile(path):
+        archive = tarfile.open(path)
+    elif zipfile.is_zipfile(path):
         archive = zipfile.open(path)
     else:
-        raise TypeError('Unknown file-type: {0}'.format(ext))
+        raise TypeError('Unknown file-type: {0}'.format(path))
     tempdir = tempfile.mkdtemp()
-    archive.extractall(tempdir)
+    archive.extractall(tempdir);print tempdir
     return os.path.join(tempdir, os.listdir(tempdir)[0])
 
 def get_url():
@@ -49,11 +40,18 @@ def get_url():
 
 def install():
     url = get_url()
+    log('Retrieving archive...')
     path = urllib.urlretrieve(url)[0]
+    log('Unpacking archive...')
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
     python = 'python{0}.{1}'.format(*sys.version_info[:2])
-    subprocess.check_call([python, setup_py, 'install'])
+    try:
+        log('Running setup.py install...')
+        subprocess.check_call([python, setup_py, 'install'], cwd=path)
+    except subprocess.CalledProcessError as e:
+        log('Installation failed. Installation command returned non-zero ' \
+            'exit status: ' + str(e.returncode) + '\n')
 
 
 if __name__ == '__main__':
