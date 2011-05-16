@@ -1,4 +1,7 @@
+#! /usr/bin/env python
+
 import os
+import sys
 import urllib
 import urllib2
 import tarfile
@@ -49,4 +52,5 @@ def install():
     path = urllib.urlretrieve(url)[0]
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
-    subprocess.check_call(['python', setup_py, 'install'])
+    python = 'python{0}.{1}'.format(*sys.version_info[:2])
+    subprocess.check_call([python, setup_py, 'install'])
