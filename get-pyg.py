@@ -54,3 +54,7 @@ def install():
     setup_py = os.path.join(path, 'setup.py')
     python = 'python{0}.{1}'.format(*sys.version_info[:2])
     subprocess.check_call([python, setup_py, 'install'])
+
+
+if __name__ == '__main__':
+    install()
