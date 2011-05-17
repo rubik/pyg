@@ -108,6 +108,10 @@ def init_parser(version=None):
     def bundle(args):
         opts.bundle_func(args)
 
+    @ command
+    def help():
+        return
+
     parser.add_commands([install, remove, freeze, link, unlink, list,
-                         search, check, download, update, shell, bundle])
+                         search, check, download, update, shell, bundle, help])
     return parser
