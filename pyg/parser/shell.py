@@ -56,6 +56,9 @@ class PygShell(cmd.Cmd, object):
         self.parser = init_parser(__import__('pyg').__version__)
         super(PygShell, self).__init__(*args, **kwargs)
 
+    def get_names(self):
+        return ['do_'+name for name in ADDITIONAL_COMMANDS + SUPPORTED_COMMANDS + ['ls', 'cd', 'exit', 'help']]
+
     def __getattr__(self, attr):
         if not attr.startswith('do_') or attr in ADDITIONAL_COMMANDS:
             return object.__getattr__(self, attr)
