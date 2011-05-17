@@ -175,9 +175,22 @@ def list_func(name):
             res.append(v)
     return sys.stdout.write('\n'.join(res) + '\n')
 
-def search_func(query, exact):
+def search_func(query, exact, show_all_version):
+
     res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
                  key=lambda i: i['_pypi_ordering'], reverse=True)
+    results = []
+    processed = set()
+
+    if not show_all_version:
+        for entry in res:
+            if entry['name'] not in processed:
+                processed.add(entry['name'])
+                results.append(entry)
+        res = results
+        del processed
+        del results
+
     if exact:
         pattern = re.compile('$|'.join(query) + '$')
         results = []

@@ -77,8 +77,9 @@ def init_parser(version=None):
 
     @ arg('query', nargs='+')
     @ arg('-e', '--exact', action='store_true', help='List only exact hits')
+    @ arg('-a', '--all', action='store_true', help='Show all versions for specified package')
     def search(args):
-        opts.search_func(args.query, args.exact)
+        opts.search_func(args.query, args.exact, args.all)
 
     @ arg('packname')
     @ arg('-i', '--info', action='store_true', help='Show infos for specified package')
