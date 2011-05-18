@@ -1,6 +1,7 @@
 *.pyc
 *.komodoproject
 *~
+*.egg
 docs/_build
 build/
 dist/

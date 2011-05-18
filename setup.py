@@ -1,11 +1,31 @@
 import sys
 import pyg
-from setuptools import setup
+from setuptools import setup, Command
 
 
 requires = ['setuptools', 'pkgtools', 'argh']
 if sys.version_info[:2] < (2, 7):
     requires.append('argparse>=1.2.1')
+
+pyg_console_scripts = [
+    'pyg = pyg:main',
+    'pyg{0}.{1} = pyg:main'.format(*sys.version_info[:2])
+]
+
+class AltInstall(Command):
+    description = 'Install only the `pygx.y` program, without installing the `pyg` one' \
+                  '(you should use this command when you want to install different Pyg)' \
+                  'versions along different Python versions).'
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        return NotImplemented
+
 
 long_desc = '''Pyg
 ===
@@ -55,9 +75,6 @@ setup(name='pyg',
       provides=['pyg'],
       zip_safe=False,
       entry_points={
-        'console_scripts': [
-            'pyg = pyg:main',
-            'pyg{0}.{1} = pyg:main'.format(*sys.version_info[:2])
-        ]
+        'console_scripts': pyg_console_scripts
       }
       )

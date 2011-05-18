@@ -11,7 +11,7 @@ from setuptools.package_index import PackageIndex
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.core import PygError, Version
-from pyg.utils import FileMapper, ext, right_egg, version_egg, is_windows
+from pyg.utils import FileMapper, name, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 
@@ -138,8 +138,8 @@ class ReqManager(object):
         self.package_manager._request_func = request
 
         self._set_prefs(pref)
-        downloaded_name = None
-        downloaded_version = None
+        self.downloaded_name = None
+        self.downloaded_version = None
 
     def _set_prefs(self, pref):
         if pref is None:
@@ -152,7 +152,24 @@ class ReqManager(object):
         self.pref = pref
 
     def find(self):
-        return self.package_manager.find()
+        def _get_version(filename):
+            ## A bit hacky but there is no solution because some packages
+            ## are in the form {package_name}-{version}-{something_else}-{?pyx.y}.{ext}
+            ## and we cannot predict at what index is the version.
+            _version_re = re.compile(r'\d[\.\d\w]*')
+            parts = name(filename).split('-')
+            for part in parts:
+                match = _version_re.search(part)
+                if match is not None:
+                    return match.group()
+
+        found = list(self.package_manager.find())
+        if not found:
+            for link in get_links(self.name):
+                package_name = link.split('/')[-1]
+                version = _get_version(package_name)
+                found.append((version, package_name, None, link))
+        return found
 
     def files(self):
         files = FileMapper(list)
