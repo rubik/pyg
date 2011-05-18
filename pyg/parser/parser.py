@@ -77,8 +77,9 @@ def init_parser(version=None):
 
     @ arg('query', nargs='+')
     @ arg('-e', '--exact', action='store_true', help='List only exact hits')
+    @ arg('-a', '--all', action='store_true', help='Show all versions for specified package')
     def search(args):
-        opts.search_func(args.query, args.exact)
+        opts.search_func(args.query, args.exact, args.all)
 
     @ arg('packname')
     @ arg('-i', '--info', action='store_true', help='Show infos for specified package')
@@ -107,6 +108,10 @@ def init_parser(version=None):
     def bundle(args):
         opts.bundle_func(args)
 
+    @ command
+    def help():
+        return
+
     parser.add_commands([install, remove, freeze, link, unlink, list,
-                         search, check, download, update, shell, bundle])
+                         search, check, download, update, shell, bundle, help])
     return parser
