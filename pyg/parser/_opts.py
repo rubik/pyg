@@ -177,8 +177,15 @@ def list_func(name):
 
 def search_func(query, exact, show_all_version):
 
+    def _pypi_order(item):
+        # this is the old implementation, that looks buggy (try on "sphinx")
+        return item['_pypi_ordering']
+
+    def _pkgresources_order(item):
+        return (item['name'] ,) + pkg_resources.parse_version(item['version'])
+
     res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
-                 key=lambda i: i['_pypi_ordering'], reverse=True)
+                 key=_pkgresources_order, reverse=True)
     results = []
     processed = dict()
 
