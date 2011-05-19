@@ -78,28 +78,6 @@ class Requirement(object):
     #    ## The highest version possible
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
-    def _download_and_install(self, url, filename, packname, hash=None):
-        fobj = download(url, 'Downloading {0}'.format(self.name))
-        if hash is not None:
-            logger.info('Checking md5 sum')
-            #import pdb; pdb.set_trace()
-            if md5(fobj.getvalue()).hexdigest() != hash:
-                logger.fatal('Error: {0} appears to be corrupted', self.name)
-                return
-        e = ext(filename)
-        if e in ('.tar.gz', '.tar.bz2', '.zip'):
-            installer = Archive(fobj, e, packname, self.reqset)
-        elif e == '.egg':
-            installer = Egg(fobj, filename, self.reqset, packname)
-        elif is_windows() and e in WINDOWS_EXT:
-            installer = Binary(fobj, e, packname)
-        else:
-            logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
-
-        ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
-        installer.install()
-        self.success = True
-
     def _install_from_links(self, package_index):
         ## Monkey-patch for pyg.inst.Updater:
         ## it does not know the real index url!
@@ -126,30 +104,48 @@ class Requirement(object):
         if not self.success:
             raise InstallationError('Fatal: cannot install {0}'.format(self.name))
 
+    def _download_and_install(self, url, filename, packname, hash=None):
+        fobj = download(url, 'Downloading {0}'.format(self.name))
+        if hash is not None:
+            logger.info('Checking md5 sum')
+            #import pdb; pdb.set_trace()
+            if md5(fobj.getvalue()).hexdigest() != hash:
+                logger.fatal('Error: {0} appears to be corrupted', self.name)
+                return
+        e = ext(filename)
+        if e in ('.tar.gz', '.tar.bz2', '.zip'):
+            installer = Archive(fobj, e, packname, self.reqset)
+        elif e == '.egg':
+            installer = Egg(fobj, filename, self.reqset, packname)
+        elif is_windows() and e in WINDOWS_EXT:
+            installer = Binary(fobj, e, packname)
+        else:
+            logger.error('Error: unknown filetype: {0}', e, exc=InstallationError)
+
+        ## There is no need to catch exceptions now, this will be done by `pyg.inst.Installer.install`
+        installer.install()
+        self.success = True
+
     def install(self):
         self.success = False
-        if self.package_index == 'http://pypi.python.org/pypi':
-            logger.info('Looking for {0} releases on PyPI', self.name)
-            p = ReqManager(self)
-            for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-                for v, name, hash, url in p.files()[pext]:
-                    if pext == '.egg' and not right_egg(name):
-                        continue
-                    if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
-                        continue
-                    logger.info('Best match: {0}=={1}', self.name, v)
-                    try:
-                        self._download_and_install(url, name, p.name, hash)
-                    except InstallationError:
-                        logger.info('Trying another file (if there is one)...')
-                        continue
-                    if not self.version:
-                        self.version = v
-                    break
-                if self.success:
-                    break
-            if not self.success:
-                logger.warn('Warning: did not find files on PyPI for {0}', self.name)
-                self.package_index = 'http://pypi.python.org/simple/'
+        logger.info('Looking for {0} releases on PyPI', self.name)
+        p = ReqManager(self)
+        for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+            for v, name, hash, url in p.files()[pext]:
+                if pext == '.egg' and not right_egg(name):
+                    continue
+                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
+                    continue
+                logger.info('Best match: {0}=={1}', self.name, v)
+                try:
+                    self._download_and_install(url, name, p.name, hash)
+                except InstallationError:
+                    logger.info('Trying another file (if there is one)...')
+                    continue
+                if not self.version:
+                    self.version = v
+                break
+            if self.success:
+                break
         if not self.success:
-            self._install_from_links(self.package_index)
+            raise InstallationError

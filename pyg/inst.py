@@ -358,7 +358,6 @@ class Updater(object):
             logger.info('Installing {0}...', release['filename'])
             logger.indent += 4
             try:
-                import pdb; pdb.set_trace()
                 Installer.from_url(release['url'])
                 break
             except Exception as e:

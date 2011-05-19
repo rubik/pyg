@@ -244,10 +244,8 @@ class Archive(object):
         if e == '.zip':
             self.arch = ZipFile(fobj)
         else:
-            if e is None:
-                m = 'r'
             ## A package should not be a tar file but we don't know
-            elif e.endswith('.tar'):
+            if e is None or e.endswith('.tar'):
                 m = 'r'
             else:
                 m = 'r:{0}'.format(e.split('.')[2])
@@ -263,8 +261,12 @@ class Archive(object):
         with TempDir() as tempdir:
             self.arch.extractall(tempdir)
             self.arch.close()
-            fullpath = os.path.join(tempdir, os.listdir(tempdir)[0])
-            Dir(fullpath, self.name, tempdir, self.reqset).install()
+
+            ## This is for archives which have top-level setup.py files
+            setup_py = os.path.join(tempdir, 'setup.py')
+            if not os.path.exists(setup_py):
+                setup_py = glob.glob(os.sep.join([tempdir, '*', 'setup.py']))[0]
+            Dir(os.path.dirname(setup_py), self.name, tempdir, self.reqset).install()
 
 
 class Bundle(object):
