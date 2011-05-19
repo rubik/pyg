@@ -95,7 +95,10 @@ def install_func(args):
     args_manager['install']['index_url'] = args.index_url
     check_and_exit()
     if args.editable:
-        return vcs(args.packname).develop()
+        if len(args.packname) > 1:
+            logger.error('Unable to install multiple packages in editable mode')
+            return
+        return vcs(args.packname[0]).develop()
     if args.req_file:
         logger.info('Installing from requirements file')
         for req_file in args.req_file:
