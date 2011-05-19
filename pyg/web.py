@@ -10,7 +10,7 @@ import pkg_resources
 from setuptools.package_index import PackageIndex
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
-from pyg.core import PygError, Version
+from pyg.core import PygError, Version, args_manager
 from pyg.utils import FileMapper, name, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
@@ -135,7 +135,6 @@ class ReqManager(object):
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
             self.package_manager = PyPIJson(self.name, highest_version(self.req))
-        self.package_manager._request_func = request
 
         self._set_prefs(pref)
         self.downloaded_name = None
@@ -165,7 +164,8 @@ class ReqManager(object):
 
         found = list(self.package_manager.find())
         if not found:
-            for link in get_links(self.name):
+            logger.warn('Warning: did not find any files on PyPI')
+            for link in get_links(self.name, args_manager['install']['index_url']):
                 package_name = link.split('/')[-1]
                 version = _get_version(package_name)
                 found.append((version, package_name, None, link))
@@ -175,7 +175,7 @@ class ReqManager(object):
         files = FileMapper(list)
         files.pref = self.pref
         for release in self.find():
-            files[ext(release[3])].append(release)
+            files[ext(release[1])].append(release)
         return files
 
     def download(self, dest):
@@ -203,7 +203,7 @@ class ReqManager(object):
                     logger.debug('urllib2 error: {0}', e.args)
                     continue
                 if not data:
-                    logger.debug('request failed')
+                    logger.debug('debug: Request failed')
                     continue
                 if not os.path.exists(dest):
                     os.makedirs(dest)
@@ -212,7 +212,7 @@ class ReqManager(object):
                     with open(os.path.join(dest, name), 'w') as f:
                         f.write(data)
                 except (IOError, OSError):
-                    logger.debug('error while writing data')
+                    logger.debug('debug: Error while writing data')
                     continue
                 logger.info('{0} downloaded successfully', self.name)
                 success = True
@@ -234,6 +234,11 @@ class PygPackageIndex(PackageIndex):
 
 
 def get_links(package, index_url='http://pypi.python.org/simple'):
+    ## Correction for standard installation when index_url is
+    ## http://pypi.python.org/pypi.
+    if index_url == 'http://pypi.python.org/pypi':
+        index_url = 'http://pypi.python.org/simple'
+    logger.info('Looking for packages on {0}', index_url)
     urls = set()
     package_index = PygPackageIndex(index_url)
     req = pkg_resources.Requirement.parse(str(package))
