@@ -1,8 +1,6 @@
 import re
 import os
 import sys
-import urllib2
-import urlparse
 import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
@@ -12,9 +10,9 @@ from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.core import args_manager, PygError
-from pyg.inst import Installer, Uninstaller, Updater, Bundler, PygError
-from pyg.locations import USER_SITE, PYG_LINKS, INSTALL_DIR, under_virtualenv
-from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_setup
+from pyg.inst import Installer, Uninstaller, Updater, Bundler
+from pyg.locations import PYG_LINKS, INSTALL_DIR
+from pyg.utils import TempDir, is_installed, link, unlink, unpack
 from pyg.web import ReqManager
 
 

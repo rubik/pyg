@@ -49,7 +49,7 @@ def install():
     cmd = 'altinstall' if 'altinstall' in sys.argv else 'install'
     try:
         log('Running setup.py install...')
-        subprocess.check_call([python, setup_py, cmd] + additional, cwd=path)
+        subprocess.check_call([python, setup_py, cmd], cwd=path)
     except subprocess.CalledProcessError as e:
         log('Installation failed. Installation command returned non-zero ' \
             'exit status: ' + str(e.returncode) + '\n')

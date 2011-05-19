@@ -3,6 +3,7 @@ Script installation resources. Modified from setuptools/easy_install.py
 '''
 
 
+import os
 import re
 import sys
 import pkg_resources

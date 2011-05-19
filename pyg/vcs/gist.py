@@ -8,7 +8,7 @@ except ImportError:
     import json
 
 from pyg.inst import Installer
-from pyg.utils import TempDir, name
+from pyg.utils import TempDir
 from pyg.web import request
 from pyg.log import logger
 

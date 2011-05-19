@@ -8,7 +8,7 @@ def main():
     try:
         ## If Python fails to import pyg we just add this directory to
         ## sys.path so we don't worry wheter Pyg is installed or not.
-        import pyg
+        __import__('pyg')
     except ImportError:
         sys.path.insert(0, '..')
     from pyg.parser.parser import init_parser, load_options
