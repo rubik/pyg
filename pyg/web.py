@@ -151,6 +151,8 @@ class ReqManager(object):
         self.pref = pref
 
     def find(self):
+        def _remove_query(url):
+            return urlparse.urlunsplit(urlparse.urlsplit(url)[:3] + ('',) * 2)
         def _get_version(filename):
             ## A bit hacky but there is no solution because some packages
             ## are in the form {package_name}-{version}-{something_else}-{?pyx.y}.{ext}
@@ -166,7 +168,7 @@ class ReqManager(object):
         if not found:
             logger.warn('Warning: did not find any files on PyPI')
             for link in get_links(self.name, args_manager['install']['index_url']):
-                package_name = link.split('/')[-1]
+                package_name = _remove_query(link).split('/')[-1]
                 version = _get_version(package_name)
                 found.append((version, package_name, None, link))
         return found
@@ -238,7 +240,7 @@ def get_links(package, index_url='http://pypi.python.org/simple'):
     ## http://pypi.python.org/pypi.
     if index_url == 'http://pypi.python.org/pypi':
         index_url = 'http://pypi.python.org/simple'
-    logger.info('Looking for packages on {0}', index_url)
+    logger.info('Looking for packages at {0}', index_url)
     urls = set()
     package_index = PygPackageIndex(index_url)
     req = pkg_resources.Requirement.parse(str(package))
