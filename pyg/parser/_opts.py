@@ -93,7 +93,10 @@ def install_func(args):
     args_manager['install']['index_url'] = args.index_url
     check_and_exit()
     if args.editable:
-        return vcs(args.packname).develop()
+        if len(args.packname) > 1:
+            logger.error('Unable to install multiple packages in editable mode')
+            return
+        return vcs(args.packname[0]).develop()
     if args.req_file:
         logger.info('Installing from requirements file')
         for req_file in args.req_file:
@@ -177,8 +180,15 @@ def list_func(name):
 
 def search_func(query, exact, show_all_version):
 
+    def _pypi_order(item):
+        # this is the old implementation, that looks buggy (try on "sphinx")
+        return item['_pypi_ordering']
+
+    def _pkgresources_order(item):
+        return (item['name'] ,) + pkg_resources.parse_version(item['version'])
+
     res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
-                 key=lambda i: i['_pypi_ordering'], reverse=True)
+                 key=_pkgresources_order, reverse=True)
     results = []
     processed = dict()
 

@@ -57,17 +57,17 @@ class Installer(object):
                 logger.info('{0} is already installed', req)
                 continue
             logger.indent = 0
-            logger.info('Installing {0} (from {1.name}=={1.version})', req, rs.comes_from)
+            logger.info('Installing {0} (from {1})', req, rs.comes_from)
             logger.indent = 8
             try:
                 Installer(req).install()
             except AlreadyInstalled:
                 continue
             except InstallationError:
-                logger.warn('Error: {0} has not been installed correctlry', req)
+                logger.warn('Error: {0} has not been installed correctly', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies for {0.name}=={0.version}', rs.comes_from)
+        logger.info('Finished installing dependencies for {0}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)

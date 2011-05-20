@@ -216,11 +216,11 @@ class Dir(object):
                         self.reqset.add(r)
                 except (KeyError, ConfigParser.MissingSectionHeaderError):
                     logger.debug('debug: requires.txt not found')
-                try:
-                    for r in dist.file('dependency_links.txt'):
-                        self.reqset.add(r)
-                except (KeyError, ConfigParser.MissingSectionHeaderError):
-                    logger.debug('debug: dependency_links.txt not found')
+                #try:
+                #    for r in dist.file('dependency_links.txt'):
+                #        self.reqset.add(r)
+                #except (KeyError, ConfigParser.MissingSectionHeaderError):
+                    #logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
             args += ['--prefix', args_manager['install']['install_dir']]
