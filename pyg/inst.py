@@ -232,13 +232,16 @@ class Uninstaller(object):
         if dist.has_metadata('entry_points.txt'):
             config = ConfigParser.ConfigParser()
             config.readfp(File(dist.get_metadata_lines('entry_points.txt')))
+            win32 = sys.platform == 'win32'
             if config.has_section('console_scripts'):
                 for name, value in config.items('console_scripts'):
                     n = os.path.join(BIN, name)
                     if not os.path.exists(n) and n.startswith('/usr/bin'): ## Searches in the local path
                         n = os.path.join('/usr/local/bin', name)
-                    to_del.add(n)
-                    if sys.platform == 'win32':
+
+                    if os.path.exists(n):
+                        to_del.add(n)
+                    elif win32 and os.path.exists(n+'.exe'):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
