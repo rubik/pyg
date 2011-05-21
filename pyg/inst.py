@@ -11,13 +11,13 @@ import ConfigParser
 import pkg_resources
 
 from pkgtools.pypi import PyPIJson
-from pkgtools.pkg import WorkingSet, Installed, SDist
+from pkgtools.pkg import SDist
 
 from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
-from pyg.locations import EASY_INSTALL, USER_SITE, ALL_SITE_PACKAGES, BIN
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
+from pyg.utils import TempDir, File, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 

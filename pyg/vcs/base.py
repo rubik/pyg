@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 
-from pyg.utils import TempDir, ChDir, call_subprocess, call_setup, print_output
+from pyg.utils import ChDir, call_subprocess, call_setup, print_output
 from pyg.inst import Installer
 from pyg.core import InstallationError
 from pyg.log import logger
@@ -71,15 +71,14 @@ class VCS(object):
 
     def call_cmd(self, args):
         self.check_dest()
-        with TempDir() as tempdir:
-            with ChDir(self.dest):
-                if self.ARGS is not None:
-                    args = ARGS + args
-                logger.info('Copying data from {0} to {1}', self.url, self.dest)
-                code, output = call_subprocess([self.cmd, self.method] + args, True)
-                if code != 0:
-                    logger.fatal('Error: Cannot retrieve data', exc=InstallationError)
-                    print_output(output, '{0} {1}'.format(self.cmd, self.method))
+        with ChDir(self.dest):
+            if self.ARGS is not None:
+                args = self.ARGS + args
+            logger.info('Copying data from {0} to {1}', self.url, self.dest)
+            code, output = call_subprocess([self.cmd, self.method] + args, True)
+            if code != 0:
+                logger.fatal('Error: Cannot retrieve data', exc=InstallationError)
+                print_output(output, '{0} {1}'.format(self.cmd, self.method))
 
     def develop(self):
         self.retrieve_data()

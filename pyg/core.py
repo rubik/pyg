@@ -1,15 +1,13 @@
 import os
-import sys
 import glob
 import tarfile
 import pkg_resources
 import ConfigParser
-from cStringIO import StringIO
 
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
 from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN, USER_SITE
-from pyg.utils import TempDir, ZipFile, call_setup, run_setup, name_from_egg, ext
+from pyg.utils import TempDir, ZipFile, call_subprocess, call_setup, run_setup, name_from_egg
 from pyg.log import logger
 
 
@@ -85,9 +83,6 @@ class Version(object):
 
     def __repr__(self):
         return 'Version({0})'.format(self._v)
-
-    def __str__(self):
-        return self._v
 
     def __eq__(self, o):
         return self.v == o.v

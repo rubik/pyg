@@ -1,11 +1,9 @@
 import os
-import sys
 import cmd
-import shutil
 import difflib
 
 from pyg.parser.parser import init_parser
-from pyg.core import PygError, InstallationError, AlreadyInstalled
+from pyg.core import PygError, AlreadyInstalled
 
 
 __all__ = ['PygShell']
