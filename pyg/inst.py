@@ -77,12 +77,17 @@ class Installer(object):
                 updater.remove_files(self.req)
             r.install()
         except InstallationError as e:
+            try:
+                msg = e.args[0]
+            except IndexError:
+                msg = repr(e)
+
             if self.upgrading:
-                logger.warn('Error: An error occurred during the upgrading: {0}', e.args[0])
+                logger.warn('Error: An error occurred during the upgrading: {0}', msg)
                 logger.info('Restoring uninstalled files...')
                 updater.restore_files(self.req)
             else:
-                logger.error(e.args[0], exc=InstallationError)
+                logger.error(msg, exc=InstallationError)
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
