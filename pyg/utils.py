@@ -134,7 +134,7 @@ def print_output(output, cmd):
     logger.indent -= 8
 
 def name_ext(path):
-    '''Like os.path.splitext(), but split .tar too'''
+    '''Like os.path.splitext(), but split .tar too.'''
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e
