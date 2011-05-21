@@ -7,9 +7,13 @@ import platform
 def under_virtualenv():
     return hasattr(sys, 'real_prefix')
 
-if sys.version_info[:2] < (2, 7):
-    ## Since the site module hasn't the getsitepackages() function (in Python < 2.7)
-    ## we have to guess it.
+if hasattr(sys, 'getsitepackages'):
+    INSTALL_DIR = site.getsitepackages()[0]
+    USER_SITE = site.getusersitepackages()
+    ALL_SITE_PACKAGES = site.getsitepackages() + [USER_SITE]
+else:
+    # XXX: WORKAROUND for older python versions and some broken virtualenvs
+    ## we have to guess site packages location...
     USER_SITE = site.USER_SITE
     INSTALL_DIR = None
     system = platform.system()
@@ -28,6 +32,11 @@ if sys.version_info[:2] < (2, 7):
         from distutils.sysconfig import get_python_lib
         INSTALL_DIR = get_python_lib(True)
 
+    if under_virtualenv():
+        ALL_SITE_PACKAGES = [INSTALL_DIR]
+    else:
+        ALL_SITE_PACKAGES = [USER_SITE]
+
     #try:
     #    INSTALL_DIR = sorted([p for p in sys.path if p.endswith('dist-packages')],
     #                        key=lambda i: 'local' in i, reverse=True)[0]
@@ -42,9 +51,6 @@ if sys.version_info[:2] < (2, 7):
     #if not INSTALL_DIR: ## We have to use /usr/lib/pythonx.y/dist-packages or something similar
     #    from distutils.sysconfig import get_python_lib
     #    INSTALL_DIR = get_python_lib()
-else:
-    INSTALL_DIR = site.getsitepackages()[0]
-    USER_SITE = site.getusersitepackages()
 
 ## Under virtualenv USER_SITE is the same as INSTALL_DIR
 if under_virtualenv():

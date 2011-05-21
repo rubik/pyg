@@ -16,7 +16,7 @@ from pkgtools.pkg import WorkingSet, Installed, SDist
 from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN
+from pyg.locations import EASY_INSTALL, USER_SITE, ALL_SITE_PACKAGES, BIN
 from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
@@ -203,7 +203,7 @@ class Uninstaller(object):
         if sys.version_info[:2] < (2, 7):
             guesses = [dist.location]
         else:
-            guesses = site.getsitepackages() + [site.getusersitepackages()]
+            guesses = ALL_SITE_PACKAGES
         for d in guesses:
             try:
                 for file in os.listdir(d):
