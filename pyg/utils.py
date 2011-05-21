@@ -108,7 +108,8 @@ def call_subprocess(args, all_output=False, cwd=None):
     return 0, output
 
 def call_setup(path, a):
-    code = 'import setuptools;__file__=\'{0}\';execfile(__file__)'.format(os.path.join(path, 'setup.py'))
+    code = 'import setuptools;from setuptools import setup;__file__=\'{0}\';' \
+           'execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code] + a
     if under_virtualenv():
         logger.debug('virtualenv detected')

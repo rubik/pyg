@@ -46,10 +46,9 @@ def install():
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
     python = 'python{0}.{1}'.format(*sys.version_info[:2])
-    cmd = 'altinstall' if 'altinstall' in sys.argv else 'install'
     try:
         log('Running setup.py install...')
-        subprocess.check_call([python, setup_py, cmd], cwd=path)
+        subprocess.check_call([python, setup_py, 'install'], cwd=path)
     except subprocess.CalledProcessError as e:
         log('Installation failed. Installation command returned non-zero ' \
             'exit status: ' + str(e.returncode) + '\n')

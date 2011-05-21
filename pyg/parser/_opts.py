@@ -11,7 +11,7 @@ from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
 from pyg.core import args_manager, PygError
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
-from pyg.locations import PYG_LINKS, INSTALL_DIR
+from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
 from pyg.utils import TempDir, is_installed, link, unlink, unpack
 from pyg.web import ReqManager
 
@@ -88,6 +88,7 @@ def install_func(args):
         args_manager['install']['ignore'] = True
     if args.user:
         args_manager['install']['user'] = True
+        args_manager['install']['install_dir'] = USER_SITE
     if args.install_dir != INSTALL_DIR:
         args_manager['install']['install_dir'] = args.install_dir
     args_manager['install']['index_url'] = args.index_url

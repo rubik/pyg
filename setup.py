@@ -12,21 +12,6 @@ pyg_console_scripts = [
     'pyg{0}.{1} = pyg:main'.format(*sys.version_info[:2])
 ]
 
-class AltInstall(Command):
-    description = 'Install only the `pygx.y` program, without installing the `pyg` one' \
-                  '(you should use this command when you want to install different Pyg)' \
-                  'versions along different Python versions).'
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        return NotImplemented
-
-
 long_desc = '''Pyg
 ===
 
@@ -59,7 +44,7 @@ setup(name='pyg',
       description='Python Package Manager',
       long_description=long_desc,
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2.6',
