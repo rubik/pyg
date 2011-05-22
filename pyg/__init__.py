@@ -7,7 +7,7 @@ def main():
 
     try:
         ## If Python fails to import pyg we just add this directory to
-        ## sys.path so we don't worry wheter Pyg is installed or not.
+        ## sys.path so we don't worry whether Pyg is installed or not.
         __import__('pyg')
     except ImportError:
         sys.path.insert(0, '..')

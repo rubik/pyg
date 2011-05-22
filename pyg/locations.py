@@ -7,7 +7,7 @@ import platform
 def under_virtualenv():
     return hasattr(sys, 'real_prefix')
 
-if hasattr(sys, 'getsitepackages'):
+if hasattr(site, 'getsitepackages'):
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
     ALL_SITE_PACKAGES = site.getsitepackages() + [USER_SITE]
@@ -35,7 +35,7 @@ else:
     if under_virtualenv():
         ALL_SITE_PACKAGES = [INSTALL_DIR]
     else:
-        ALL_SITE_PACKAGES = [USER_SITE]
+        ALL_SITE_PACKAGES = [INSTALL_DIR, USER_SITE]
 
     #try:
     #    INSTALL_DIR = sorted([p for p in sys.path if p.endswith('dist-packages')],

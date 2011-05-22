@@ -239,9 +239,10 @@ class Uninstaller(object):
                     if not os.path.exists(n) and n.startswith('/usr/bin'): ## Searches in the local path
                         n = os.path.join('/usr/local/bin', name)
 
+                    ## Check existance before adding to `to-del` set.
                     if os.path.exists(n):
                         to_del.add(n)
-                    elif win32 and os.path.exists(n+'.exe'):
+                    elif win32 and os.path.exists(n + '.exe'):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')

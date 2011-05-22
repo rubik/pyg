@@ -180,7 +180,6 @@ def list_func(name):
     return sys.stdout.write('\n'.join(res) + '\n')
 
 def search_func(query, exact, show_all_version):
-
     def _pypi_order(item):
         # this is the old implementation, that looks buggy (try on "sphinx")
         return item['_pypi_ordering']
@@ -191,7 +190,7 @@ def search_func(query, exact, show_all_version):
     res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
                  key=_pkgresources_order, reverse=True)
     results = []
-    processed = dict()
+    processed = {}
 
     for entry in res:
         if entry['name'] not in processed:
@@ -204,9 +203,9 @@ def search_func(query, exact, show_all_version):
             results.append(entry)
 
         if processed[entry['name']] == entry['version']:
-            entry['version'] = '@'+entry['version']
-        elif processed[entry['name']] != None:
-            entry['version'] = '*'+entry['version']
+            entry['version'] = '@' + entry['version']
+        elif processed[entry['name']] is not None:
+            entry['version'] = '*' + entry['version']
 
 
     if not show_all_version:
