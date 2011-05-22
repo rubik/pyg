@@ -43,7 +43,7 @@ def install():
         url = 'https://github.com/rubik/pyg/tarball/master'
     else:
         url = get_url()
-    log('Retrieving archive...')
+    log('Retrieving archive from {0}'.format(url))
     path = urllib.urlretrieve(url)[0]
     log('Unpacking archive...')
     path = unpack(path)
