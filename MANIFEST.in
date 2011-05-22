@@ -5,6 +5,7 @@ include LICENSE
 include TODO
 
 recursive-include pyg *
+prune pyg/__pycache__
 
 recursive-include docs *
 prune docs/_build

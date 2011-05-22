@@ -29,7 +29,7 @@ def unpack(path):
     else:
         raise TypeError('Unknown file-type: {0}'.format(path))
     tempdir = tempfile.mkdtemp()
-    archive.extractall(tempdir);print tempdir
+    archive.extractall(tempdir)
     return os.path.join(tempdir, os.listdir(tempdir)[0])
 
 def get_url():
