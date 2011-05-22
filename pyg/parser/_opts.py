@@ -95,9 +95,13 @@ def install_func(args):
     check_and_exit()
     if args.editable:
         if len(args.packname) > 1:
-            logger.error('Unable to install multiple packages in editable mode')
+            logger.error('Error: Unable to install multiple packages in editable mode')
             return
-        return vcs(args.packname[0]).develop()
+        package = args.packname[0]
+        if os.path.exists(os.path.abspath(package)):
+            package = 'dir+{0}#egg={1}'.format(os.path.abspath(package),
+                                               os.path.basename(package))
+        return vcs(package).develop()
     if args.req_file:
         logger.info('Installing from requirements file')
         for req_file in args.req_file:

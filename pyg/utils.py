@@ -108,11 +108,12 @@ def call_subprocess(args, all_output=False, cwd=None):
     return 0, output
 
 def call_setup(path, a):
-    code = 'import setuptools;from setuptools import setup;__file__=\'{0}\';' \
+    sys.path.insert(0, '..')
+    code = 'import setuptools;from ez_setup import use_setuptools;use_setuptools();__file__=\'{0}\';' \
            'execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code] + a
     if under_virtualenv():
-        logger.debug('virtualenv detected')
+        logger.debug('debug: Virtualenv detected')
         args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
     return call_subprocess(args, cwd=path)
 
@@ -134,7 +135,7 @@ def print_output(output, cmd):
     logger.indent -= 8
 
 def name_ext(path):
-    '''Like os.path.splitext(), but split .tar too.'''
+    '''Like os.path.splitext(), but split off .tar too.'''
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e

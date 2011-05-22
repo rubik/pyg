@@ -4,7 +4,7 @@ from pyg.log import logger
 
 
 def vcs(url, dest=None):
-    schemes = ('git+', 'hg+', 'bzr+', 'svn+')
+    schemes = ('git+', 'hg+', 'bzr+', 'svn+', 'dir+')
     for scheme in schemes:
         if url.startswith(scheme):
            break
@@ -18,6 +18,7 @@ def vcs(url, dest=None):
         'hg': Hg,
         'bzr': Bzr,
         'svn': Svn,
+        'dir': Local,
     }
 
     return MAP[scheme[:-1]](url, dest)

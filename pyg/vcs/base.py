@@ -31,6 +31,8 @@ class VCS(object):
 
     @ property
     def dir(self):
+        if self.LOCAL:
+            return self.dest
         try:
             return os.path.join(self.dest, os.listdir(self.dest)[0])
         except OSError:
@@ -85,8 +87,11 @@ class VCS(object):
         if not os.path.exists(os.path.join(self.dir, 'setup.py')):
             logger.fatal('Error: The repository must have a top-level setup.py file', exc=InstallationError)
         logger.info('Running setup.py develop for {0}', self.package_name)
-        if call_setup(self.dir, ['develop']) != 0:
-            return
+        code, output = call_setup(self.dir, ['develop'])
+        if code != 0:
+            logger.fatal('Error: setup.py develop did not install {0}', self.package_name)
+            print_output(output, 'setup.py develop')
+            raise InstallationError('setup.py did not install {0}'.format(self.package_name))
         logger.info('{0} installed succesfully', self.package_name)
 
     def install(self):

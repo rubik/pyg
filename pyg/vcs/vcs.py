@@ -1,7 +1,12 @@
+import os
+
 from pyg.vcs.base import VCS
+from pyg.utils import call_setup, print_output
+from pyg.core import InstallationError
+from pyg.log import logger
 
 
-__all__ = ['Git', 'Hg', 'Bzr', 'Svn']
+__all__ = ['Git', 'Hg', 'Bzr', 'Svn', 'Local']
 
 
 class Git(VCS):
@@ -54,3 +59,19 @@ class Svn(VCS):
         self.url, self.package_name = self.parse_url(url)
         skip = True if dest is not None else False
         super(Svn, self).__init__(dest or self.package_name, skip)
+
+
+class Local(VCS):
+    def __init__(self, url, dest=None):
+        if url.startswith('dir+'):
+            url = url[4:]
+        self.dest, self.package_name = self.parse_url(url)
+
+    def develop(self):
+        logger.info('Running setup.py develop for {0}', self.package_name)
+        code, output = call_setup(self.dest, ['develop'])
+        if code != 0:
+            logger.fatal('Error: setup.py develop did not install {0}', self.package_name)
+            print_output(output, 'setup.py develop')
+            raise InstallationError('setup.py did not install {0}'.format(self.package_name))
+        logger.info('{0} installed succesfully', self.package_name)
