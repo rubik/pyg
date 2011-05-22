@@ -39,7 +39,10 @@ def get_url():
     return min(installable, key=lambda item: item['size'])['url']
 
 def install():
-    url = get_url()
+    if '--dev' in sys.argv:
+        url = 'https://github.com/rubik/pyg/tarball/master'
+    else:
+        url = get_url()
     log('Retrieving archive...')
     path = urllib.urlretrieve(url)[0]
     log('Unpacking archive...')
