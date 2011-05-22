@@ -334,7 +334,7 @@ class Updater(object):
         logger.enabled = True
 
     def restore_files(self, package):
-        package = self.removed['package']
+        package = self.removed[package]
         tempdir = package.keys()[0]
         for path in package[tempdir]:
             p = os.path.join(tempdir, os.path.basename(path))
