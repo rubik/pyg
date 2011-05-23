@@ -1,5 +1,6 @@
 import os
 import glob
+import site
 import tarfile
 import pkg_resources
 import ConfigParser
@@ -224,13 +225,7 @@ class Dir(object):
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
             dir = args_manager['install']['install_dir']
-            if is_windows():
-                scripts, data = os.path.join(dir, 'scripts'), os.path.join(dir, 'data')
-            else:
-                scripts, data = os.path.join(dir, 'bin'), os.path.join(dir, 'share')
-            args += ['--install-base', dir, '--install-purelib', dir,
-                     '--install-platlib', dir + '.$PLAT', '--install-scripts', scripts,
-                     '--install-data', data, '--install-headers', os.path.join(dir, 'include')]
+            args += ['--root', dir]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
