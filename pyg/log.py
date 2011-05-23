@@ -73,7 +73,10 @@ class Logger(object):
                 std.write('\r' + ' ' * len(self.last_msg))
                 msg = '\r' + ' ' * self.indent + msg[1:].format(*a)
             else:
-                msg = ' ' * self.indent + msg.format(*a)
+                try:
+                    msg = ' ' * self.indent + msg.format(*a)
+                except KeyError:
+                    msg = ' ' * self.indent + msg
             std.write(msg)
 
             ## Automatically adds a newline character

@@ -7,6 +7,7 @@ import tarfile
 import zipfile
 import tempfile
 import urlparse
+import collections
 import ConfigParser
 import pkg_resources
 
@@ -17,7 +18,7 @@ from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
-from pyg.utils import TempDir, File, ext, is_installed, is_windows, unpack
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -137,7 +138,7 @@ class Installer(object):
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(open(path), e, packname, reqset)
         elif e in ('.pybundle', '.pyb'):
-            installer = Bundle(filepath, reqset)
+            installer = Bundle(filepath)
         elif e == '.egg':
             installer = Egg(open(path), path, reqset)
         elif e in ('.exe', '.msi') and is_windows():
@@ -162,7 +163,11 @@ class Installer(object):
                 logger.info('Installing {0}', name)
                 Dir(path, name, tempdir, reqset).install()
         except Exception as e:
-            logger.fatal('Error: {0}: cannot install the package', e, exc=InstallationError)
+            try:
+                msg = e.args[0]
+            except IndexError:
+                msg = repr(e)
+            logger.fatal('Error: {0}: cannot install the package', msg, exc=InstallationError)
         else:
             if reqset:
                 Installer._install_deps(reqset)
@@ -334,7 +339,11 @@ class Updater(object):
         logger.enabled = True
 
     def restore_files(self, package):
-        package = self.removed['package']
+        try:
+            package = self.removed[package]
+        except KeyError:
+            logger.debug('debug: `{0}` not found in self.removed', package)
+            return
         tempdir = package.keys()[0]
         for path in package[tempdir]:
             p = os.path.join(tempdir, os.path.basename(path))
@@ -370,7 +379,11 @@ class Updater(object):
                 Installer.from_url(release['url'])
                 break
             except Exception as e:
-                logger.error('Error: An error occurred while installing {0}: {1}', package_name, e)
+                try:
+                    msg = e.args[0]
+                except IndexError:
+                    msg = repr(e)
+                logger.error('Error: An error occurred while installing {0}: {1}', package_name, msg)
                 logger.info('Trying another file...')
                 logger.indent -= 4
         else:

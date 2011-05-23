@@ -130,8 +130,9 @@ class Requirement(object):
         self.success = False
         logger.info('Looking for {0} releases on PyPI', self.name)
         p = ReqManager(self)
+        files = p.files()
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
-            for v, name, hash, url in p.files()[pext]:
+            for v, name, hash, url in files[pext]:
                 if pext == '.egg' and not right_egg(name):
                     continue
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:

@@ -7,7 +7,7 @@ import ConfigParser
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
 from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN, USER_SITE
-from pyg.utils import TempDir, ZipFile, call_subprocess, call_setup, run_setup, name_from_egg
+from pyg.utils import TempDir, ZipFile, call_subprocess, call_setup, run_setup, is_windows, name_from_egg
 from pyg.log import logger
 
 
@@ -223,7 +223,14 @@ class Dir(object):
                     #logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
-            args += ['--prefix', args_manager['install']['install_dir']]
+            dir = args_manager['install']['install_dir']
+            if is_windows():
+                scripts, data = os.path.join(dir, 'scripts'), os.path.join(dir, 'data')
+            else:
+                scripts, data = os.path.join(dir, 'bin'), os.path.join(dir, 'share')
+            args += ['--install-base', dir, '--install-purelib', dir,
+                     '--install-platlib', dir + '.$PLAT', '--install-scripts', scripts,
+                     '--install-data', data]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:

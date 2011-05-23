@@ -10,6 +10,14 @@ Already implemented:
     https://github.com/rubik/pyg/raw/master/get-pyg.py
 + #58: Add a ``pygx.y`` program (where ``x.y`` is Python current version), in addition to ``pyg``.
 + #59: Solve :class:`pyg.web.LinkFinder` issue once and for all.
++ #62: ``pyg bundle`` failed when it did not find links on PyPI. Thanks to Fabien Devaux.
++ #64: Fixed ``pyg install --user``.
++ #68: Now you can install local directories in development mode with the :option:`install -e` option.
+
+To solve:
+
+    + #63: Pyg cannot install packages which uses distutils instead of setuptools.
+    + #66: ``pyg install -d {dir}`` can be ineffective.
 
 0.6 (May 15, 2011)
 ------------------
