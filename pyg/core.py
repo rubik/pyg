@@ -230,7 +230,7 @@ class Dir(object):
                 scripts, data = os.path.join(dir, 'bin'), os.path.join(dir, 'share')
             args += ['--install-base', dir, '--install-purelib', dir,
                      '--install-platlib', dir + '.$PLAT', '--install-scripts', scripts,
-                     '--install-data', data]
+                     '--install-data', data, '--install-headers', os.path.join(dir, 'include')]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
