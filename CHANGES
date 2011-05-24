@@ -15,7 +15,7 @@ Already implemented:
 
 To solve:
 
-    + #63: Pyg cannot install packages which uses distutils instead of setuptools.
+    + #63: Pyg cannot install packages which use distutils instead of setuptools.
     + #66: ``pyg install -d {dir}`` can be ineffective.
 
 0.6 (May 15, 2011)
