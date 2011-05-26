@@ -277,14 +277,14 @@ class Uninstaller(object):
             elif u == 'y':
                 for d in to_del:
                     try:
-                        logger.info('Deleting: {0}', d)
+                        logger.verbose('Deleting: {0}', d)
                         shutil.rmtree(d)
                     except OSError: ## It is not a directory
                         try:
                             os.remove(d)
                         except OSError:
                             logger.error('Error: cannot delete {0}', d)
-                logger.info('Removing egg path from easy_install.pth...')
+                logger.verbose('Removing egg path from easy_install.pth...')
                 with open(EASY_INSTALL) as f:
                     lines = f.readlines()
                 with open(EASY_INSTALL, 'w') as f:
@@ -443,7 +443,7 @@ class Bundler(object):
 
     def __init__(self, reqs, bundle_name, exclude=[]):
         self.reqs = reqs
-        if not bundle_name.endswith('.pybundle') and not bundle_name.endswith('.pyb'):
+        if not bundle_name.endswith(('.pyb', '.pybundle')):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
         self.bundled = [] # To keep track of the all bundled packages
@@ -467,9 +467,9 @@ class Bundler(object):
         Clean the `dir` directory: it removes all top-level files, leaving only sub-directories.
         '''
 
-        logger.debug('bundle: cleaning build dir')
+        logger.debug('debug: bundle: cleaning build dir')
         for file in (d for d in os.listdir(dir) if os.path.isfile(os.path.join(dir, d))):
-            logger.debug('removing: {0}', file)
+            logger.debug('debug: Removing: {0}', file)
             os.remove(os.path.join(dir, file))
 
     def bundle(self):
