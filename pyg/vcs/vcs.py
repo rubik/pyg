@@ -1,5 +1,3 @@
-import os
-
 from pyg.vcs.base import VCS
 from pyg.utils import call_setup, print_output
 from pyg.core import InstallationError

@@ -1,13 +1,11 @@
 import re
 import os
 import sys
-import site
 import shutil
 import tarfile
 import zipfile
 import tempfile
 import urlparse
-import collections
 import ConfigParser
 import pkg_resources
 

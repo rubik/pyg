@@ -1,6 +1,6 @@
 import sys
 import pyg
-from setuptools import setup, Command
+from setuptools import setup
 
 
 requires = ['setuptools', 'pkgtools', 'argh']

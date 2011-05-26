@@ -1,6 +1,5 @@
 import os
 import glob
-import site
 import tarfile
 import pkg_resources
 import ConfigParser
@@ -8,7 +7,7 @@ import ConfigParser
 from pkgtools.pkg import Dir as DirTools, EggDir
 from pyg.scripts import script_args
 from pyg.locations import EASY_INSTALL, INSTALL_DIR, BIN, USER_SITE
-from pyg.utils import TempDir, ZipFile, call_subprocess, call_setup, run_setup, is_windows, name_from_egg
+from pyg.utils import TempDir, ZipFile, call_subprocess, call_setup, run_setup, name_from_egg
 from pyg.log import logger
 
 
