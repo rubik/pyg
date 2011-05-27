@@ -101,7 +101,7 @@ def call_subprocess(args, cwd=None):
     try:
         output = check_output(args, stderr=subprocess.STDOUT, cwd=cwd)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
-        return e.returncode, output
+        return e.returncode, e.output
     return 0, output
 
 def call_setup(path, a):
