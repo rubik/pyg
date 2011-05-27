@@ -220,11 +220,18 @@ class Dir(object):
                 #    for r in dist.file('dependency_links.txt'):
                 #        self.reqset.add(r)
                 #except (KeyError, ConfigParser.MissingSectionHeaderError):
-                    #logger.debug('debug: dependency_links.txt not found')
+                #    logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
             dir = args_manager['install']['install_dir']
-            args += ['--root', dir]
+            #if not os.path.exists(dir):
+            #    os.makedirs(dir)
+
+            ## Setuptools will not install the package without this hacks
+            import sys, site
+            site.addsitedir(dir)
+            sys.path.append(dir)
+            args += ['--install-purelib', dir, '--install-platlib', dir]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]
         if args_manager['install']['no_data']:
