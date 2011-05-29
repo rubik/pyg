@@ -225,8 +225,8 @@ class ReqManager(object):
 class PygPackageIndex(PackageIndex):
     class URL(Exception):
         ## Fake Exception used by PygPackageIndex to immediately return download link.
-
-        pass
+        def __init__(self, url):
+            self.url = url
 
     def _download_to(self, url, filename):
         raise self.URL(url)
@@ -249,7 +249,9 @@ def get_links(package, index_url='http://pypi.python.org/simple'):
             package_index.fetch_distribution(req, None, force_scan=True, \
                                              source=source, develop_ok=False)
         except PygPackageIndex.URL as url:
-            urls.add(urlparse.urldefrag(url.args[0])[0])
+            url = url.url
+            if url.startswith(('http', 'https')):
+                urls.add(urlparse.urldefrag(url)[0])
     return urls
 
 

@@ -3,7 +3,7 @@ Pyg's features
 
 Pyg can:
 
-    * Install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundle` files.
+    * install packages from :file:`.tar.gz`, :file:`.tar.bz2`, :file:`.zip` archives, as well as from :file:`.egg` files and :file:`.pybundle` files.
     * Uninstall packages.
     * Define fixed sets of requirement.
     * Perform searches on PyPI.
@@ -12,7 +12,7 @@ Pyg can:
 
 Currently Pyg don't:
 
-    * understand Setuptools extras (like ``package[extra]``)
+    * understand Setuptools extras (like ``package[extra]``). This is planned for Pyg 1.0.
 
 
 Pyg compared to easy_install
@@ -32,8 +32,7 @@ Pyg is meant to be a replacement for easy_install, and tries to improve it. In p
 
 But at the moment Pyg does not do everything that easy_install does:
 
-    * It cannot install from binaries on Windows (i.e. from :file:`.exe` or :file:`.msi`).
-    * It does not support Setuptools extras (like ``package[extra]``).
+    * It does not support Setuptools extras (like ``package[extra]``). This is planned for Pyg 1.0.
 
 
 Pyg compared to Pip
@@ -45,7 +44,7 @@ Pyg is very similar to Pip but tries to improve something. Specifically:
     * Pyg supports Python Eggs installation, while Pip doesn't.
     * A better uninstallation of packages (Pip cannot install packages installed with ``python setup.py install``).
 
-But Pyg is not yet tested under virtualenv, unlike Pip.
+In addition to that, Pyg is completely useable under vitualenvs.
 
 
 Uninstall
@@ -84,7 +83,8 @@ A little example::
     Installing setuptools............................done.
     $ cd env
     $ source bin/activate
-    (env)$ pip install pyg
+    (env)$ curl -O https://github.com/rubik/pyg/raw/master/get_pyg.py
+    (env)$ python get_pyg.py
     (env)$ pyg install sphinx
     Looking for sphinx releases on PyPI
     Best match: Sphinx==1.0.7
@@ -145,11 +145,6 @@ A little example::
             env/bin/sphinx-build
             env/bin/sphinx-autogen
     Proceed? (y/[n]) y
-    Deleting: env/lib/python2.6/site-packages/Sphinx-1.0.7-py2.6.egg-info
-    Deleting: env/bin/sphinx-quickstart
-    Deleting: env/lib/python2.6/site-packages/sphinx
-    Deleting: env/bin/sphinx-build
-    Deleting: env/bin/sphinx-autogen
     Removing egg path from easy_install.pth...
     sphinx uninstalled succesfully
 
