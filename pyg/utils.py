@@ -105,7 +105,6 @@ def call_subprocess(args, cwd=None):
     return 0, output
 
 def call_setup(path, a):
-    sys.path.insert(0, '..')
     code = 'from setuptools import setup;from setuptools.command.install import install as setuptools_install;' \
             'import distutils;distutils.command.install.install = setuptools_install;__file__={0!r};' \
             'execfile(__file__)'.format(os.path.join(path, 'setup.py'))
@@ -117,7 +116,7 @@ def call_setup(path, a):
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
-    code, output = call_setup(path, global_args + ['install',
+    code, output = call_setup(path, global_args + ['install', '--single-version-externally-managed',
                             '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)
