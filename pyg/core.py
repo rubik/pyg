@@ -223,14 +223,12 @@ class Dir(object):
                 #    logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
-            dir = args_manager['install']['install_dir']
-            #if not os.path.exists(dir):
-            #    os.makedirs(dir)
+            dir = os.path.abspath(args_manager['install']['install_dir'])
+            if not os.path.exists(dir):
+                os.makedirs(dir)
 
-            ## Setuptools will not install the package without this hacks
-            import sys, site
-            site.addsitedir(dir)
-            sys.path.append(dir)
+            ## Setuptools would not install the package without this hack
+            os.putenv('PYTHONPATH', dir)
             args += ['--install-purelib', dir, '--install-platlib', dir]
         if args_manager['install']['no_scripts']:
             args += ['--install-scripts', self.tempdir]

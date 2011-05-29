@@ -223,7 +223,7 @@ class Uninstaller(object):
 
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
-            for s in dist.metadata_listdir('scripts'):
+            for script in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
 
                 ## If we are on Windows we have to remove *.bat files too

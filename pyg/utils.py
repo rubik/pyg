@@ -117,7 +117,7 @@ def call_setup(path, a):
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     logger.info('Running setup.py install for {0}', name)
-    code, output = call_setup(path, global_args + ['install', '--single-version-externally-managed',
+    code, output = call_setup(path, global_args + ['install',
                             '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)

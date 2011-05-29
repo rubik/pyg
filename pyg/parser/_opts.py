@@ -90,7 +90,10 @@ def install_func(args):
         args_manager['install']['user'] = True
         args_manager['install']['install_dir'] = USER_SITE
     if args.install_dir != INSTALL_DIR:
-        args_manager['install']['install_dir'] = args.install_dir
+        dir = os.path.abspath(args.install_dir)
+        args_manager['install']['install_dir'] = dir
+        if any(os.path.basename(dir) == p for p in args.packname):
+            args_manager['install']['ignore'] = True
     args_manager['install']['index_url'] = args.index_url
     check_and_exit()
     if args.editable:
