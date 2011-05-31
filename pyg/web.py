@@ -156,7 +156,7 @@ class ReqManager(object):
         def _get_version(filename):
             ## A bit hacky but there is no solution because some packages
             ## are in the form {package_name}-{version}-{something_else}-{?pyx.y}.{ext}
-            ## and we cannot predict at what index is the version.
+            ## and we cannot predict where is the version in that mess.
             _version_re = re.compile(r'\d[\.\d\w]*')
             parts = name(filename).split('-')
             for part in parts:
@@ -223,16 +223,15 @@ class ReqManager(object):
 
 
 class PygPackageIndex(PackageIndex):
-    class URL(Exception):
-        ## Fake Exception used by PygPackageIndex to immediately return download link.
-        def __init__(self, url):
-            self.url = url
+    urls = set()
 
     def _download_to(self, url, filename):
-        raise self.URL(url)
+        self.urls.add(url)
+        return
 
     def download(self, spec, tmpdir=None):
-        raise self.URL(spec)
+        self.urls.add(spec)
+        return
 
 
 def get_links(package, index_url='http://pypi.python.org/simple'):
@@ -245,11 +244,11 @@ def get_links(package, index_url='http://pypi.python.org/simple'):
     package_index = PygPackageIndex(index_url)
     req = pkg_resources.Requirement.parse(str(package))
     for source in (True, False):
-        try:
-            package_index.fetch_distribution(req, None, force_scan=True, \
+        package_index.fetch_distribution(req, None, force_scan=True, \
                                              source=source, develop_ok=False)
-        except PygPackageIndex.URL as url:
-            url = url.url
+        for url in package_index.urls:
+            ## PackageIndex looks for local distributions too, and we
+            ## don't want that.
             if url.startswith(('http', 'https')):
                 urls.add(urlparse.urldefrag(url)[0])
     return urls
