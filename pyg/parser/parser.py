@@ -25,8 +25,8 @@ def load_options():
 
 def init_parser(version=None):
     import _opts as opts
-    import argparse
     from pyg.locations import INSTALL_DIR as _loc_install_dir
+    from pyg.parser.formatter import _formatter
     from argh import ArghParser, arg, command
 
 
@@ -116,4 +116,5 @@ def init_parser(version=None):
 
     parser.add_commands([install, remove, freeze, link, unlink, list,
                          search, check, download, update, shell, bundle, help])
+    parser.formatter_class = _formatter(parser)
     return parser
