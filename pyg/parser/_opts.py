@@ -212,8 +212,9 @@ def search_func(query, exact, show_all_version):
     pattern = re.compile('$|'.join(query) + '$')
     results = []
     for name, values in processed.iteritems():
-        if not exact or pattern.match(name) is None:
-            continue
+        if exact:
+            if pattern.match(name) is None:
+                continue
         for version in values:
             results.append((name, version[0], version[1]))
     results = sorted(results, key=_pkgresources_order)
