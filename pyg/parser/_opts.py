@@ -9,7 +9,7 @@ from pyg.vcs import vcs
 from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
-from pyg.core import args_manager, PygError
+from pyg.core import args_manager, PygError, Version
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
 from pyg.utils import TempDir, is_installed, link, unlink, unpack
@@ -192,43 +192,33 @@ def search_func(query, exact, show_all_version):
         return item['_pypi_ordering']
 
     def _pkgresources_order(item):
-        return (item['name'] ,) + pkg_resources.parse_version(item['version'])
+        return (item[0],) +  item[1].v
 
-    res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'), \
-                 key=_pkgresources_order, reverse=True)
-    results = []
+    res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'))
     processed = {}
+    for release in res:
+        name, version, summary = release['name'], Version(release['version']), release['summary']
 
-    for entry in res:
-        if entry['name'] not in processed:
-            try:
-                dist = pkg_resources.get_distribution(entry['name'])
-            except pkg_resources.DistributionNotFound:
-                processed[entry['name']] = None
-            else:
-                processed[entry['name']] = dist.version
-            results.append(entry)
+        ## We have already parsed a different version
+        if name in processed:
+            if show_all_version:
+                processed[name].append((version, summary))
+            elif version > processed[name][0][0]:
+                processed[name] = [(version, summary)]
+            continue
+        ## This is the first time
+        processed[name] = [(version, summary)]
 
-        if processed[entry['name']] == entry['version']:
-            entry['version'] = '@' + entry['version']
-        elif processed[entry['name']] is not None:
-            entry['version'] = '*' + entry['version']
-
-
-    if not show_all_version:
-        res = results
-
-    del processed
-    del results
-
-    if exact:
-        pattern = re.compile('$|'.join(query) + '$')
-        results = []
-        for r in res:
-            if pattern.match(r['name']) is not None and r not in results:
-                results.append(r)
-        res = results
-    return sys.stdout.write('\n'.join('{name}  {version} - {summary}'.format(**i) for i in res) + '\n')
+    pattern = re.compile('$|'.join(query) + '$')
+    results = []
+    for name, values in processed.iteritems():
+        if not exact or pattern.match(name) is None:
+            continue
+        for version in values:
+            results.append((name, version[0], version[1]))
+    results = sorted(results, key=_pkgresources_order)
+    output = '\n'.join('{0}  {1} - {2}'.format(name, version, summary) for name, version, summary in results)
+    return sys.stdout.write(output + '\n')
 
 def download_func(args):
     pref = None
