@@ -50,6 +50,10 @@ def init_parser(version=None):
     @ arg('--no-scripts', action='store_true', help='Do not install scripts')
     @ arg('--no-data', action='store_true', help='Do not install data files')
     def install(args):
+        '''
+        Install a package
+        '''
+
         opts.install_func(args)
 
     @ arg('packname', nargs='+')
@@ -57,35 +61,63 @@ def init_parser(version=None):
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
     @ arg('-i', '--info', action='store_true', help='Only list files to delete')
     def remove(args):
+        '''
+        Remove a package
+        '''
+
         opts.remove_func(args)
 
     @ command
     def list(packname):
+        '''
+        List all versions for a package
+        '''
+
         opts.list_func(packname)
 
     @ arg('-c', '--count', action='store_true', help='Only returns requirements count')
     @ arg('-f', '--file', metavar='<path>', help='Writes requirements into the specified file')
     def freeze(args):
+        '''
+        Freeze current environment (i.e. installed packages)
+        '''
+
         opts.freeze_func(args)
 
     @ command
     def link(path):
+        '''
+        Add a directory to PYTHONPATH
+        '''
+
         opts.link_func(path)
 
     @ arg('path', nargs='?')
     @ arg('-a', '--all', action='store_true', help='Remove all links')
     def unlink(args):
+        '''
+        Remove a previously added directory (with link) from PYTHONPATH
+        '''
+
         opts.unlink_func(args)
 
     @ arg('query', nargs='+')
     @ arg('-e', '--exact', action='store_true', help='List only exact hits')
     @ arg('-a', '--all', action='store_true', help='Show all versions for specified package')
     def search(args):
+        '''
+        Search PyPI
+        '''
+
         opts.search_func(args.query, args.exact, args.all)
 
     @ arg('packname')
     @ arg('-i', '--info', action='store_true', help='Show infos for specified package')
     def check(args):
+        '''
+        Check if a package is installed
+        '''
+
         opts.check_func(args.packname, args.info)
 
     @ arg('packname')
@@ -93,14 +125,26 @@ def init_parser(version=None):
     @ arg('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
     @ arg('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
     def download(args):
+        '''
+        Download a package
+        '''
+
         opts.download_func(args)
 
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation for the upgrade')
     def update(args):
+        '''
+        Check for updates for installed packages
+        '''
+
         opts.update_func(args)
 
     @ command
     def shell():
+        '''
+        Fire up Pyg Shell
+        '''
+
         opts.shell_func()
 
     @ arg('bundlename', help='Name of the bundle to create')
@@ -108,10 +152,18 @@ def init_parser(version=None):
     @ arg('-r', '--req-file', action='append', metavar='<path>', help='Requirement files which contains packages to bundle')
     @ arg('-e', '--exclude', action='append', metavar='<requirement>', help='Exclude packages matching `requirement`')
     def bundle(args):
+        '''
+        Create bundles (like Pip's ones)
+        '''
+
         opts.bundle_func(args)
 
     @ command
     def help():
+        '''
+        Show this help and exit
+        '''
+
         return
 
     parser.add_commands([install, remove, freeze, link, unlink, list,
