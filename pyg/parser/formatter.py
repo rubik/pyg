@@ -4,7 +4,7 @@ import argparse
 
 TEMPLATE = '''{0}
 
-Avaiable commands:
+Available commands:
 {1}
 '''
 
