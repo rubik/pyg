@@ -1,3 +1,77 @@
+'''
+Pyg's own HelpFormatter for argparse.
+The standard help would be like this:
+
+    usage: pyg [-h] [-d] [--verbose] [-v]
+    
+               {search,shell,help,list,update,remove,freeze,link,bundle,install,download,unlink,check}
+               ...
+    
+    positional arguments:
+      {search,shell,help,list,update,remove,freeze,link,bundle,install,download,unlink,check}
+        install
+        remove
+        freeze
+        link
+        unlink
+        list
+        search
+        check
+        download
+        update
+        shell
+        bundle
+        help
+
+It repeats 3 times the commands without giving some useful informations.
+With this modification Pyg's help is more comprehensive and useful:
+
+usage: pyg [-h] [-v] [-d] [--verbose] [command] args
+or: pyg command -h
+or: pyg command --help
+
+Available commands:
+	install [-eUAngu] [-r <path>] [-i <url>] [-d <path>] [--no-scripts] [--no-data] packname
+		Install a package
+
+	bundle [-r <path>] [-e <requirement>] bundlename packages
+		Create bundles (like Pip's ones)
+
+	download [-u] [-d <path>] [-p <ext>] packname
+		Download a package
+
+	remove [-yi] [-r <path>] packname
+		Remove a package
+
+	freeze [-c] [-f <path>] 
+		Freeze current environment (i.e. installed packages)
+
+	check [-i] packname
+		Check if a package is installed
+
+	search [-ea] query
+		Search PyPI
+
+	unlink [-a] path
+		Remove a previously added directory (with link) from PYTHONPATH
+
+	list packname
+		List all versions for a package
+
+	update [-y] 
+		Check for updates for installed packages
+
+	link path
+		Add a directory to PYTHONPATH
+
+	shell 
+		Fire up Pyg Shell
+
+	help 
+		Show this help and exit
+'''
+
+
 import re
 import argparse
 

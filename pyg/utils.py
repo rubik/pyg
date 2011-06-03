@@ -101,8 +101,6 @@ def call_subprocess(args, cwd=None):
     try:
         output = check_output(args, stderr=subprocess.STDOUT, cwd=cwd)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
-        if e.returncode == 255:
-            return 0, e.output
         return e.returncode, e.output
     return 0, output
 
@@ -127,9 +125,9 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
 
 def print_output(output, cmd):
     '''Print to sys.stderr the complete output of a failed command'''
-    logger.info('Complete output from command {0}:', cmd)
+    logger.info('Complete output from command `{0}`:', cmd)
     logger.indent += 8
-    for line in output.split('\n'):
+    for line in output.splitlines():
         logger.error(line)
     logger.indent -= 8
 

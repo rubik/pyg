@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 
-from pyg.utils import ChDir, call_subprocess, call_setup, print_output
+from pyg.utils import call_subprocess, call_setup, print_output
 from pyg.inst import Installer
 from pyg.core import InstallationError
 from pyg.log import logger
@@ -31,8 +31,6 @@ class VCS(object):
 
     @ property
     def dir(self):
-        if self.LOCAL:
-            return self.dest
         try:
             return os.path.join(self.dest, os.listdir(self.dest)[0])
         except OSError:
@@ -43,11 +41,40 @@ class VCS(object):
             raise ValueError('You must specify #egg=PACKAGE')
         return url.split('#egg=')
 
+    def develop(self):
+        self.retrieve_data()
+        if not os.path.exists(os.path.join(self.dir, 'setup.py')):
+            logger.fatal('Error: The repository must have a top-level setup.py file', exc=InstallationError)
+        logger.info('Running setup.py develop for {0}', self.package_name)
+        code, output = call_setup(self.dir, ['develop'])
+        if code != 0:
+            logger.fatal('Error: setup.py develop did not install {0}', self.package_name)
+            print_output(output, 'setup.py develop')
+            raise InstallationError('setup.py did not install {0}'.format(self.package_name))
+        logger.info('{0} installed succesfully', self.package_name)
+
+    def install(self):
+        self.retrieve_data()
+        Installer.from_dir(self.dir, self.package_name)
+
     def retrieve_data(self):
-        self.call_cmd([self.url])
+        code, output = self.call_cmd([self.url])
+        if code != 0:
+            logger.fatal('Error: Cannot retrieve data')
+            print_output(output, '{0} {1}'.format(self.cmd, self.method))
+            logger.raise_last(InstallationError)
+
+    def call_cmd(self, args):
+        ## Ensure that the destination directory exists
+        self.check_dest()
+        if self.ARGS is not None:
+            args = self.ARGS + args
+        logger.info('Copying data from {0} to {1}', self.url, self.dest)
+        return call_subprocess([self.cmd, self.method] + args)
 
     def check_dest(self):
-        if self.skip:
+        ## If the target directory is empty we don't have to worry
+        if not os.listdir(self.dest):
             return
         if os.path.exists(self.dest):
             while True:
@@ -70,30 +97,3 @@ class VCS(object):
                     sys.exit(0)
         else:
             os.makedirs(self.dest)
-
-    def call_cmd(self, args):
-        self.check_dest()
-        with ChDir(self.dest):
-            if self.ARGS is not None:
-                args = self.ARGS + args
-            logger.info('Copying data from {0} to {1}', self.url, self.dest)
-            code, output = call_subprocess([self.cmd, self.method] + args, True)
-            if code != 0:
-                logger.fatal('Error: Cannot retrieve data', exc=InstallationError)
-                print_output(output, '{0} {1}'.format(self.cmd, self.method))
-
-    def develop(self):
-        self.retrieve_data()
-        if not os.path.exists(os.path.join(self.dir, 'setup.py')):
-            logger.fatal('Error: The repository must have a top-level setup.py file', exc=InstallationError)
-        logger.info('Running setup.py develop for {0}', self.package_name)
-        code, output = call_setup(self.dir, ['develop'])
-        if code != 0:
-            logger.fatal('Error: setup.py develop did not install {0}', self.package_name)
-            print_output(output, 'setup.py develop')
-            raise InstallationError('setup.py did not install {0}'.format(self.package_name))
-        logger.info('{0} installed succesfully', self.package_name)
-
-    def install(self):
-        self.retrieve_data()
-        Installer.from_dir(self.dir, self.package_name)

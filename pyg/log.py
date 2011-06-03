@@ -17,7 +17,7 @@ class Logger(object):
     def __init__(self,level=None):
         self.indent = 0
         self.level = level or Logger.INFO
-        self.last_msg = ''
+        self._stack = []
         self.enabled = True
 
     def newline(self):
@@ -26,6 +26,13 @@ class Logger(object):
         '''
 
         sys.stdout.write('\n')
+
+    def raise_last(self, exc):
+        raise exc(self.last_msg)
+
+    @ property
+    def last_msg(self):
+        return self._stack[-1]
 
     def verbose(self, msg, *a, **kw):
         self.log(self.VERBOSE, msg, *a, **kw)
@@ -85,7 +92,7 @@ class Logger(object):
 
             ## flush() makes the log immediately readable
             std.flush()
-            self.last_msg = msg
+            self._stack.append(msg)
 
 
 logger = Logger()
