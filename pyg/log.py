@@ -21,9 +21,7 @@ class Logger(object):
         self.enabled = True
 
     def newline(self):
-        '''
-        Print a newline character (\n) on Standard Output.
-        '''
+        '''Print a newline character (\n) on Standard Output.'''
 
         sys.stdout.write('\n')
 

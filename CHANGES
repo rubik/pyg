@@ -15,6 +15,12 @@ Already implemented:
 + #66: ``pyg install -d {dir}`` could be ineffective.
 + #68: Now you can install local directories in development mode with the :option:`install -e` option.
 
+To solve:
+
++ #72: Default argparse help is incomplete: write Pyg's own HelpFormatter.
++ #73: Sometimes the :command:`search` does not find anything (even if the package really exists).
++ #74: VCS install error.
+
 0.6 (May 15, 2011)
 ------------------
 

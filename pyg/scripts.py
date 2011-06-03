@@ -1,5 +1,5 @@
 '''
-Script installation resources. Modified from setuptools/easy_install.py
+Script installation resources. Modified from setuptools/easy_install.py.
 '''
 
 

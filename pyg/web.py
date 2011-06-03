@@ -19,29 +19,41 @@ __all__ = ['PREFERENCES', 'ReqManager', 'get_versions', 'get_links', \
            'highest_version', 'request']
 
 
-## This constants holds files priority
+## This constant holds files priority
 PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
 if is_windows():
     PREFERENCES = ('.exe', '.msi') + PREFERENCES
 
 
 def get_versions(req):
-    _versions_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
+    '''
+    Return all versions the given requirement can match.
+    For example, if requirement is `pyg>=0.6` it will return: [0.6, 0.7].
+    When a package has no files on PyPI (but at least a release) we have to
+    look for version manually, with regular expressions.
+    `req` should be a Requirement object (from pyg.core).
+    '''
+
+    _version_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
     name = req.name
     pypi = PyPIXmlRpc()
     versions = map(Version, pypi.package_releases(name, True))
 
     ## Slow way: we need to search versions by ourselves
     if not versions:
-        _vre = re.compile(_versions_re.format(name), re.I)
+        _vre = re.compile(_version_re.format(name), re.I)
         data = request('http://pypi.python.org/simple/{0}'.format(name))
         versions = map(Version, set(v.strip('.') for v in _vre.findall(data)))
     return (v for v in versions if req.match(v))
 
 def highest_version(req):
+    '''Return the highest version the given requirement can match.'''
+
     return max(get_versions(req))
 
 def request(url):
+    '''Perform a GET request to `url`.'''
+
     return urllib2.urlopen(url).read()
 
 def convert_bytes(bytes):
@@ -115,6 +127,7 @@ def download(url, msg):
                     convert_bytes(total_size), format_time(remaining), addn=False)
 
     if is_windows():
+        ## On Windows time.clock should be more precise.
         func = time.clock
     else:
         func = time.time
@@ -223,6 +236,12 @@ class ReqManager(object):
 
 
 class PygPackageIndex(PackageIndex):
+    '''
+    Pyg's own PackageIndex derived from setuptools' one. This PackageIndex does
+    not download any files but crawl the index looking for links available for
+    the download.
+    '''
+
     urls = set()
 
     def _download_to(self, url, filename):
@@ -235,7 +254,7 @@ class PygPackageIndex(PackageIndex):
 
 
 def get_links(package, index_url='http://pypi.python.org/simple'):
-    ## Correction for standard installation when index_url is
+    ## Correction for standard installations when index_url is
     ## http://pypi.python.org/pypi.
     if index_url == 'http://pypi.python.org/pypi':
         index_url = 'http://pypi.python.org/simple'
@@ -256,10 +275,13 @@ def get_links(package, index_url='http://pypi.python.org/simple'):
 
 ## OLD! We are using Json to interoperate with pypi.
 ## We use it only if we don't find any files with the Json API
-
+## UPDATE: Now we use PyPIJson (from pktools) in combination with get_links
+## (from setuptools).
+##
 ## Old link finder we used to retrieve packages' links.
-## Now we use setuptools' PackageIndex.
+## Now we use setuptools' PackageIndex and PyPI Json API.
 ## (above)
+##
 ##
 #######################################################################
 #

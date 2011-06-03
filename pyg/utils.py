@@ -18,10 +18,13 @@ from pyg.log import logger
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 
 try:
+    ## subprocess.check_output has been introduced in Python 2.7
+    ## Since Pyg run on Python 2.6 too, we have to reproduce it.
     check_output = subprocess.check_output
 except AttributeError:
     def check_output(*popenargs, **kwargs):
-        '''Copied from Python2.7 subprocess.py'''
+        '''Borrowed from Python2.7 subprocess.py'''
+
         if 'stdout' in kwargs:
             raise ValueError('stdout argument not allowed, it will be overridden.')
         process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
@@ -40,6 +43,7 @@ class CalledProcessError(Exception):
         The exit status will be stored in the returncode attribute;
         check_output() will also store the output in the output attribute.
         """
+
         def __init__(self, returncode, cmd, output=None):
             self.returncode = returncode
             self.cmd = cmd
@@ -48,25 +52,47 @@ class CalledProcessError(Exception):
             return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
 
 def is_installed(req):
+    '''
+    Check whether the given requirement is installed or not.
+    A requirement can be either a name or a name plus a version: both `pyg` and
+    `pyg==0.7` are valid requirements.
+    '''
+
     try:
         pkg_resources.get_distribution(req)
-    except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict, ValueError):
+    except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict,
+            ValueError):
         return False
     else:
         return True
 
 def is_windows():
+    '''Return True when Pyg is running on a Windows system, False otherwise.'''
+
     return platform.system() == 'Windows'
 
 def name_from_egg(eggname):
+    '''
+    Get the name of a package from its egg name:
+
+        >>> name_from_egg('pyg-0.7-py2.7.egg')
+        'pyg'
+    '''
+
+    ## We could use str.split, but regex give us a better control over
+    ## the strings.
     egg = re.compile(r'([\w\d_]+)-.+')
     return egg.search(eggname).group(1)
 
 def right_egg(eggname):
+    '''Return True if the egg can be installed basing on the running Python version.'''
+
     vcode = 'py{0}'.format('.'.join(map(str, sys.version_info[:2])))
     return vcode in eggname
 
 def version_egg(eggname):
+    '''Extract Python version from an egg name.'''
+
     eggv = re.compile(r'py(\d\.\d)')
     return eggv.search(eggname).group(1)
 
@@ -98,6 +124,11 @@ def unlink(path):
             f.write(line)
 
 def call_subprocess(args, cwd=None):
+    '''
+    Call subprocess with the given argument and return the tuple
+    `(returncode, output)`. You can also specify the current working directory.
+    '''
+
     try:
         output = check_output(args, stderr=subprocess.STDOUT, cwd=cwd)
     except (subprocess.CalledProcessError, CalledProcessError) as e:
@@ -105,16 +136,36 @@ def call_subprocess(args, cwd=None):
     return 0, output
 
 def call_setup(path, a):
-    code = 'from setuptools import setup;from setuptools.command.install import install as setuptools_install;' \
-            'import distutils;distutils.command.install.install = setuptools_install;__file__={0!r};' \
+    '''
+    Call the `setup.py` file under the specified path with the given arguments.
+
+    Note that `path` must be the directory in which the setup file is located,
+    not the direct path to the file. For example, `/home/user/packages/pyg-0.7/'
+    is right (assuming there is a `setup.py` file in it), while
+    '/home/user/packages/pyg-0.7/setup.py` is not.
+    '''
+
+    code = 'from setuptools import setup;from setuptools.command.install import' \
+           'install as setuptools_install;import distutils;' \
+           'distutils.command.install.install = setuptools_install;__file__={0!r};' \
             'execfile(__file__)'.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code] + a
     if under_virtualenv():
         logger.debug('debug: virtualenv detected')
-        args += ['--install-headers', os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)]
+        headers = os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)
+        args += ['--install-headers', headers]
     return call_subprocess(args, cwd=path)
 
 def run_setup(path, name, global_args=[], args=[], exc=TypeError):
+    '''
+    Run `setup.py install` for the given setup file. `name` is the package name;
+    `global_args` are the arguments to pass before the `install` command; `args`
+    are the options for the `install` command and `exc` is the exception to throw
+    in case of a failed installation.
+
+    The warning for `path` is the same as `call_setup`.
+    '''
+
     logger.info('Running setup.py install for {0}', name)
     code, output = call_setup(path, global_args + ['install', '--single-version-externally-managed',
                             '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
@@ -125,6 +176,7 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
 
 def print_output(output, cmd):
     '''Print to sys.stderr the complete output of a failed command'''
+
     logger.info('Complete output from command `{0}`:', cmd)
     logger.indent += 8
     for line in output.splitlines():
@@ -133,24 +185,45 @@ def print_output(output, cmd):
 
 def name_ext(path):
     '''Like os.path.splitext(), but split off .tar too.'''
+
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         e = '.tar' + e
         p = p[:-4]
+
+    ## Little hack to support .tgz files too without adding them to
+    ## pyg.web.PREFERENCES, etc.
+    if e == '.tgz':
+        return p, '.tar.gz'
     return p, e
 
 def name(path):
+    '''
+    Return the name of a file (i.e. strip off the file extension):
+
+        >>> name('pyg-0.7-py2.7.egg')
+        'pyg-0.7-py2.7'
+    '''
+
     return name_ext(path)[0]
 
 def ext(path):
-    e = name_ext(path)[1]
+    '''
+    Return the extension of a filename:
 
-    ## Little hack to support .tgz files too
-    if e == '.tgz':
-        return '.tar.gz'
-    return e
+        >>> ext('pyg-0.7-py2.7.egg')
+        '.egg'
+        >>> ext('pyg-0.7.tar.gz')
+        '.tar.gz'
+    '''
+
+    return name_ext(path)[1]
 
 def unpack(path):
+    '''
+    Unpack the specified archive into the same directory.
+    '''
+
     path = os.path.abspath(path)
     d, n = os.path.split(path)
     e = ext(n)
@@ -163,6 +236,10 @@ def unpack(path):
 
 
 class FileMapper(collections.defaultdict):
+    '''
+    Container for pyg.web.ReqManager, which needs it to hold files preferences.
+    '''
+
     def __missing__(self, key):
         if key in self.pref:
             if key not in self:
@@ -217,7 +294,7 @@ class ZipFile(zipfile.ZipFile):
 #        self.close()
 
 
-## This is a generic file object needed for ConfigParser.ConfigParser
+## This is a fake file object needed by ConfigParser.ConfigParser
 ## It implements only a readline() method plus an __iter__ method
 
 class File(object):
