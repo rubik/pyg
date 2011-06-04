@@ -1,10 +1,11 @@
 import os
 import sys
 import shutil
+import subprocess
 
 from pyg.utils import call_subprocess, call_setup, print_output
 from pyg.inst import Installer
-from pyg.core import InstallationError
+from pyg.core import InstallationError, PygError
 from pyg.log import logger
 
 
@@ -12,9 +13,8 @@ class VCS(object):
 
     ARGS = None
 
-    def __init__(self, dest, skip=False):
+    def __init__(self, dest):
         self.dest = os.path.abspath(dest)
-        self.skip = skip
 
     def __repr__(self):
         return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__,
@@ -70,12 +70,17 @@ class VCS(object):
         if self.ARGS is not None:
             args = self.ARGS + args
         logger.info('Copying data from {0} to {1}', self.url, self.dest)
-        return call_subprocess([self.cmd, self.method] + args)
+        return call_subprocess([self.cmd, self.method] + args, cwd=self.dest)
 
     def check_dest(self):
         ## If the target directory is empty we don't have to worry
-        if not os.listdir(self.dest):
-            return
+        try:
+            if not os.listdir(self.dest):
+                return
+        ## If self.dest does not exist we leave it as it is, because it will be
+        ## created by the `else` clause (below)
+        except OSError:
+            pass
         if os.path.exists(self.dest):
             while True:
                 u = raw_input('The destination already exists: {0}\nWhat do you want to do?\n\n' \
