@@ -16,6 +16,14 @@ class VCS(object):
     def __init__(self, dest):
         self.dest = os.path.abspath(dest)
 
+        ## Check command line programs existence (git, hg, bzr, etc.) to avoid
+        ## strange errors.
+        try:
+            subprocess.check_call([self.cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except OSError:
+            logger.fatal('Error: {0} command not found. Please make sure you ' \
+                         'have installed required vcs', self.cmd, exc=PygError)
+
     def __repr__(self):
         return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__,
                                                  self.package_name,
