@@ -192,7 +192,7 @@ def search_func(query, exact, show_all_version):
         return item['_pypi_ordering']
 
     def _pkgresources_order(item):
-        return (item[0],) +  item[1].v
+        return (item[0],) +  item[2].v
 
     res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'))
     processed = {}
@@ -212,13 +212,28 @@ def search_func(query, exact, show_all_version):
     pattern = re.compile('$|'.join(query) + '$')
     results = []
     for name, values in processed.iteritems():
+        try:
+            _installed = Version(pkg_resources.get_distribution(name).version)
+        except pkg_resources.DistributionNotFound:
+            _installed = None
+        except Exception:
+            logger.warn("WARN: Can't get package data for %r"%name)
+            _installed = None
         if exact:
             if pattern.match(name) is None:
                 continue
+
         for version in values:
-            results.append((name, version[0], version[1]))
+            if not _installed:
+                dec = ''
+            elif _installed == version[0]:
+                dec = '@'
+            else:
+                dec = '*'
+            results.append((name, dec, version[0], version[1]))
+
     results = sorted(results, key=_pkgresources_order)
-    output = '\n'.join('{0}  {1} - {2}'.format(name, version, summary) for name, version, summary in results)
+    output = '\n'.join('{0}  {1}{2} - {3}'.format(name, dec, version, summary) for name, dec, version, summary in results)
     return sys.stdout.write(output + '\n')
 
 def download_func(args):
