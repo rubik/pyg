@@ -190,8 +190,10 @@ class Uninstaller(object):
         self.yes = yes
 
     def find_files(self):
-        uninstall_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
-        uninstall_re2 = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
+        _un_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
+        _un2_re = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
+        _un3_re = re.compile(r'{0}.*\.so'.format(self.name), re.I)
+        _uninstall_re = [_un_re, _un2_re, _un3_re]
 
         to_del = set()
         try:
@@ -215,8 +217,9 @@ class Uninstaller(object):
         for d in guesses:
             try:
                 for file in os.listdir(d):
-                    if uninstall_re.match(file) or uninstall_re2.match(file):
-                        to_del.add(os.path.join(d, file))
+                    for u_re in _uninstall_re:
+                        if u_re.match(file):
+                            to_del.add(os.path.join(d, file))
             ## When os.listdir fails
             except OSError:
                 continue
