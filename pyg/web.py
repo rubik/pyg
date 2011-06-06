@@ -34,7 +34,7 @@ def get_versions(req):
     `req` should be a Requirement object (from pyg.core).
     '''
 
-    _version_re = r'{0}-(\d+\.?(?:\d\.?|\d\w)*)-?.*'
+    _version_re = r'{0}-(\d[\d\w.-]*).*'
     name = req.name
     pypi = PyPIXmlRpc()
     versions = map(Version, pypi.package_releases(name, True))
