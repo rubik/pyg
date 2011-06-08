@@ -291,7 +291,7 @@ class Bundle(object):
                 logger.info('Installing {0}...', f)
                 fullpath = os.path.join(location, f)
                 Dir(fullpath, f, tempdir).install()
-            logger.info('Bundle installed successfully')
+            logger.success('Bundle installed successfully')
 
 
 class Binary(object):

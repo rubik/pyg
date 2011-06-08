@@ -4,6 +4,31 @@ import logging
 
 __all__ = ['logger']
 
+try:
+    from colorama import init, Fore, Back, Style
+    init(autoreset=False)
+    colors = {
+        'good'   : Fore.GREEN,
+        'bad'    : Fore.RED,
+        'vgood'  : Fore.GREEN + Style.BRIGHT,
+        'vbad'   : Fore.RED + Style.BRIGHT,
+
+        'std'    : '', # Do not color "standard" text
+        'warn'   : Fore.YELLOW + Style.BRIGHT,
+        'reset'  : Style.RESET_ALL,
+    }
+except ImportError:
+    colors = {
+        'good'   : '',
+        'bad'    : '',
+        'vgood'  : '',
+        'vbad'   : '',
+
+        'std'    : '',
+        'warn'   : '',
+        'reset'  : '',
+    }
+
 
 class Logger(object):
 
@@ -33,35 +58,39 @@ class Logger(object):
         return self._stack[-1]
 
     def verbose(self, msg, *a, **kw):
-        self.log(self.VERBOSE, msg, *a, **kw)
+        self.log(self.VERBOSE, 'std', msg, *a, **kw)
 
     def debug(self, msg, *a, **kw):
-        self.log(self.DEBUG, msg, *a, **kw)
+        self.log(self.DEBUG, 'std', msg, *a, **kw)
 
     def info(self, msg, *a, **kw):
-        self.log(self.INFO, msg, *a, **kw)
+        self.log(self.INFO, 'std', msg, *a, **kw)
+
+    def success(self, msg, *a, **kw):
+        self.log(self.INFO, 'good', msg, *a, **kw)
 
     def warn(self, msg, *a, **kw):
-        self.log(self.WARN, msg, *a, **kw)
+        self.log(self.WARN, 'warn', msg, *a, **kw)
 
     def error(self, msg, *a, **kw):
-        self.log(self.ERROR, msg, *a, **kw)
+        self.log(self.ERROR, 'bad', msg, *a, **kw)
         exc = kw.get('exc', None)
         if exc is not None:
             raise exc(self.last_msg)
 
     def fatal(self, msg, *a, **kw):
-        self.log(self.FATAL, msg, *a, **kw)
+        self.log(self.FATAL, 'vbad', msg, *a, **kw)
         exc = kw.get('exc', None)
         if exc is not None:
             raise exc(self.last_msg)
 
-    def log(self, level, msg, *a, **kw):
+    def log(self, level, col, msg, *a, **kw):
         '''
         This is the base function that logs all messages. This function prints a newline character too,
         unless you specify ``addn=False``. When the message starts with a return character (\r) it automatically
         cleans the line.
         '''
+        col = colors[col]
 
         if level >= self.level and self.enabled:
             std = sys.stdout
@@ -82,11 +111,11 @@ class Logger(object):
                     msg = ' ' * self.indent + msg.format(*a)
                 except KeyError:
                     msg = ' ' * self.indent + msg
-            std.write(msg)
+            std.write(col+msg+colors['reset'])
 
             ## Automatically adds a newline character
             if kw.get('addn', True):
-                std.write('\n')
+                self.newline()
 
             ## flush() makes the log immediately readable
             std.flush()

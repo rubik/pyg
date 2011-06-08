@@ -66,7 +66,7 @@ class Installer(object):
                 logger.warn('Error: {0} has not been installed correctly', req)
                 continue
         logger.indent = 0
-        logger.info('Finished installing dependencies for {0}', rs.comes_from)
+        logger.success('Finished installing dependencies for {0}', rs.comes_from)
 
     def install(self):
         r = Requirement(self.req)
@@ -90,7 +90,7 @@ class Installer(object):
 
         # Now let's install dependencies
         Installer._install_deps(r.reqset, r.name)
-        logger.info('{0} installed successfully', r.name)
+        logger.success('{0} installed successfully', r.name)
 
     @ staticmethod
     def from_req_file(filepath):
@@ -150,7 +150,7 @@ class Installer(object):
                 logger.fatal('Error: Cannot install {0}: unknown filetype', packname, exc=InstallationError)
         installer.install()
         Installer._install_deps(reqset, packname)
-        logger.info('{0} installed successfully', packname)
+        logger.success('{0} installed successfully', packname)
 
     @ staticmethod
     def from_dir(path, name=None):
@@ -169,7 +169,7 @@ class Installer(object):
         else:
             if reqset:
                 Installer._install_deps(reqset)
-            logger.info('{0} installed successfully', name)
+            logger.success('{0} installed successfully', name)
 
     @ staticmethod
     def from_url(url, packname=None):
@@ -293,7 +293,7 @@ class Uninstaller(object):
                         if path_re.match(line) or path_re2.match(line):
                             continue
                         f.write(line)
-                logger.info('{0} uninstalled succesfully', self.name)
+                logger.success('{0} uninstalled succesfully', self.name)
                 break
 
 
@@ -430,7 +430,7 @@ class Updater(object):
                     self.upgrade(package, json, new_version)
                     break
         self._clean()
-        logger.info('Updating finished successfully')
+        logger.success('Updating finished successfully')
 
 
 class Bundler(object):
@@ -529,7 +529,7 @@ class Bundler(object):
                     as_req = str(r)
                 already_downloaded.add(as_req)
             logger.indent = 0
-            logger.info('Finished processing dependencies')
+            logger.success('Finished processing dependencies')
 
             ## Step 3: we remove all files in the build directory, so we make sure
             ## that when we collect packages we collect only dirs
