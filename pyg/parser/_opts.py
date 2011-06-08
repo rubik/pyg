@@ -89,6 +89,8 @@ def install_func(args):
     if args.user:
         args_manager['install']['user'] = True
         args_manager['install']['install_dir'] = USER_SITE
+    if args.force_egg_install:
+        args_manager['install']['force_egg_install'] = True
     if args.install_dir != INSTALL_DIR:
         dir = os.path.abspath(args.install_dir)
         args_manager['install']['install_dir'] = dir

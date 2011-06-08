@@ -153,8 +153,8 @@ class Requirement(object):
                 return
         if bad_eggs:
             eggs = '\n'.join('\t{0}. {1}'.format(k, v[1]) for k, v in bad_eggs.iteritems())
-            nums = map(str, range(len(bad_eggs)))
-            logger.info('Found only eggs for another Python version:{0}', eggs)
+            nums = map(str, range(1, len(bad_eggs) + 1))
+            logger.info('Found only eggs for another Python version:\n{0}', eggs)
             while True:
                 u = raw_input('Which one do you want to install?\n(Type the number)> ')
                 if u not in nums:
@@ -162,4 +162,4 @@ class Requirement(object):
                 self._download_and_install(*bad_eggs[int(u)])
                 break
         if not self.success:
-            raise InstallationError
+            raise InstallationError('Error: Cannot find files available for dowloading and installing')
