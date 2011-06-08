@@ -49,6 +49,7 @@ def init_parser(version=None):
     @ arg('-u', '--user', action='store_true', help='Install to user site')
     @ arg('--no-scripts', action='store_true', help='Do not install scripts')
     @ arg('--no-data', action='store_true', help='Do not install data files')
+    @ arg('--force-egg-install', action='store_true', help='Allow installing eggs with a different Python version')
     def install(args):
         '''
         Install a package

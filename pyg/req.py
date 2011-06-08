@@ -131,9 +131,12 @@ class Requirement(object):
         logger.info('Looking for {0} releases on PyPI', self.name)
         p = ReqManager(self)
         files = p.files()
+        bad_eggs = {}
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             for v, name, hash, url in files[pext]:
                 if pext == '.egg' and not right_egg(name):
+                    if args_manager['install']['force_egg_install']:
+                        bad_eggs[len(bad_eggs) + 1] = (url, name, p.name, hash)
                     continue
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
                     continue
@@ -147,6 +150,16 @@ class Requirement(object):
                     self.version = v
                 break
             if self.success:
+                return
+        if bad_eggs:
+            eggs = '\n'.join('\t{0}. {1}'.format(k, v[1]) for k, v in bad_eggs.iteritems())
+            nums = map(str, range(len(bad_eggs)))
+            logger.info('Found only eggs for another Python version:{0}', eggs)
+            while True:
+                u = raw_input('Which one do you want to install?\n(Type the number)> ')
+                if u not in nums:
+                    continue
+                self._download_and_install(*bad_eggs[int(u)])
                 break
         if not self.success:
             raise InstallationError

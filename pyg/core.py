@@ -327,6 +327,7 @@ class ArgsManager(object):
             'no_scripts': False,
             'no_data': False,
             'ignore': False,
+            'force_egg_install': False,
         },
         'remove': {
             'yes': False

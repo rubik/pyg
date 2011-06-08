@@ -29,7 +29,7 @@ Also, you can download the source and after unpacking the archive::
 Documentation
 ------------
 
-If you need further informations you can check the documentation at: http://pyg-installer.co.nr
+If you need further information you can check the documentation at: http://pyg-installer.co.nr
 
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

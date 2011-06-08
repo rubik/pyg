@@ -23,7 +23,7 @@ The standard help would be like this:
         bundle
         help
 
-It repeats 3 times the commands without giving some useful informations.
+It repeats 3 times the commands without giving some useful information.
 With this modification Pyg's help is more comprehensive and useful:
 
 usage: pyg [-h] [-v] [-d] [--verbose] [command] args
