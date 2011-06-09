@@ -169,5 +169,8 @@ Once you have one you can install it like::
     $ pyg install yourbundle.pyb
 
 The internet access is not necessary.
+In addition to that, you can easily create bundles with Pyg. For example, if you want to create a bundle of Pyg, you would do::
+
+    $ pyg bundle pyg-bundle.pyb pyg
 
 See also: :ref:`bundles`
