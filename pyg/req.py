@@ -104,11 +104,24 @@ class Requirement(object):
         if not self.success:
             raise InstallationError('Fatal: cannot install {0}'.format(self.name))
 
+    def _check_bad_eggs(self, bad_eggs):
+        ## Bad eggs are eggs which require a different Python version.
+        ## If we don't find anything more, we check bad eggs.s
+
+        eggs = '\n'.join('\t{0}. {1}'.format(k, v[1]) for k, v in bad_eggs.iteritems())
+        nums = map(str, range(1, len(bad_eggs) + 1))
+        logger.info('Found only eggs for another Python version:\n{0}', eggs)
+        while True:
+            u = raw_input('Which one do you want to install?\n(Type the number)> ')
+            if u not in nums:
+                continue
+            self._download_and_install(*bad_eggs[int(u)])
+            break
+
     def _download_and_install(self, url, filename, packname, hash=None):
         fobj = download(url, 'Downloading {0}'.format(self.name))
         if hash is not None:
             logger.info('Checking md5 sum')
-            #import pdb; pdb.set_trace()
             if md5(fobj.getvalue()).hexdigest() != hash:
                 logger.fatal('Error: {0} appears to be corrupted', self.name)
                 return
@@ -152,14 +165,6 @@ class Requirement(object):
             if self.success:
                 return
         if bad_eggs:
-            eggs = '\n'.join('\t{0}. {1}'.format(k, v[1]) for k, v in bad_eggs.iteritems())
-            nums = map(str, range(1, len(bad_eggs) + 1))
-            logger.info('Found only eggs for another Python version:\n{0}', eggs)
-            while True:
-                u = raw_input('Which one do you want to install?\n(Type the number)> ')
-                if u not in nums:
-                    continue
-                self._download_and_install(*bad_eggs[int(u)])
-                break
+            self._check_bad_eggs(bad_eggs)
         if not self.success:
             raise InstallationError('Error: Cannot find files available for dowloading and installing')

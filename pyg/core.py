@@ -148,7 +148,7 @@ class Egg(object):
 
     def install(self):
         eggpath = os.path.join(self.idir, self.eggname)
-        if os.path.exists(eggpath):
+        if os.path.exists(eggpath) and not args_manager['install']['upgrade']:
             logger.info('{0} is already installed', self.packname)
             raise AlreadyInstalled
         logger.info('Installing {0} egg file', self.packname)

@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+1.0 (planning)
+--------------
+
++ #69: Write tests. We haven't chosen the test framework to use yet.
++ #70: Upgrade :class:`pyg.req.Requirement` to honor setuptools extras.
+
+0.8 (planning)
+-------------
+
++ #78: Allow installing packages from *dev* version: ``pyg==dev``.
++ #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.
++ #80: Add a new method: :meth:`pyg.log.Logger.ask`.
+
 0.7 (in development)
 --------------------
 
@@ -14,13 +27,14 @@ Already implemented:
 + #64: Fixed ``pyg install --user``.
 + #66: ``pyg install -d {dir}`` could be ineffective.
 + #68: Now you can install local directories in development mode with the :option:`install -e` option.
++ #72: Default argparse help is incomplete: write Pyg's own HelpFormatter.
 + #73: Sometimes the :command:`search` does not find anything (even if the package really exists).
 + #74: VCS install error.
 + #77: Improve uninstaller's file-detection.
 
 To solve:
 
-+ #72: Default argparse help is incomplete: write Pyg's own HelpFormatter.
++ #72b: Add colored output.
 + #76: Allow installing eggs which requires a different Python installation.
 
 0.6 (May 15, 2011)
