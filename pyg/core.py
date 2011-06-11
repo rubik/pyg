@@ -317,6 +317,9 @@ class Binary(object):
 class ArgsManager(object):
 
     _OPTS = {
+        'global': {
+            'no_colors': False,
+        },
         'install': {
             'upgrade': False,
             'upgrade_all': False,

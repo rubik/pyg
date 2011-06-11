@@ -35,6 +35,7 @@ def init_parser(version=None):
     parser.add_argument('--verbose', action='store_true', help='Set logger to VERBOSE level')
     if version is not None:
         parser.add_argument('-v', '--version', action='version', version=version)
+    parser.add_argument('--no-colors', action='store_true', help='Disable colors')
 
 
     @ arg('packname', nargs='*')
