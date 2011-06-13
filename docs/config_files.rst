@@ -132,6 +132,10 @@ Option tree
 
 Here is a list of all sections and their default options:
 
+    **global**:
+
+        - *no_colors* = False
+
     **install**:
 
         - *upgrade* = False
