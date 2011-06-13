@@ -9,7 +9,7 @@ from pyg.vcs import vcs
 from pyg.log import logger
 from pyg.req import Requirement
 from pyg.freeze import freeze, list_releases
-from pyg.core import args_manager, PygError, Version
+from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
 from pyg.utils import TempDir, is_installed, link, unlink, unpack
@@ -52,8 +52,8 @@ or
     http://pyg-installer.co.nr
 '''.format(dir))
 
-def _install_package_from_name(package):
-    if os.path.exists(package) and not args_manager['install']['ignore']:
+def _install_package_from_name(package, ignore=False):
+    if os.path.exists(package) and not ignore:
         path = os.path.abspath(package)
         logger.info('Installing {0}', path)
         if os.path.isfile(path):
@@ -72,53 +72,29 @@ def _install_package_from_name(package):
                 return vcs(package, tempdir).install()
     return Installer(package).install()
 
-def install_func(args):
-    if args.no_deps:
-        args_manager['install']['no_deps'] = True
-    if args.upgrade:
-        args_manager['install']['upgrade'] = True
-    if args.upgrade_all:
-        args_manager['install']['upgrade_all'] = True
-        args_manager['install']['upgrade'] = True
-    if args.no_scripts:
-        args_manager['install']['no_scripts'] = True
-    if args.no_data:
-        args_manager['install']['no_data'] = True
-    if args.ignore:
-        args_manager['install']['ignore'] = True
-    if args.user:
-        args_manager['install']['user'] = True
-        args_manager['install']['install_dir'] = USER_SITE
-    if args.force_egg_install:
-        args_manager['install']['force_egg_install'] = True
-    if args.install_dir != INSTALL_DIR:
-        dir = os.path.abspath(args.install_dir)
-        args_manager['install']['install_dir'] = dir
-        if any(os.path.basename(dir) == p for p in args.packname):
-            args_manager['install']['ignore'] = True
-    args_manager['install']['index_url'] = args.index_url
+def install_func(packname, req_file, editable, ignore):
     check_and_exit()
-    if args.editable:
-        if len(args.packname) > 1:
+    if editable:
+        if len(packname) > 1:
             logger.error('Error: Unable to install multiple packages in editable mode')
             return
-        package = args.packname[0]
+        package = packname[0]
         if os.path.exists(os.path.abspath(package)):
             package = 'dir+{0}#egg={1}'.format(os.path.abspath(package),
                                                os.path.basename(package))
         return vcs(package).develop()
-    if args.req_file:
+    if req_file:
         logger.info('Installing from requirements file')
-        for req_file in args.req_file:
-            Installer.from_req_file(os.path.abspath(req_file))
+        for rq in req_file:
+            Installer.from_req_file(os.path.abspath(rq))
         return
-    if args.packname:
-        for package in args.packname:
-            _install_package_from_name(package)
+    if packname:
+        for package in packname:
+            _install_package_from_name(package, ignore)
 
-def remove_func(args):
-    if args.info:
-        for p in args.packname:
+def remove_func(packname, req_file, yes, info):
+    if info:
+        for p in packname:
             logger.info('{0}:', p)
             files = Uninstaller(p).find_files()
             logger.indent = 8
@@ -127,17 +103,17 @@ def remove_func(args):
             logger.indent = 0
         return
     check_and_exit()
-    yes = True if args.yes or args_manager['remove']['yes'] else False
-    if len(args.packname) == 1 and args.packname[0] == 'yourself':
+    ## Little Easter egg...
+    if len(packname) == 1 and packname[0] == 'yourself':
         return Uninstaller('pyg', yes).uninstall()
-    if args.req_file:
-        with open(os.path.abspath(args.req_file)) as f:
+    if req_file:
+        with open(os.path.abspath(req_file)) as f:
             for line in f:
                 try:
                     Uninstaller(line.strip(), yes).uninstall()
                 except PygError:
                     continue
-    for p in args.packname:
+    for p in packname:
         try:
             Uninstaller(p, yes).uninstall()
         except PygError:
@@ -146,14 +122,14 @@ def remove_func(args):
 def link_func(path):
     return link(path)
 
-def unlink_func(args):
-    if args.all or args_manager['unlink']['all']:
+def unlink_func(path, all):
+    if all:
         try:
             os.remove(PYG_LINKS)
         except OSError:
             pass
         return
-    return unlink(args.path)
+    return unlink(path)
 
 def check_func(name, info=False):
     INFO = '{0.project_name} - {0.version}\nInstalled in {0.location}'
@@ -169,11 +145,11 @@ def check_func(name, info=False):
 
 def freeze_func(args):
     f = freeze()
-    if args.count or args_manager['freeze']['count']:
+    if args_manager['freeze']['count']:
         sys.stdout.write(str(len(freeze())) + '\n')
         return
     f = '\n'.join(f) + '\n'
-    if args.file or args_manager['freeze']['file']:
+    if args_manager['freeze']['file']:
         path = args.file or args_manager['freeze']['file']
         with open(os.path.abspath(path), 'w') as req_file:
             req_file.write(f)
@@ -244,11 +220,7 @@ def download_func(args):
         pref = ['.' + args.prefer.strip('.')]
     name = args.packname
     dest = args_manager['download']['download_dir']
-    if args.download_dir != dest:
-        dest = args.download_dir
     unpk = args_manager['download']['unpack']
-    if args.unpack != unpk:
-        unpk = args.unpack
     downloader = ReqManager(Requirement(name), pref)
     downloader.download(dest)
     if downloader.downloaded_name is None:
@@ -259,8 +231,6 @@ def download_func(args):
         unpack(path)
 
 def update_func(args):
-    if args.yes:
-        args_manager['update']['yes'] = True
     check_and_exit()
     up = Updater()
     up.update()

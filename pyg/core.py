@@ -333,7 +333,8 @@ class ArgsManager(object):
             'force_egg_install': False,
         },
         'remove': {
-            'yes': False
+            'yes': False,
+            'info': False,
         },
         'freeze': {
             'count': False,

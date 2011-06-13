@@ -24,9 +24,12 @@ def load_options():
                 break
 
 def init_parser(version=None):
+    import sys
+    import os
     import _opts as opts
-    from pyg.locations import INSTALL_DIR as _loc_install_dir
+    from pyg.locations import INSTALL_DIR, USER_SITE
     from pyg.parser.formatter import _formatter
+    from pyg.core import args_manager
     from argh import ArghParser, arg, command
 
 
@@ -46,7 +49,7 @@ def init_parser(version=None):
     @ arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @ arg('-g', '--ignore', action='store_true', help='Ignore local files or directories')
     @ arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
-    @ arg('-d', '--install-dir', default=_loc_install_dir, metavar='<path>', help='Base installation directory')
+    @ arg('-d', '--install-dir', default=INSTALL_DIR, metavar='<path>', help='Base installation directory')
     @ arg('-u', '--user', action='store_true', help='Install to user site')
     @ arg('--no-scripts', action='store_true', help='Do not install scripts')
     @ arg('--no-data', action='store_true', help='Do not install data files')
@@ -56,7 +59,28 @@ def init_parser(version=None):
         Install a package
         '''
 
-        opts.install_func(args)
+        args_manager['install']['no_deps'] = args.no_deps
+        args_manager['install']['upgrade'] = args.upgrade
+        args_manager['install']['no_scripts'] = args.no_script
+        args_manager['install']['no_data'] = args.no_data
+        args_manager['install']['ignore'] = args.ignore
+        args_manager['install']['force_egg_install'] = args.force_egg_install
+        args_manager['install']['index_url'] = args.index_url
+        if args.upgrade_all:
+            args_manager['install']['upgrade_all'] = True
+            args_manager['install']['upgrade'] = True
+        if args.user:
+            args_manager['install']['user'] = True
+            args_manager['install']['install_dir'] = USER_SITE
+        if args.install_dir != INSTALL_DIR:
+            dir = os.path.abspath(args.install_dir)
+            args_manager['install']['install_dir'] = dir
+            if any(os.path.basename(dir) == p for p in args.packname):
+                ## Automatically set ignore=True when INSTALL_DIR has the same
+                ## name of one of the packages to install
+                args_manager['install']['ignore'] = True
+        opts.install_func(args.packname, args.req_file, args.editable,
+                          args_manager['install']['ignore'])
 
     @ arg('packname', nargs='+')
     @ arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
@@ -67,7 +91,10 @@ def init_parser(version=None):
         Remove a package
         '''
 
-        opts.remove_func(args)
+        args_manager['remove']['yes'] = args.yes
+        args_manager['remove']['yes'] = args.info
+        opts.remove_func(args.packname, args.req_file,
+                         args_manager['remove']['yes'], args_manager['remove']['info'])
 
     @ command
     def list(packname):
@@ -84,6 +111,10 @@ def init_parser(version=None):
         Freeze current environment (i.e. installed packages)
         '''
 
+        if args.count:
+            args_manager['freeze']['count'] = True
+        if args.file:
+            args_manager['freeze']['file'] = args.file
         opts.freeze_func(args)
 
     @ command
@@ -101,6 +132,8 @@ def init_parser(version=None):
         Remove a previously added directory (with link) from PYTHONPATH
         '''
 
+        if args.all:
+            args_manager['unlink']['all'] = True
         opts.unlink_func(args)
 
     @ arg('query', nargs='+')
@@ -131,6 +164,11 @@ def init_parser(version=None):
         Download a package
         '''
 
+        if args.download_dir != args_manager['download']['download_dir']:
+            args_manager['download']['download_dir'] = args.download_dir
+        if args.prefer != args_manager['download']['prefer']:
+            args_manager['download']['prefer'] = args.prefer
+        args_manager['download']['unpack'] = args.unpack
         opts.download_func(args)
 
     @ arg('-y', '--yes', action='store_true', help='Do not ask confirmation for the upgrade')
@@ -139,6 +177,8 @@ def init_parser(version=None):
         Check for updates for installed packages
         '''
 
+        if args.yes:
+            args_manager['update']['yes'] = True
         opts.update_func(args)
 
     @ command
@@ -171,4 +211,6 @@ def init_parser(version=None):
     parser.add_commands([install, remove, freeze, link, unlink, list,
                          search, check, download, update, shell, bundle, help])
     parser.formatter_class = _formatter(parser)
+    if parser.parse_args(sys.argv[1:]).no_colors:
+        args_manager['global']['no_colors'] = True
     return parser
