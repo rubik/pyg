@@ -30,7 +30,7 @@ class Installer(object):
         if is_installed(req):
             self.upgrading = True
             if not args_manager['install']['upgrade']:
-                    logger.info('{0} is already installed', req)
+                    logger.info('{0} is already installed, use -U, --upgrade to upgrade', req)
                     raise AlreadyInstalled
             ## We don't set args_manager['upgrade'] = False
             ## because we want to propagate it to dependencies
@@ -53,7 +53,7 @@ class Installer(object):
         for req in rs:
             if is_installed(req) and not args_manager['install']['upgrade_all']:
                 logger.indent = 8
-                logger.info('{0} is already installed', req)
+                logger.info('{0} is already installed, use -A, --upgrade-all to upgrade dependencies', req)
                 continue
             logger.indent = 0
             logger.info('Installing {0} (from {1})', req, rs.comes_from)
@@ -234,7 +234,7 @@ class Uninstaller(object):
                     to_del.add(os.path.join(BIN, script) + '.bat')
 
         ## Very important!
-        ## We want to remove all files: even console scripts!
+        ## We want to remove all files: even console scripts.
         if dist.has_metadata('entry_points.txt'):
             config = ConfigParser.ConfigParser()
             config.readfp(File(dist.get_metadata_lines('entry_points.txt')))
@@ -242,7 +242,9 @@ class Uninstaller(object):
             if config.has_section('console_scripts'):
                 for name, value in config.items('console_scripts'):
                     n = os.path.join(BIN, name)
-                    if not os.path.exists(n) and n.startswith('/usr/bin'): ## Searches in the local path
+
+                    ## Searches in the local path
+                    if not os.path.exists(n) and n.startswith('/usr/bin'):
                         n = os.path.join('/usr/local/bin', name)
 
                     ## Check existance before adding to `to-del` set.
@@ -253,6 +255,8 @@ class Uninstaller(object):
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
 
+        if not to_del and isinstance(dist, pkg_resources.Distribution):
+            to_del.add(dist.location)
         return to_del
 
     def uninstall(self):
