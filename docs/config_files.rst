@@ -29,6 +29,8 @@ In addition to this, Pyg supports a nonstandard syntax, allowing multiple sectio
 
 It will set that option in all specified sections.
 
+Note: If you set an option to ``False``, ``false``, or ``0``, Pyg will consider it as false.
+
 The ``global`` section
 ----------------------
 

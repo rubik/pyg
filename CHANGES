@@ -13,6 +13,9 @@ CHANGELOG
 + #78: Allow installing packages from *dev* version: ``pyg==dev``.
 + #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.
 + #80: Add a new method: :meth:`pyg.log.Logger.ask`.
++ #81: Read :file:`~/.pypirc` file.
++ #82: Allow comments in Pyg's configuration files.
++ #83: Add support for environment variables like :envvar:`PYG_CONFIG_FILE` or :envvar:`PYG_HOME`.
 
 0.7 (in development)
 --------------------
