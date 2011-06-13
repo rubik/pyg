@@ -40,7 +40,7 @@ Pyg supports these file-types:
         * Bazaar (prefix ``bzr+``)
         * Subversion (prefix ``svn+``)
 
-    The URL syntax is as follow::
+    The URL syntax is as follows::
 
         <prefix><repo_url>#egg=<package_name>
 

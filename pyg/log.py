@@ -39,6 +39,10 @@ class Logger(object):
     ERROR = logging.ERROR
     FATAL = logging.FATAL
 
+    ## This attribute is set to True when the user does not want colors
+    ## by __init__.py
+    _NO_COLORS = False
+
     def __init__(self,level=None):
         self.indent = 0
         self.level = level or Logger.INFO
@@ -112,7 +116,7 @@ class Logger(object):
                     msg = ' ' * self.indent + msg
 
             col, col_reset = colors[col], colors['reset']
-            if args_manager['global']['no_colors']:
+            if self._NO_COLORS:
                 col, col_reset = '', ''
             std.write(col + msg + col_reset)
 

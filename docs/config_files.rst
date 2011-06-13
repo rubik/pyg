@@ -27,13 +27,18 @@ In addition to this, Pyg supports a nonstandard syntax, allowing multiple sectio
     [section1 & section2 & section6]
     option = value
 
-And it will set that option in all specified sections.
+It will set that option in all specified sections.
 
 The ``global`` section
 ----------------------
 
-This section is special: there is no ``global`` command, and it refers to Pyg's global options.
-At the moment there is only one global option: :option:`--no-colors`. Since 
+.. versionadded:: 0.7
+
+This section is a special one: there is no ``global`` command, and it refers to Pyg's global options.
+At the moment there is only one global option: :option:`--no-colors`. You can set it as follows::
+
+    [global]
+    no_colors = True
 
 
 Example usage

@@ -367,7 +367,7 @@ class ArgsManager(object):
 
     def load(self, path):
         '''
-        Load options from a config file. The syntax is as follow::
+        Load options from a config file. The syntax is as follows::
 
             [section_name]
             option=value
@@ -406,7 +406,10 @@ class ArgsManager(object):
                         logger.warn('Warning: section {0} does not have such option: {1}', s, option)
                         continue
                     if value not in self.NOT_BOOL:
-                        value = bool(value)
+                        if value in ('False', '0', 'false'):
+                            value = False
+                        else:
+                            value = bool(value)
                     if s == 'install' and option == 'upgrade_all':
                         self._OPTS['install']['upgrade'] = True
                     self._OPTS[s][option] = value
