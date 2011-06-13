@@ -61,7 +61,7 @@ def init_parser(version=None):
 
         args_manager['install']['no_deps'] = args.no_deps
         args_manager['install']['upgrade'] = args.upgrade
-        args_manager['install']['no_scripts'] = args.no_script
+        args_manager['install']['no_scripts'] = args.no_scripts
         args_manager['install']['no_data'] = args.no_data
         args_manager['install']['ignore'] = args.ignore
         args_manager['install']['force_egg_install'] = args.force_egg_install
