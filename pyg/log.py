@@ -114,7 +114,7 @@ class Logger(object):
             col, col_reset = colors[col], colors['reset']
             if args_manager['global']['no_colors']:
                 col, col_reset = '', ''
-            std.write(col + msg + colors['reset'])
+            std.write(col + msg + col_reset)
 
             ## Automatically adds a newline character
             if kw.get('addn', True):
