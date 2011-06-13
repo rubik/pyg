@@ -90,14 +90,13 @@ class Logger(object):
         unless you specify ``addn=False``. When the message starts with a return character (\r) it automatically
         cleans the line.
         '''
-        col = colors[col]
 
         if level >= self.level and self.enabled:
             std = sys.stdout
             if level >= self.ERROR:
                 std = sys.stderr
 
-            ## We can pass to logger.log any object: it only has to have
+            ## We can pass to logger.log any object: it must have at least
             ## a __repr__ or a __str__ method.
             msg = str(msg)
             if msg.startswith('\r'):
@@ -111,7 +110,11 @@ class Logger(object):
                     msg = ' ' * self.indent + msg.format(*a)
                 except KeyError:
                     msg = ' ' * self.indent + msg
-            std.write(col+msg+colors['reset'])
+
+            col, col_reset = colors[col], colors['reset']
+            if args_manager['global']['no_colors']:
+                col, col_reset = '', ''
+            std.write(col + msg + colors['reset'])
 
             ## Automatically adds a newline character
             if kw.get('addn', True):

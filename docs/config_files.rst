@@ -33,7 +33,7 @@ The ``global`` section
 ----------------------
 
 This section is special: there is no ``global`` command, and it refers to Pyg's global options.
-At the moment there is only one global option: :option:`--no-colors`.
+At the moment there is only one global option: :option:`--no-colors`. Since 
 
 
 Example usage
