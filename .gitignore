@@ -9,3 +9,5 @@ pyg.egg-info/
 temp/
 .cache/
 *.nja
+.ninjaproject
+.ropeproject
