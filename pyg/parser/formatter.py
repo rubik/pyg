@@ -3,10 +3,11 @@ Pyg's own HelpFormatter for argparse.
 The standard help would be like this:
 
     usage: pyg [-h] [-d] [--verbose] [-v]
-    
-               {search,shell,help,list,update,remove,freeze,link,bundle,install,download,unlink,check}
+
+          {search,shell,help,list,update,remove,freeze,link,bundle,install,
+          download,unlink,check}
                ...
-    
+
     positional arguments:
       {search,shell,help,list,update,remove,freeze,link,bundle,install,download,unlink,check}
         install
@@ -43,7 +44,7 @@ Available commands:
 	remove [-yi] [-r <path>] packname
 		Remove a package
 
-	freeze [-c] [-f <path>] 
+	freeze [-c] [-f <path>]
 		Freeze current environment (i.e. installed packages)
 
 	check [-i] packname
@@ -58,16 +59,16 @@ Available commands:
 	list packname
 		List all versions for a package
 
-	update [-y] 
+	update [-y]
 		Check for updates for installed packages
 
 	link path
 		Add a directory to PYTHONPATH
 
-	shell 
+	shell
 		Fire up Pyg Shell
 
-	help 
+	help
 		Show this help and exit
 '''
 
@@ -82,11 +83,13 @@ Available commands:
 {1}
 '''
 
+
 def _formatter(parser):
+
     class PygHelpFormatter(argparse.HelpFormatter):
-    
+
         _argh_parser = None
-    
+
         def _get_commands(self):
             commands = {}
             actions = [a for a in self._argh_parser._actions if isinstance(a, argparse._SubParsersAction)]
@@ -102,10 +105,10 @@ def _formatter(parser):
             return commands
 
         def _format_usage(self):
-            return 'usage: pyg [-h] [-v] [-d] [--verbose] [command] args\n' \
+            return 'usage: pyg [-h] [-v] [-d] [--verbose] [--no-colors] [command] args\n' \
                    'or: pyg command -h\n' \
                    'or: pyg command --help'
-    
+
         def _format_args(self):
             args = []
             _spaces_re = re.compile(r'[ ]+')
@@ -133,7 +136,7 @@ def _formatter(parser):
                             continue
                         no_value.append(options[0])
 
-                line = '{0} [-{1}] {2} {3} {4}\n\t\t{5}\n'.format(
+                line = '{0} [-{1}] {2} {3} {4}\n\t\t{5}'.format(
                     command,
                     ''.join(option.strip('-') for option in no_value),
                     ' '.join('[{0} {1}]'.format(option, metavar) for option, metavar in with_value),
@@ -149,7 +152,7 @@ def _formatter(parser):
                 args.append(line.lstrip())
 
             return '\t' + '\n\t'.join(sorted(args, key=lambda line: -len(line.split('\n\t\t')[0]))) + '\n'
-    
+
         def format_help(self):
             return TEMPLATE.format(
                 self._format_usage(),

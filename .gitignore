@@ -8,3 +8,4 @@ dist/
 pyg.egg-info/
 temp/
 .cache/
+*.nja
