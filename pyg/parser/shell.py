@@ -55,11 +55,11 @@ class PygShell(cmd.Cmd, object):
         super(PygShell, self).__init__(*args, **kwargs)
 
     def get_names(self):
-        return ['do_'+name for name in ADDITIONAL_COMMANDS + SUPPORTED_COMMANDS + ['ls', 'cd', 'exit', 'help']]
+        return ['do_' + name for name in ADDITIONAL_COMMANDS + SUPPORTED_COMMANDS + ['ls', 'cd', 'exit', 'help']]
 
     def __getattr__(self, attr):
         if not attr.startswith('do_') or attr in ADDITIONAL_COMMANDS:
-            return object.__getattr__(self, attr)
+            return super(PygShell, self).__getattribute__(attr)
         attr = attr[3:]
         if not attr in SUPPORTED_COMMANDS:
             return command_hook(attr)

@@ -71,7 +71,7 @@ Pyg supports these file-types:
 .. option:: -U, --upgrade
 
     If the package is already installed, install it again.
-    For example, one day you install ``pypol_ v0.4``::
+    For example, if you have installed ``pypol_ v0.4``::
 
         $ pyg install pypol_==0.4
         Best match: pypol_==0.4

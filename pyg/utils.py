@@ -166,8 +166,12 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     '''
 
     logger.info('Running setup.py install for {0}', name)
-    code, output = call_setup(path, global_args + ['install', '--single-version-externally-managed',
-                            '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args)
+    if name == 'dreampie':
+        ar = global_args + ['install'] + args
+    else:
+        ar = global_args + ['install', '--single-version-externally-managed',
+                            '--record', os.path.join(tempfile.mkdtemp(), '.pyg-install-record')] + args
+    code, output = call_setup(path, ar)
     if code != 0:
         logger.fatal('Error: setup.py did not install {0}', name)
         print_output(output, 'setup.py install')
