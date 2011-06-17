@@ -21,17 +21,7 @@ from setuptools import setup
 from setuptools.command.install import install as setuptools_install
 distutils.command.install.install = setuptools_install
 
-def write_file(f, c):
-    f = open(f, 'w')
-    try:
-        for line in c:
-            f.write(str(line) + {0!r})
-    finally:
-        f.close()
-
-distutils.file_util.write_file = write_file
-
-__file__={1!r};execfile(__file__)'''
+__file__={0!r};execfile(__file__)'''
 
 try:
     ## subprocess.check_output has been introduced in Python 2.7
@@ -161,7 +151,7 @@ def call_setup(path, a):
     '/home/user/packages/pyg-0.7/setup.py` is not.
     '''
 
-    code = SETUP_PY_TEMPLATE.format('\n', os.path.join(path, 'setup.py'))
+    code = SETUP_PY_TEMPLATE.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code] + a
     if under_virtualenv():
         logger.debug('debug: virtualenv detected')
