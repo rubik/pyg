@@ -49,6 +49,11 @@ class Logger(object):
         self._stack = []
         self.enabled = True
 
+    def disable_colors(self):
+        self._NO_COLORS = True
+        for k in colors.keys():
+            colors[k] = ''
+
     def newline(self):
         '''Print a newline character (\n) on Standard Output.'''
 
@@ -87,6 +92,11 @@ class Logger(object):
         exc = kw.get('exc', None)
         if exc is not None:
             raise exc(self.last_msg)
+
+    def exit(self, msg=None, status=1):
+        if msg != None:
+            self.log(self.FATAL, 'vbad', msg)
+        sys.exit(status)
 
     def log(self, level, col, msg, *a, **kw):
         '''
