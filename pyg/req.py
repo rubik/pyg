@@ -27,6 +27,7 @@ class Requirement(object):
              }
 
     version = op = None
+    success = False
 
     def __init__(self, req):
         self.req = req
