@@ -210,19 +210,11 @@ class Uninstaller(object):
                     return (lambda *a: False)
             dist = FakeDist()
 
-        if sys.version_info[:2] < (2, 7):
-            guesses = [dist.location]
-        else:
-            guesses = ALL_SITE_PACKAGES
-        for d in guesses:
-            try:
-                for file in os.listdir(d):
-                    for u_re in _uninstall_re:
-                        if u_re.match(file):
-                            to_del.add(os.path.join(d, file))
-            ## When os.listdir fails
-            except OSError:
-                continue
+        d = dist.location
+        for file in os.listdir(d):
+            for u_re in _uninstall_re:
+                if u_re.match(file):
+                    to_del.add(os.path.join(d, file))
 
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):

@@ -229,7 +229,7 @@ class ReqManager(object):
                 except (IOError, OSError):
                     logger.debug('debug: Error while writing data')
                     continue
-                logger.info('{0} downloaded successfully', self.name)
+                logger.success('{0} downloaded successfully', self.name)
                 success = True
             self.downloaded_name = name
             self.downloaded_version = v

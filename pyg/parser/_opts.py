@@ -33,7 +33,7 @@ def check_permissions(dir):
 def check_and_exit():
     dir = os.path.abspath(args_manager['install']['install_dir'])
     if not check_permissions(dir):
-        sys.exit('''Pyg cannot create new files in the installation directory.
+        logger.exit('''Pyg cannot create new files in the installation directory.
 Installation directory was:
 
     {0}
