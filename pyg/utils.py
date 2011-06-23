@@ -23,6 +23,7 @@ distutils.command.install.install = setuptools_install
 
 __file__={0!r};execfile(__file__)'''
 
+
 try:
     ## subprocess.check_output has been introduced in Python 2.7
     ## Since Pyg run on Python 2.6 too, we have to reproduce it.

@@ -31,14 +31,15 @@ Already implemented:
 + #66: ``pyg install -d {dir}`` could be ineffective.
 + #68: Now you can install local directories in development mode with the :option:`install -e` option.
 + #72: Default argparse help is incomplete: write Pyg's own HelpFormatter.
++ #72b: Add colored output.
 + #73: Sometimes the :command:`search` does not find anything (even if the package really exists).
 + #74: VCS install error.
++ #76: Allow installing eggs which requires a different Python installation.
 + #77: Improve uninstaller's file-detection.
 
 To solve:
 
-+ #72b: Add colored output.
-+ #76: Allow installing eggs which requires a different Python installation.
++ #87: ``pyg update`` is not dynamic.
 
 0.6 (May 15, 2011)
 ------------------
