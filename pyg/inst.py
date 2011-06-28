@@ -210,11 +210,25 @@ class Uninstaller(object):
                     return (lambda *a: False)
             dist = FakeDist()
 
-        d = dist.location
-        for file in os.listdir(d):
+        pkg_loc = dist.location
+        if pkg_loc in ALL_SITE_PACKAGES:
+            if dist.has_metadata('top_level.txt'):
+                pkg_loc = os.path.join( pkg_loc,
+                    dist.get_metadata_lines('top_level.txt').next())
+            else:
+                raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
+
+            egg_info_dir = os.path.join(dist.location, dist.egg_name()+'.egg-info')
+
+            for file in os.listdir(egg_info_dir):
+                for u_re in _uninstall_re:
+                    if u_re.match(file):
+                        to_del.add(os.path.join(egg_info_dir, file))
+
+        for file in os.listdir(pkg_loc):
             for u_re in _uninstall_re:
                 if u_re.match(file):
-                    to_del.add(os.path.join(d, file))
+                    to_del.add(os.path.join(pkg_loc, file))
 
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
@@ -248,7 +262,11 @@ class Uninstaller(object):
                         to_del.add(n + '-script.py')
 
         if not to_del and isinstance(dist, pkg_resources.Distribution):
-            to_del.add(dist.location)
+            if pkg_loc not in ALL_SITE_PACKAGES:
+                to_del.add(pkg_loc)
+            else:
+                raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
+
         return to_del
 
     def uninstall(self):
