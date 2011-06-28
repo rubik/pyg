@@ -92,7 +92,7 @@ def init_parser(version=None):
         '''
 
         args_manager['remove']['yes'] = args.yes
-        args_manager['remove']['yes'] = args.info
+        args_manager['remove']['info'] = args.info
         opts.remove_func(args.packname, args.req_file,
                          args_manager['remove']['yes'], args_manager['remove']['info'])
 
