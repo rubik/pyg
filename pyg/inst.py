@@ -218,12 +218,18 @@ class Uninstaller(object):
             else:
                 raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
 
-            egg_info_dir = os.path.join(dist.location, dist.egg_name()+'.egg-info')
-
-            for file in os.listdir(egg_info_dir):
-                for u_re in _uninstall_re:
-                    if u_re.match(file):
-                        to_del.add(os.path.join(egg_info_dir, file))
+            _base_name = dist.egg_name().split('-')
+            for n in range(len(_base_name)+1):
+                egg_info_dir = os.path.join(
+                    dist.location,
+                    '-'.join(_base_name[:-n if n else None]) + '.egg-info'
+                )
+                if os.path.exists(egg_info_dir):
+                    for file in os.listdir(egg_info_dir):
+                        for u_re in _uninstall_re:
+                            if u_re.match(file):
+                                to_del.add(os.path.join(egg_info_dir, file))
+                    break
 
         for file in os.listdir(pkg_loc):
             for u_re in _uninstall_re:
