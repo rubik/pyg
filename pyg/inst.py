@@ -75,6 +75,10 @@ class Installer(object):
                 updater = Updater(skip=True)
                 updater.remove_files(self.req)
             r.install()
+
+            # Now let's install dependencies
+            Installer._install_deps(r.reqset, r.name)
+            logger.success('{0} installed successfully', r.name)
         except InstallationError as e:
             try:
                 msg = e.args[0]
@@ -87,10 +91,6 @@ class Installer(object):
                 updater.restore_files(self.req)
             else:
                 logger.error(msg, exc=InstallationError)
-
-        # Now let's install dependencies
-        Installer._install_deps(r.reqset, r.name)
-        logger.success('{0} installed successfully', r.name)
 
     @ staticmethod
     def from_req_file(filepath):
