@@ -79,7 +79,7 @@ class Installer(object):
             # Now let's install dependencies
             Installer._install_deps(r.reqset, r.name)
             logger.success('{0} installed successfully', r.name)
-        except InstallationError as e:
+        except Exception as e:
             try:
                 msg = e.args[0]
             except IndexError:
