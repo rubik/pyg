@@ -83,7 +83,7 @@ class Installer(object):
 
             if self.upgrading:
                 logger.warn('Error: An error occurred during the upgrading: {0}', msg)
-                logger.info('Restoring uninstalled files...')
+                logger.info('Restoring files...')
                 updater.restore_files(self.req)
             else:
                 logger.error(msg, exc=InstallationError)
@@ -221,28 +221,26 @@ class Uninstaller(object):
                 #raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
             # detect egg-info location
             _base_name = dist.egg_name().split('-')
-            for n in range(len(_base_name)+1):
+            for n in range(len(_base_name) + 1):
                 egg_info_dir = os.path.join(
                     dist.location,
                     '-'.join(_base_name[:-n if n else None]) + '.egg-info'
                 )
                 if os.path.exists(egg_info_dir):
                     for file in os.listdir(egg_info_dir):
-                        for u_re in _uninstall_re:
-                            if u_re.match(file):
-                                to_del.add(os.path.join(egg_info_dir, file))
+                        if any(u_re.match(file) for u_re in _uninstall_re):
+                            to_del.add(os.path.join(egg_info_dir, file))
                     to_del.add(egg_info_dir)
                     break
 
         # finding package's files
         if os.path.isdir(pkg_loc):
             for file in os.listdir(pkg_loc):
-                for u_re in _uninstall_re:
-                    if u_re.match(file):
-                        to_del.add(os.path.join(pkg_loc, file))
+                if any(u_re.match(file) for u_re in _uninstall_re):
+                    to_del.add(os.path.join(pkg_loc, file))
         else:
             for ext in '.py .pyc .pyo'.split():
-                _p = os.path.join(pkg_loc+ext)
+                _p = pkg_loc + ext
                 if os.path.exists(_p):
                     to_del.add(_p)
 
@@ -256,7 +254,7 @@ class Uninstaller(object):
                     to_del.add(os.path.join(BIN, script) + '.bat')
 
         ## Very important!
-        ## We want to remove all files: even console scripts.
+        ## We want to remove console scripts too.
         if dist.has_metadata('entry_points.txt'):
             config = ConfigParser.ConfigParser()
             config.readfp(File(dist.get_metadata_lines('entry_points.txt')))

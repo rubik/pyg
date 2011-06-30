@@ -20,11 +20,16 @@ CHANGELOG
 0.7 (in development)
 --------------------
 
-Already implemented:
+Bugs fixed
+++++++++++
+
++ #59: Solve :class:`pyg.web.LinkFinder` issue once and for all.
+
+Features added
+++++++++++++++
 
 + #57: Create an installer, like Pip's ``get-pip.py``. You can grab it here: https://raw.github.com/rubik/pyg/master/get-pyg.py
 + #58: Add a ``pygx.y`` program (where ``x.y`` is Python current version), in addition to ``pyg``.
-+ #59: Solve :class:`pyg.web.LinkFinder` issue once and for all.
 + #62: ``pyg bundle`` failed when it did not find links on PyPI. Thanks to Fabien Devaux.
 + #63: Pyg could not install packages which use distutils instead of setuptools. Thanks to Fabien Devaux.
 + #64: Fixed ``pyg install --user``.
