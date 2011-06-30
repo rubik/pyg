@@ -1,3 +1,4 @@
+import urllib2
 import operator
 import urlparse
 
@@ -143,7 +144,10 @@ class Requirement(object):
         self.success = False
         logger.info('Looking for {0} releases on PyPI', self.name)
         p = ReqManager(self)
-        files = p.files()
+        try:
+            files = p.files()
+        except (urllib2.URLError, urllib2.HTTPError) as e:
+            raise InstallationError(repr(e.reason))
         bad_eggs = {}
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             for v, name, hash, url in files[pext]:

@@ -72,13 +72,15 @@ class Installer(object):
         r = Requirement(self.req)
         try:
             updater = Updater(skip=True)
-            updater.remove_files(self.req)
+            if self.upgrading:
+                updater.remove_files(self.req)
             r.install()
 
             # Now let's install dependencies
             Installer._install_deps(r.reqset, r.name)
             logger.success('{0} installed successfully', r.name)
         except Exception as e:
+            print 'asfasdf'
             try:
                 msg = e.args[0]
             except IndexError:
