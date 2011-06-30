@@ -71,9 +71,8 @@ class Installer(object):
     def install(self):
         r = Requirement(self.req)
         try:
-            if self.upgrading:
-                updater = Updater(skip=True)
-                updater.remove_files(self.req)
+            updater = Updater(skip=True)
+            updater.remove_files(self.req)
             r.install()
 
             # Now let's install dependencies
@@ -88,9 +87,8 @@ class Installer(object):
             if self.upgrading:
                 logger.warn('Error: An error occurred during the upgrading: {0}', msg)
                 logger.info('Restoring files...')
-                updater.restore_files(self.req)
-            else:
-                logger.error(msg, exc=InstallationError)
+            updater.restore_files(self.req)
+            logger.error(msg, exc=InstallationError)
 
     @ staticmethod
     def from_req_file(filepath):
