@@ -80,7 +80,6 @@ class Installer(object):
             Installer._install_deps(r.reqset, r.name)
             logger.success('{0} installed successfully', r.name)
         except Exception as e:
-            print 'asfasdf'
             try:
                 msg = e.args[0]
             except IndexError:
