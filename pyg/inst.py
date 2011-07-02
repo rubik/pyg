@@ -39,7 +39,7 @@ class Installer(object):
         self.req = req
 
     @ staticmethod
-    def _install_deps(rs, name=None):
+    def _install_deps(rs, name=None, updater=None):
         if not rs:
             return
         if args_manager['install']['no_deps']:
@@ -50,6 +50,8 @@ class Installer(object):
             logger.indent = 0
             return
         logger.info('Installing dependencies...')
+        dep_error = False
+        newly_installed = []
         for req in rs:
             if is_installed(req) and not args_manager['install']['upgrade_all']:
                 logger.indent = 8
@@ -60,34 +62,50 @@ class Installer(object):
             logger.indent = 8
             try:
                 Installer(req).install()
+                newly_installed.append(req)
             except AlreadyInstalled:
                 continue
             except InstallationError:
-                logger.warn('Error: {0} has not been installed correctly', req)
+                dep_error = True
+                logger.error('Error: {0} has not been installed correctly', req)
                 continue
         logger.indent = 0
-        logger.success('Finished installing dependencies for {0}', rs.comes_from)
+        if dep_error:
+            if updater:
+                for req in newly_installed:
+                    updater.restore_files(req)
+                updater.remove_files(rs.comes_from.name)
+                updater.restore_files(rs.comes_from.name)
+            logger.error("{0}'s dependencies installation failed", rs.comes_from.name)
+            raise InstallationError()
+        else:
+            logger.success('Finished installing dependencies for {0}', rs.comes_from.name)
 
     def install(self):
-        r = Requirement(self.req)
         try:
+            r = Requirement(self.req)
             updater = Updater(skip=True)
             if self.upgrading:
                 updater.remove_files(self.req)
             r.install()
 
             # Now let's install dependencies
-            Installer._install_deps(r.reqset, r.name)
+            Installer._install_deps(r.reqset, r.name, updater)
             logger.success('{0} installed successfully', r.name)
-        except Exception as e:
+        except (KeyboardInterrupt, Exception) as e:
             try:
                 msg = e.args[0]
             except IndexError:
                 msg = repr(e)
 
-            if self.upgrading:
-                logger.warn('Error: An error occurred during the upgrading: {0}', msg)
-                logger.info('Restoring files...')
+            if isinstance(e, KeyboardInterrupt):
+                logger.warn('Process interrupted...')
+            else:
+                logger.warn('Error: An error occurred during the {0} of {1}: {2}',
+                        'upgrading' if self.upgrading else 'installation',
+                        self.req,
+                        msg)
+            logger.info('Restoring files...')
             updater.restore_files(self.req)
             logger.error(msg, exc=InstallationError)
 
@@ -123,7 +141,7 @@ class Installer(object):
             for req in not_installed:
                 logger.warn(req)
             logger.indent = 0
-            raise InstallationError
+            raise InstallationError()
 
     @ staticmethod
     def from_file(filepath, packname=None):
