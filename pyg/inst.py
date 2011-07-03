@@ -76,8 +76,7 @@ class Installer(object):
                     updater.restore_files(req)
                 updater.remove_files(rs.comes_from.name)
                 updater.restore_files(rs.comes_from.name)
-            logger.error("{0}'s dependencies installation failed", rs.comes_from.name)
-            raise InstallationError()
+            logger.error("{0}'s dependencies installation failed", rs.comes_from.name, exc=InstallationError)
         else:
             logger.success('Finished installing dependencies for {0}', rs.comes_from.name)
 
@@ -105,8 +104,12 @@ class Installer(object):
                         'upgrading' if self.upgrading else 'installation',
                         self.req,
                         msg)
-            logger.info('Restoring files...')
-            updater.restore_files(self.req)
+            if self.upgrading:
+                logger.info('Restoring files...')
+                updater.restore_files(self.req)
+            else:
+                logger.info('Removing broken files...')
+                Uninstaller(self.req).uninstall()
             logger.error(msg, exc=InstallationError)
 
     @ staticmethod
@@ -360,25 +363,31 @@ class Updater(object):
         if not to_del:
             logger.info('No files to remove found')
             return
+
+        # XXX: tempfile.mktemp is deprecated, but all other functions create
+        # the directory and shutil does not want that.
         tempdir = tempfile.mktemp()
         self.removed[package] = {}
         self.removed[package][tempdir] = []
         for path in to_del:
+            print path, tempdir
             self.removed[package][tempdir].append(path)
 
-            ## We store files-to-delete into a temporary directory:
-            ## if something goes wrong during the upgrading we can
-            ## restore the original files!
+            # We store files-to-delete into a temporary directory:
+            # if something goes wrong during the upgrading we can
+            # restore the original files.
             p = os.path.join(tempdir, os.path.basename(path))
             try:
                 shutil.copy2(path, p)
-            ## It is a directory
+            # It is a directory
             except IOError:
+                print 'it is a directory'
                 try:
                     shutil.copytree(path, p)
                 except OSError:
                     logger.debug('debug: shutil.copytree raised OSError')
                     continue
+        print self.removed
         logger.enabled = False
         uninst.uninstall()
         logger.enabled = True
