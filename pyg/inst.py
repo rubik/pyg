@@ -38,7 +38,7 @@ class Installer(object):
 
         self.req = req
 
-    @ staticmethod
+    @staticmethod
     def _install_deps(rs, name=None, updater=None):
         if not rs:
             return
@@ -76,8 +76,7 @@ class Installer(object):
                     updater.restore_files(req)
                 updater.remove_files(rs.comes_from.name)
                 updater.restore_files(rs.comes_from.name)
-            logger.error("{0}'s dependencies installation failed", rs.comes_from.name)
-            raise InstallationError()
+            logger.error("{0}'s dependencies installation failed", rs.comes_from.name, exc=InstallationError)
         else:
             logger.success('Finished installing dependencies for {0}', rs.comes_from.name)
 
@@ -105,11 +104,15 @@ class Installer(object):
                         'upgrading' if self.upgrading else 'installation',
                         self.req,
                         msg)
-            logger.info('Restoring files...')
-            updater.restore_files(self.req)
+            if self.upgrading:
+                logger.info('Restoring files...')
+                updater.restore_files(self.req)
+            else:
+                logger.info('Removing broken files...')
+                Uninstaller(self.req).uninstall()
             logger.error(msg, exc=InstallationError)
 
-    @ staticmethod
+    @staticmethod
     def from_req_file(filepath):
         path = os.path.abspath(filepath)
         not_installed = set()
@@ -143,7 +146,7 @@ class Installer(object):
             logger.indent = 0
             raise InstallationError()
 
-    @ staticmethod
+    @staticmethod
     def from_file(filepath, packname=None):
         packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
@@ -169,7 +172,7 @@ class Installer(object):
         Installer._install_deps(reqset, packname)
         logger.success('{0} installed successfully', packname)
 
-    @ staticmethod
+    @staticmethod
     def from_dir(path, name=None):
         name = name or os.path.basename(path)
         reqset = ReqSet(name)
@@ -188,7 +191,7 @@ class Installer(object):
                 Installer._install_deps(reqset)
             logger.success('{0} installed successfully', name)
 
-    @ staticmethod
+    @staticmethod
     def from_url(url, packname=None):
         with TempDir() as tempdir:
             packname = packname or urlparse.urlsplit(url).path.split('/')[-1]
@@ -360,19 +363,22 @@ class Updater(object):
         if not to_del:
             logger.info('No files to remove found')
             return
+
+        # XXX: tempfile.mktemp is deprecated, but all other functions create
+        # the directory and shutil does not want that.
         tempdir = tempfile.mktemp()
         self.removed[package] = {}
         self.removed[package][tempdir] = []
         for path in to_del:
             self.removed[package][tempdir].append(path)
 
-            ## We store files-to-delete into a temporary directory:
-            ## if something goes wrong during the upgrading we can
-            ## restore the original files!
+            # We store files-to-delete into a temporary directory:
+            # if something goes wrong during the upgrading we can
+            # restore the original files.
             p = os.path.join(tempdir, os.path.basename(path))
             try:
                 shutil.copy2(path, p)
-            ## It is a directory
+            # It is a directory
             except IOError:
                 try:
                     shutil.copytree(path, p)

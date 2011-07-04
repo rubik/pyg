@@ -24,7 +24,7 @@ class Gist(object):
     def __repr__(self):
         return '<Gist[{0}] at {1}>'.format(self.gist_id, id(self))
 
-    @ property
+    @property
     def data(self):
         if self._data is not None:
             return self._data
@@ -32,7 +32,7 @@ class Gist(object):
         self._data = json.loads(request(url))
         return self._data
 
-    @ property
+    @property
     def files(self):
         if self._files is not None:
             return self._files

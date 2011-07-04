@@ -52,7 +52,7 @@ class Requirement(object):
             self.version = None
             self.op = None
 
-    @ staticmethod
+    @staticmethod
     def find_version(s):
         v = []
         for c in s:
