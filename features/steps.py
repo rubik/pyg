@@ -34,7 +34,7 @@ def given_i_use_venv(step, env_name):
 
 @step('I execute +(.*)')
 def i_execute(step, cmd):
-    world.proc = Popen(os.path.join(world.env_path, 'bin', cmd),
+    world.proc = Popen(os.path.join(world.env_path, 'bin', cmd).split(),
      stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
 @step('the return code is (\d+)')
