@@ -5,12 +5,32 @@ import shutil
 import tempfile
 import itertools
 from subprocess import Popen, PIPE, call
+import lettuce
 
-VENV_DIR = tempfile.mkdtemp(prefix='pyg_env_')
+VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
+
+ENVIRONMENTS = {}
+
+@before.each_feature
+def remove_std_packages(*a):
+    for env, path in ENVIRONMENTS.iteritems():
+        call([os.path.join(path, 'bin', 'pyg'),
+            'remove',
+            '-y',
+            'bottle',
+            'mercurial',
+            'lk',
+            'grin',
+            'hg-git',
+            'gevent'])
 
 @before.all
 def init_env(*a):
-    """ Ensure VENV_DIR folder exists and is empty """
+    """ Ensure VENV_DIR folder exists and is empty (unless KEEPENV is used) """
+
+    if 'KEEPENV' in os.environ and os.path.exists(VENV_DIR):
+        return
+
     try:
         shutil.rmtree(VENV_DIR)
     except OSError:
@@ -19,7 +39,7 @@ def init_env(*a):
 
 @after.all
 def destroy_env(*a):
-    """ Ensure VENV_DIR folder is destroyed, set KEEPENV to disable. """
+    """ Ensure VENV_DIR folder is destroyed, set KEEPENV=/some/folder to disable. """
 
     if 'KEEPENV' in os.environ:
         print "Env. path: %s" % VENV_DIR
@@ -38,6 +58,7 @@ def given_i_use_venv(step, env_name):
 
     # Create Venv if it can't be found
     if not os.path.exists(world.env_path):
+        ENVIRONMENTS[env_name] = world.env_path
         if py_version:
             args = ['--python', 'python'+py_version]
         else:
@@ -48,7 +69,7 @@ def given_i_use_venv(step, env_name):
     # Install pyg if not found
     if not os.path.exists(os.path.join(world.env_path, 'bin', 'pyg')):
         dn = os.path.dirname
-        pyg_dir = dn(dn(dn(__file__)))+'/'
+        pyg_dir = dn(dn(dn(__file__))) + '/'
         os.chdir(pyg_dir)
 
         call('. %s ; python %s install' % (
@@ -71,17 +92,25 @@ def i_execute(step, cmd):
     world.proc = Popen(prefixed_cmd,
      shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
+@step('no trace of \s*(.*)')
+def no_trace_of(step, what):
+    import glob
+    matches = glob(os.path.join(world.env_path, 'lib', 'python*', 'site-packages', what))
+    if 0 != len(matches):
+        pfx_len = len(world.env_path) + 27
+        raise AssertionError('Found stale files : %r' % [x[pfx_len:] for x in matches])
+
 @step('the return code is (\d+)')
 def the_return_code_is(step, given_code):
     code, out, err = wait_and_set()
     if int(given_code) != code:
         out_desc = "stdout:\n%s\nstderr:\n%s\n-EOF-\n" % (out, err)
-        raise AssertionError('Invalid code, expected %s, got %d\n%s' % (code, code, out_desc))
+        raise AssertionError('Invalid code, got %s, expected %s\n%s' % (code, given_code, out_desc))
 
-@step('(?P<num>\d+|many|all|one|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
+@step('(?P<num>\d+|many|all|one|a single|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
 def x_line_matches(step, num, expression, what):
     # prepare arguments
-    if num == 'one':
+    if num in ('one', 'a single'):
         num = 1
     if not what:
         what = 'stdout'
