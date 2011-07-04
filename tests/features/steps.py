@@ -78,7 +78,7 @@ def the_return_code_is(step, given_code):
         out_desc = "OUT:\n%sERR:\n%s\n-EOF-\n" % (out, err)
         raise AssertionError('Invalid code, expected %s, got %d\n%s' % (code, code, out_desc))
 
-@step('(?P<num>\d+|many|one|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
+@step('(?P<num>\d+|many|all|one|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
 def x_line_matches(step, num, expression, what):
     # prepare arguments
     if num == 'one':
@@ -88,18 +88,29 @@ def x_line_matches(step, num, expression, what):
 
     # get result & count matching lines
     cnt = itertools.count()
+    total = itertools.count()
     code, out, err = wait_and_set()
     r = re.compile(expression)
     for line in (err if 'err' in what else out).split('\n'):
+        if not line.strip():
+            continue
+
         if r.match(line):
             cnt.next()
+        total.next()
 
     # handle result
 
     cnt = cnt.next()
-    err_desc = "\nOUT: %s\nERR: %s\n"%(out, err)
+    total = total.next()
 
-    if num == 'no':
+    err_desc = "\nstdout: %s\nstderr: %s\n"%(out, err)
+
+    if num == 'all':
+        if cnt != total:
+          print cnt, total
+          raise AssertionError('Some line mismatch!'+err_desc)
+    elif num == 'no':
         if cnt:
           raise AssertionError('Got matches!'+err_desc)
     elif num == 'many':
