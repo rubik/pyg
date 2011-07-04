@@ -352,7 +352,7 @@ class Updater(object):
         ##>>> u = Updater(skip=True)
         ##>>> u.upgrade(package_name, json, version)
         if not skip:
-            logger.info('Loading list of installed packages... ', addn=False)
+            logger.debug('Loading list of installed packages... ', addn=False)
             self.working_set = list(iter(pkg_resources.working_set))
             logger.info('{0} packages loaded', len(self.working_set))
         self.removed = {}

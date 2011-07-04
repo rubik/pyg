@@ -15,7 +15,7 @@ def load_options():
     if CFG_FILES:
         for cfg in CFG_FILES:
             if os.path.exists(cfg):
-                logger.info('Loading options from {0}', cfg)
+                logger.debug('Loading options from {0}', cfg)
 
                 ## This is for potential warnings
                 logger.indent = 8
