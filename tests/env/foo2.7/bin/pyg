@@ -1,9 +1,0 @@
-#!/home/miki/pyg/tests/env/foo2.7/bin/python2.7
-# EASY-INSTALL-ENTRY-SCRIPT: 'pyg==0.6','console_scripts','pyg'
-__requires__ = 'pyg==0.6'
-import sys
-from pkg_resources import load_entry_point
-
-sys.exit(
-   load_entry_point('pyg==0.6', 'console_scripts', 'pyg')()
-)
