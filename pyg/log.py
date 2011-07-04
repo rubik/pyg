@@ -62,7 +62,7 @@ class Logger(object):
     def raise_last(self, exc):
         raise exc(self.last_msg)
 
-    @ property
+    @property
     def last_msg(self):
         return self._stack[-1]
 

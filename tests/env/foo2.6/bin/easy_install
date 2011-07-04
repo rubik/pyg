@@ -1,0 +1,9 @@
+#!/home/miki/pyg/tests/env/foo2.6/bin/python2.6
+# EASY-INSTALL-ENTRY-SCRIPT: 'setuptools==0.6c12dev-r88846','console_scripts','easy_install'
+__requires__ = 'setuptools==0.6c12dev-r88846'
+import sys
+from pkg_resources import load_entry_point
+
+sys.exit(
+   load_entry_point('setuptools==0.6c12dev-r88846', 'console_scripts', 'easy_install')()
+)

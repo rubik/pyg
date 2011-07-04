@@ -29,15 +29,15 @@ class VCS(object):
                                                  self.package_name,
                                                  id(self))
 
-    @ property
+    @property
     def cmd(self):
         return self.CMD
 
-    @ property
+    @property
     def method(self):
         return self.METHOD
 
-    @ property
+    @property
     def dir(self):
         try:
             return os.path.join(self.dest, os.listdir(self.dest)[0])

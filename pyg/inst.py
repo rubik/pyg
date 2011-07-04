@@ -38,7 +38,7 @@ class Installer(object):
 
         self.req = req
 
-    @ staticmethod
+    @staticmethod
     def _install_deps(rs, name=None, updater=None):
         if not rs:
             return
@@ -112,7 +112,7 @@ class Installer(object):
                 Uninstaller(self.req).uninstall()
             logger.error(msg, exc=InstallationError)
 
-    @ staticmethod
+    @staticmethod
     def from_req_file(filepath):
         path = os.path.abspath(filepath)
         not_installed = set()
@@ -146,7 +146,7 @@ class Installer(object):
             logger.indent = 0
             raise InstallationError()
 
-    @ staticmethod
+    @staticmethod
     def from_file(filepath, packname=None):
         packname = packname or os.path.basename(filepath).split('-')[0]
         reqset = ReqSet(packname)
@@ -172,7 +172,7 @@ class Installer(object):
         Installer._install_deps(reqset, packname)
         logger.success('{0} installed successfully', packname)
 
-    @ staticmethod
+    @staticmethod
     def from_dir(path, name=None):
         name = name or os.path.basename(path)
         reqset = ReqSet(name)
@@ -191,7 +191,7 @@ class Installer(object):
                 Installer._install_deps(reqset)
             logger.success('{0} installed successfully', name)
 
-    @ staticmethod
+    @staticmethod
     def from_url(url, packname=None):
         with TempDir() as tempdir:
             packname = packname or urlparse.urlsplit(url).path.split('/')[-1]
@@ -370,7 +370,6 @@ class Updater(object):
         self.removed[package] = {}
         self.removed[package][tempdir] = []
         for path in to_del:
-            print path, tempdir
             self.removed[package][tempdir].append(path)
 
             # We store files-to-delete into a temporary directory:
@@ -381,13 +380,11 @@ class Updater(object):
                 shutil.copy2(path, p)
             # It is a directory
             except IOError:
-                print 'it is a directory'
                 try:
                     shutil.copytree(path, p)
                 except OSError:
                     logger.debug('debug: shutil.copytree raised OSError')
                     continue
-        print self.removed
         logger.enabled = False
         uninst.uninstall()
         logger.enabled = True

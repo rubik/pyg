@@ -122,7 +122,7 @@ class ReqSet(object):
     def add(self, r):
         self._reqs.add(r)
 
-    @ property
+    @property
     def reqs(self):
         return self._reqs
 
@@ -361,7 +361,7 @@ class ArgsManager(object):
     def __getitem__(self, item):
         return ArgsManager._OPTS[item]
 
-    @ property
+    @property
     def OPTS(self):
         return self._OPTS
 
