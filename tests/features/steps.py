@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import tempfile
+import itertools
 from subprocess import Popen, PIPE, call
 
 VENV_DIR = tempfile.mkdtemp(prefix='pyg_env_')
@@ -77,14 +78,37 @@ def the_return_code_is(step, given_code):
         out_desc = "OUT:\n%sERR:\n%s\n-EOF-\n" % (out, err)
         raise AssertionError('Invalid code, expected %s, got %d\n%s' % (code, code, out_desc))
 
-@step('the stdout contains\s+(.*)')
-def the_stdout_contains(step, text):
-    code, out, err = wait_and_set()
-    if text not in out:
-        raise AssertionError('Could not find string %r, got:\n%s\nEOF' % (text, out))
+@step('(?P<num>\d+|many|one|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
+def x_line_matches(step, num, expression, what):
+    # prepare arguments
+    if num == 'one':
+        num = 1
+    if not what:
+        what = 'stdout'
 
-@step('the stderr contains\s+(.*)')
-def the_stderr_is(step, text):
+    # get result & count matching lines
+    cnt = itertools.count()
     code, out, err = wait_and_set()
-    if text not in err:
-        raise AssertionError('Could not find string %r, got:\n%s\nEOF' % (text, world.stderr))
+    r = re.compile(expression)
+    for line in (err if 'err' in what else out).split('\n'):
+        if r.match(line):
+            cnt.next()
+
+    # handle result
+
+    cnt = cnt.next()
+    err_desc = "\nOUT: %s\nERR: %s\n"%(out, err)
+
+    if num == 'no':
+        if cnt:
+          raise AssertionError('Got matches!'+err_desc)
+    elif num == 'many':
+        if cnt == 0:
+            raise AssertionError('No match!'+err_desc)
+        elif cnt == 1:
+            raise AssertionError('Single match!'+err_desc)
+    elif cnt != int(num):
+        if cnt == 0:
+            raise AssertionError('No match!'+err_desc)
+        else:
+            raise AssertionError('Expected %s matches, got %d%s' % (num, cnt, err_desc))
