@@ -75,7 +75,7 @@ def i_execute(step, cmd):
 def the_return_code_is(step, given_code):
     code, out, err = wait_and_set()
     if int(given_code) != code:
-        out_desc = "OUT:\n%sERR:\n%s\n-EOF-\n" % (out, err)
+        out_desc = "stdout:\n%s\nstderr:\n%s\n-EOF-\n" % (out, err)
         raise AssertionError('Invalid code, expected %s, got %d\n%s' % (code, code, out_desc))
 
 @step('(?P<num>\d+|many|all|one|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
