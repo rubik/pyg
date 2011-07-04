@@ -4,25 +4,29 @@ import re
 import shutil
 import tempfile
 import itertools
+from glob import glob
 from subprocess import Popen, PIPE, call
 import lettuce
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
 
-ENVIRONMENTS = {}
+ENVIRONMENTS = { 'standard': os.path.join(VENV_DIR, 'standard') }
 
 @before.each_feature
 def remove_std_packages(*a):
     for env, path in ENVIRONMENTS.iteritems():
-        call([os.path.join(path, 'bin', 'pyg'),
-            'remove',
-            '-y',
-            'bottle',
-            'mercurial',
-            'lk',
-            'grin',
-            'hg-git',
-            'gevent'])
+        try:
+            call([os.path.join(path, 'bin', 'pyg'),
+                'remove',
+                '-y',
+                'bottle',
+                'mercurial',
+                'lk',
+                'grin',
+                'hg-git',
+                'gevent'])
+        except OSError:
+            pass
 
 @before.all
 def init_env(*a):
@@ -92,13 +96,12 @@ def i_execute(step, cmd):
     world.proc = Popen(prefixed_cmd,
      shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-@step('no trace of \s*(.*)')
+@step('no trace of \s*(\w+).*')
 def no_trace_of(step, what):
-    import glob
     matches = glob(os.path.join(world.env_path, 'lib', 'python*', 'site-packages', what))
     if 0 != len(matches):
-        pfx_len = len(world.env_path) + 27
-        raise AssertionError('Found stale files : %r' % [x[pfx_len:] for x in matches])
+        pfx_len = 1 + len(glob(os.path.join(world.env_path, 'lib', 'python*', 'site-packages'))[0])
+        raise AssertionError('Found stale files : %s' % ', '.join(x[pfx_len:] for x in matches))
 
 @step('the return code is (\d+)')
 def the_return_code_is(step, given_code):
@@ -133,11 +136,10 @@ def x_line_matches(step, num, expression, what):
     cnt = cnt.next()
     total = total.next()
 
-    err_desc = "\nstdout: %s\nstderr: %s\n"%(out, err)
+    err_desc = "\nINFO:\nExpect %s \"%s\" (%s) \nstdout: %s\nstderr: %s\n"%(num, expression, what, out, err)
 
     if num == 'all':
         if cnt != total:
-          print cnt, total
           raise AssertionError('Some line mismatch!'+err_desc)
     elif num == 'no':
         if cnt:
