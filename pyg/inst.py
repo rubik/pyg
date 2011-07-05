@@ -327,34 +327,28 @@ class Uninstaller(object):
         for d in to_del:
             logger.info(d)
         logger.indent -= 8
-        while True:
-            if self.yes:
-                u = 'y'
-            else:
-                u = raw_input('Proceed? (y/[n]) ').lower()
-            if u in ('n', ''):
-                logger.info('{0} has not been uninstalled', self.name)
-                break
-            elif u == 'y':
-                for d in to_del:
+        do_it = logger.ask('Proceed', bool=('remove files', 'cancel'), dont_ask=self.yes)
+        if do_it:
+            for d in to_del:
+                try:
+                    logger.verbose('Deleting: {0}', d)
+                    shutil.rmtree(d)
+                except OSError: ## It is not a directory
                     try:
-                        logger.verbose('Deleting: {0}', d)
-                        shutil.rmtree(d)
-                    except OSError: ## It is not a directory
-                        try:
-                            os.remove(d)
-                        except OSError:
-                            logger.error('Error: cannot delete {0}', d)
-                logger.verbose('Removing egg path from easy_install.pth...')
-                with open(EASY_INSTALL) as f:
-                    lines = f.readlines()
-                with open(EASY_INSTALL, 'w') as f:
-                    for line in lines:
-                        if path_re.match(line) or path_re2.match(line):
-                            continue
-                        f.write(line)
-                logger.success('{0} uninstalled succesfully', self.name)
-                break
+                        os.remove(d)
+                    except OSError:
+                        logger.error('Error: cannot delete {0}', d)
+            logger.verbose('Removing egg path from easy_install.pth...')
+            with open(EASY_INSTALL) as f:
+                lines = f.readlines()
+            with open(EASY_INSTALL, 'w') as f:
+                for line in lines:
+                    if path_re.match(line) or path_re2.match(line):
+                        continue
+                    f.write(line)
+            logger.success('{0} uninstalled succesfully', self.name)
+        else:
+           logger.info('{0} has not been uninstalled', self.name)
 
 
 class Updater(object):
@@ -480,18 +474,12 @@ class Updater(object):
             if version >= new_version:
                 continue
 
-            logger.info('A new release is avaiable for {0}: {1!s} (old {2})', package, new_version, dist.version)
-            while True:
-                if args_manager['update']['yes']:
-                    u = 'y'
-                else:
-                    u = raw_input('Do you want to upgrade? (y/[n]) ').lower()
-                if u in ('n', ''):
-                    logger.info('{0} has not been upgraded', package)
-                    break
-                elif u == 'y':
-                    self.upgrade(package, json, new_version)
-                    break
+            txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package, new_version, dist.version)
+            u = logger.ask(txt, bool=('upgrade version', 'keep working version'), dont_ask=self.yes)
+            if u:
+                self.upgrade(package, json, new_version)
+            else:
+                logger.info('{0} has not been upgraded', package)
         self._clean()
         logger.success('Updating finished successfully')
 

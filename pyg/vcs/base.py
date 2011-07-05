@@ -90,23 +90,20 @@ class VCS(object):
         except OSError:
             pass
         if os.path.exists(self.dest):
-            while True:
-                u = raw_input('The destination already exists: {0}\nWhat do you want to do?\n\n' \
-                              '(d)elete, (b)ackup, e(x)it\n> '.format(self.dest)).lower()
-                if u == 'd':
-                    logger.info('Removing {0}...', self.dest)
-                    shutil.rmtree(self.dest)
-                    os.makedirs(self.dest)
-                    break
-                elif u == 'b':
-                    dst = os.path.join(os.path.dirname(self.dest),
-                                                        self.dest + '-pyg-backup')
-                    logger.info('Moving {0} to {1}', self.dest, dst)
-                    shutil.move(self.dest, dst)
-                    os.makedirs(self.dest)
-                    break
-                elif u == 'x':
-                    logger.info('Exiting...')
-                    sys.exit(0)
+            txt = 'The destination already exists: {0}\nWhat do you want to do ?'.format(self.dest)
+            u = logger.ask(txt, choices={'destroy': 'd', 'backup': 'b', 'exit': 'x'})
+            if u == 'd':
+                logger.info('Removing {0}...', self.dest)
+                shutil.rmtree(self.dest)
+                os.makedirs(self.dest)
+            elif u == 'b':
+                dst = os.path.join(os.path.dirname(self.dest),
+                                                    self.dest + '-pyg-backup')
+                logger.info('Moving {0} to {1}', self.dest, dst)
+                shutil.move(self.dest, dst)
+                os.makedirs(self.dest)
+            elif u == 'x':
+                logger.info('Exiting...')
+                sys.exit(0)
         else:
             os.makedirs(self.dest)

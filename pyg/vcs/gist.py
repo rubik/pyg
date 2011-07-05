@@ -51,21 +51,19 @@ class Gist(object):
             logger.indent = 8
             path = os.path.abspath(os.path.join(dest, filename))
             if os.path.exists(path):
-                while True:
-                    u = raw_input('\tThe destination already exists: {0}\n\tWhat do you want to do?\n\n\t' \
-                                  '(d)elete (b)ackup e(x)it\n\t> '.format(path)).lower()
-                    if u == 'd':
-                        logger.info('Removing {0}', path)
-                        os.remove(path)
-                        break
-                    elif u == 'b':
-                        d = path + '.pyg-backup'
-                        logger.info('Moving {0} to {1}', path, d)
-                        shutil.copyfile(path, d)
-                        break
-                    elif u == 'x':
-                        logger.info('Exiting...')
-                        sys.exit(0)
+                txt = 'The destination already exists: {0}\nWhat do you want to do'.format(path)
+                u = logger.ask(txt, choices={'destroy': 'd', 'backup': 'b', 'exit': 'x'})
+
+                if u == 'd':
+                    logger.info('Removing {0}', path)
+                    os.remove(path)
+                elif u == 'b':
+                    d = path + '.pyg-backup'
+                    logger.info('Moving {0} to {1}', path, d)
+                    shutil.copyfile(path, d)
+                elif u == 'x':
+                    logger.info('Exiting...')
+                    sys.exit(0)
             with open(path, 'w') as f:
                 logger.info('Writing data into {0}', filename)
                 f.write(self.get_file_content(filename))
