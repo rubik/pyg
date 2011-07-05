@@ -93,6 +93,7 @@ def wait_and_set():
 @step('I execute +(.*)')
 def i_execute(step, cmd):
     prefixed_cmd = os.path.join(world.env_path, 'bin', cmd)
+    world.last_cmd = prefixed_cmd
     world.proc = Popen(prefixed_cmd,
      shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -107,8 +108,10 @@ def no_trace_of(step, what):
 def the_return_code_is(step, given_code):
     code, out, err = wait_and_set()
     if int(given_code) != code:
-        out_desc = "stdout:\n%s\nstderr:\n%s\n-EOF-\n" % (out, err)
-        raise AssertionError('Invalid code, got %s, expected %s\n%s' % (code, given_code, out_desc))
+        out_desc = "cmd: %s\nstdout:\n%s\nstderr:\n%s\n-EOF-\n" % (
+         world.last_cmd, out, err)
+        raise AssertionError('Invalid code, got %s, expected %s\n%s' % (
+         code, given_code, out_desc))
 
 @step('(?P<num>\d+|many|all|one|a single|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
 def x_line_matches(step, num, expression, what):
@@ -136,7 +139,8 @@ def x_line_matches(step, num, expression, what):
     cnt = cnt.next()
     total = total.next()
 
-    err_desc = "\nINFO:\nExpect %s \"%s\" (%s) \nstdout: %s\nstderr: %s\n"%(num, expression, what, out, err)
+    err_desc = "\ncmd:%s\nINFO:\nExpect %s \"%s\" (%s) \nstdout: %s\nstderr: %s\n" % (
+     world.last_cmd, num, expression, what, out, err)
 
     if num == 'all':
         if cnt != total:
