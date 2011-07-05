@@ -76,7 +76,7 @@ def given_i_use_venv(step, env_name):
         pyg_dir = dn(dn(dn(__file__))) + '/'
         os.chdir(pyg_dir)
 
-        call('. %s ; python %s install' % (
+        call('. %s ; python %s develop' % (
          os.path.join(world.env_path, 'bin', 'activate'),
          os.path.join(pyg_dir, 'setup.py'),
         ), shell=True)
