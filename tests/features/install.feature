@@ -24,7 +24,7 @@ Scenario: Install misc packages
         | grin      |
         | gevent    |
 
-Scenario: Install a dev package [not supported yet, see #78]
-    Given I use "standard" environment
-    When I execute pyg install bottle==dev
-    Then the return code is 255
+#Scenario: Install a dev package [not supported yet, see #78]
+#    Given I use "standard" environment
+#    When I execute pyg install bottle==dev
+#    Then the return code is 255
