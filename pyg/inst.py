@@ -224,45 +224,64 @@ class Uninstaller(object):
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
             class FakeDist(object):
-                def __getattribute__(self, a):
+                def __init__(self, o):
+                    self._orig_o = o
+                def __getattr__(self, a):
                     if a == 'location':
                         return USER_SITE
+                    elif a == 'egg_name':
+                        return (lambda *a: self._orig_o.name + '.egg')
                     return (lambda *a: False)
-            dist = FakeDist()
+            dist = FakeDist(self)
 
         pkg_loc = dist.location
+
+        glob_folder = False
+
         if pkg_loc in ALL_SITE_PACKAGES:
-            # detect the real package location
+
+            # try to detect the real package location
             if dist.has_metadata('top_level.txt'):
                 pkg_loc = os.path.join( pkg_loc,
                     dist.get_metadata_lines('top_level.txt').next())
             else:
-                return to_del
-                #raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
-            # detect egg-info location
-            _base_name = dist.egg_name().split('-')
-            for n in range(len(_base_name) + 1):
-                egg_info_dir = os.path.join(
-                    dist.location,
-                    '-'.join(_base_name[:-n if n else None]) + '.egg-info'
-                )
-                if os.path.exists(egg_info_dir):
-                    for file in os.listdir(egg_info_dir):
-                        if any(u_re.match(file) for u_re in _uninstall_re):
-                            to_del.add(os.path.join(egg_info_dir, file))
-                    to_del.add(egg_info_dir)
-                    break
+                glob_folder = True
 
-        # finding package's files
-        if os.path.isdir(pkg_loc):
+        # detect egg-info location
+        _base_name = dist.egg_name().split('-')
+        for n in range(len(_base_name) + 1):
+            egg_info_dir = os.path.join(
+                dist.location,
+                '-'.join(_base_name[:-n if n else None]) + '.egg-info'
+            )
+            if os.path.exists(egg_info_dir):
+                for file in os.listdir(egg_info_dir):
+                    if any(u_re.match(file) for u_re in _uninstall_re):
+                        to_del.add(os.path.join(egg_info_dir, file))
+                to_del.add(egg_info_dir)
+                break
+
+        if glob_folder:
+            # track individual files inside that folder
+
             for file in os.listdir(pkg_loc):
                 if any(u_re.match(file) for u_re in _uninstall_re):
                     to_del.add(os.path.join(pkg_loc, file))
-        else:
-            for ext in '.py .pyc .pyo'.split():
-                _p = pkg_loc + ext
-                if os.path.exists(_p):
-                    to_del.add(_p)
+        else: # specific folder (non site-packages)
+            if os.path.isdir(pkg_loc):
+                to_del.add(pkg_loc)
+
+            # finding package's files into that folder
+            if os.path.isdir(pkg_loc):
+                for file in os.listdir(pkg_loc):
+                    if any(u_re.match(file) for u_re in _uninstall_re):
+                        to_del.add(os.path.join(pkg_loc, file))
+            else:
+                # single file installation
+                for ext in '.py .pyc .pyo'.split():
+                    _p = pkg_loc + ext
+                    if os.path.exists(_p):
+                        to_del.add(_p)
 
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
@@ -294,12 +313,6 @@ class Uninstaller(object):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
-
-        if not to_del and isinstance(dist, pkg_resources.Distribution):
-            if pkg_loc not in ALL_SITE_PACKAGES:
-                to_del.add(pkg_loc)
-            #else:
-                #raise RuntimeError('Unmanaged case, please fill a bug report! loc=%s, dist=%r'%(pkg_loc, dist))
         return to_del
 
     def uninstall(self):
