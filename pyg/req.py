@@ -108,16 +108,9 @@ class Requirement(object):
     def _check_bad_eggs(self, bad_eggs):
         ## Bad eggs are eggs which require a different Python version.
         ## If we don't find anything more, we check bad eggs.s
-
-        eggs = '\n'.join('\t{0}. {1}'.format(k, v[1]) for k, v in bad_eggs.iteritems())
-        nums = map(str, range(1, len(bad_eggs) + 1))
-        logger.info('Found only eggs for another Python version:\n{0}', eggs)
-        while True:
-            u = raw_input('Which one do you want to install?\n(Type the number)> ')
-            if u not in nums:
-                continue
-            self._download_and_install(*bad_eggs[int(u)])
-            break
+        txt = 'Found only eggs for another Python version, which one do you want to install'
+        choice = logger.ask(txt, choices={v[1]: v for v in bad_eggs})
+        self._download_and_install(*choice)
 
     def _download_and_install(self, url, filename, packname, hash=None):
         fobj = download(url, 'Downloading {0}'.format(self.name))
@@ -148,12 +141,12 @@ class Requirement(object):
             files = p.files()
         except (urllib2.URLError, urllib2.HTTPError) as e:
             raise InstallationError(repr(e.reason))
-        bad_eggs = {}
+        bad_eggs = []
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             for v, name, hash, url in files[pext]:
                 if pext == '.egg' and not right_egg(name):
                     if args_manager['install']['force_egg_install']:
-                        bad_eggs[len(bad_eggs) + 1] = (url, name, p.name, hash)
+                        bad_eggs.append( (url, name, p.name, hash) )
                     continue
                 if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
                     continue
