@@ -46,7 +46,7 @@ class Logger(object):
     def __init__(self,level=None):
         self.indent = 0
         self.level = level or Logger.INFO
-        self._stack = []
+        self._stack = ['']
         self.enabled = True
 
     def disable_colors(self):

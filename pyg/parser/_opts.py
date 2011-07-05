@@ -246,6 +246,8 @@ def bundle_func(args):
                     continue
                 reqs.add(line)
         return reqs
+    if not args.packages:
+        logger.fatal('Error: You must specify at least one package', exc=PygError)
     reqs = []
     if args.req_file:
         reqs = [Requirement(r) for f in args.req_file for r in get_reqs(f)]

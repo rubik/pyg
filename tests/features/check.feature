@@ -15,7 +15,7 @@ Scenario: Check Uninstalled packages
 
         Examples:
             | pkg       |
-            | pottle    |
+            | bottle    |
             | flask     |
             | ZODB3     |
             | gevent    |

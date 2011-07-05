@@ -526,7 +526,8 @@ class Bundler(object):
         self.bundled.append('{0}=={1}'.format(name(d_name).split('-')[0], version))
         return arch_name
 
-    def _clean(self, dir):
+    @staticmethod
+    def _clean(dir):
         '''
         Clean the `dir` directory: it removes all top-level files, leaving only sub-directories.
         '''
@@ -536,7 +537,7 @@ class Bundler(object):
             logger.debug('debug: Removing: {0}', file)
             os.remove(os.path.join(dir, file))
 
-    def bundle(self):
+    def bundle(self, include_manifest=True, build_dir=True, additional_files=[]):
         '''
         Create a bundle of the specified package:
 
@@ -544,7 +545,7 @@ class Bundler(object):
             2. Clean the build directory
             3. Collect the packages in a single zip file (bundle)
             4. Add the manifest file
-            5. Move the bundle from the built dir to the destination
+            5. Move the bundle from the build dir to the destination
         '''
 
         def _add_to_archive(zfile, dir):
@@ -555,13 +556,19 @@ class Bundler(object):
                 elif os.path.isdir(path):
                     _add_to_archive(zfile, path)
 
-        with TempDir() as tempdir:
+        with TempDir() as tempdir, TempDir() as bundle_dir:
             ## Step 1: we create the `build` directory
+            ## If you choose to create a bundle without the build directory,
+            ## be aware that your bundle will not be compatible with Pip.
             #####
-            build = os.path.join(tempdir, 'build')
-            os.mkdir(build)
+            if build_dir:
+                build = os.path.join(tempdir, 'build')
+                os.mkdir(build)
+            else:
+                build = tempdir
+            tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
 
-            ## Step 2: we recursively download all required packages
+            ## Step 2: we *recursively* download all required packages
             #####
             reqs = list(self.reqs)
             already_downloaded = set()
@@ -585,7 +592,7 @@ class Bundler(object):
                             logger.info('Found: {0}', requirement)
                             reqs.append(Requirement(requirement))
                 except KeyError:
-                    logger.debug('requires.txt not found for {0}', dist)
+                    logger.debug('debug: requires.txt not found for {0}', dist)
                 try:
                     as_req = dist.as_req
                 except KeyError:
@@ -603,17 +610,25 @@ class Bundler(object):
             ## in a single file (zipped)
             #####
             logger.info('Adding packages to the bundle')
-            bundle = zipfile.ZipFile(os.path.join(tempdir, self.bundle_name), mode='w')
+            bundle = zipfile.ZipFile(tmp_bundle, mode='w')
             _add_to_archive(bundle, build)
 
             ## Step 4: add the manifest file
-            logger.info('Adding the manifest file')
-            bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
+            if include_manifest:
+                logger.info('Adding the manifest file')
+                bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
+
+            # Additional files to add
+            for path in additional_files:
+                try:
+                    _add_to_archive(bundle, path)
+                except (IOError, OSError):
+                    logger.debug('debug: Error while adding an additional file: {0}', path)
             bundle.close()
 
             ## Last step: move the bundle to the current working directory
             dest = os.path.join(os.getcwd(), self.bundle_name)
             if os.path.exists(dest):
-                logger.debug('dest already exists: removing it')
+                logger.debug('debug: dest already exists, removing it')
                 os.remove(dest)
-            shutil.move(os.path.join(tempdir, self.bundle_name), os.getcwd())
+            shutil.move(tmp_bundle, os.getcwd())

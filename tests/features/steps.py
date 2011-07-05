@@ -6,7 +6,7 @@ import tempfile
 import itertools
 from glob import glob
 from subprocess import Popen, PIPE, call
-import lettuce
+
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
 
