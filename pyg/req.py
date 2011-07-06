@@ -140,7 +140,7 @@ class Requirement(object):
         try:
             files = p.files()
         except (urllib2.URLError, urllib2.HTTPError) as e:
-            raise InstallationError(repr(e.reason))
+            raise InstallationError(repr(e.reason) if hasattr(e, 'reason') else e.msg)
         bad_eggs = []
         for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
             for v, name, hash, url in files[pext]:

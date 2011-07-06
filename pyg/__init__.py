@@ -33,7 +33,7 @@ def main():
     except urllib2.HTTPError as e:
         logger.exit('HTTPError: {0}'.format(e.msg))
     except urllib2.URLError as e:
-        logger.exit('urllib error: {0}'.format(e.reason))
+        logger.exit('urllib error: {0}'.format(e.reason if hasattr(e, 'reason') else e.msg))
     except Exception as e:
         if logger.level == logger.DEBUG:
             raise
