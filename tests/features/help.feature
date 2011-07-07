@@ -1,7 +1,7 @@
 Feature: Be able to get some help
 
 Scenario: Global help
-    Given I use "standard" environment
+    Given I use "standard-2.7" environment
 
     Given I execute pyg <opt>
     Then one line matches usage:
@@ -16,7 +16,7 @@ Scenario: Global help
         | --help    |
 
 Scenario: Specific help
-    Given I use "standard" environment
+    Given I use "standard-2.7" environment
 
     Given I execute pyg <cmd> <opt>
     Then one line matches usage:

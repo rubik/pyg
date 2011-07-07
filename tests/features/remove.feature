@@ -1,7 +1,7 @@
 Feature: Be able to remove packages
 
 Scenario: Install then Uninstall <pkg>
-    Given I use "standard" environment
+    Given I use "standard-2.7" environment
     Given I execute pyg check <pkg>
     Then a single line matches False
     Then the return code is 0

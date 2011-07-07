@@ -1,7 +1,7 @@
 Feature: Some basic installation scenarios
 
 Scenario: Install hg-git
-    Given I use "standard" environment
+    Given I use "standard-2.7" environment
     When I execute pyg check hg-git
     Then one line matches False
     Then the return code is 0
@@ -12,7 +12,7 @@ Scenario: Install hg-git
     Then the return code is 0
 
 Scenario: Install misc packages
-    Given I use "standard" environment
+    Given I use "standard-2.7" environment
     When I execute pyg install <pkg>
     Then the return code is 0
 
@@ -25,6 +25,6 @@ Scenario: Install misc packages
         | gevent    |
 
 #Scenario: Install a dev package [not supported yet, see #78]
-#    Given I use "standard" environment
+#    Given I use "standard-2.7" environment
 #    When I execute pyg install bottle==dev
 #    Then the return code is 255
