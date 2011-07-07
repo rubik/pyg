@@ -2,6 +2,7 @@
 *.komodoproject
 *~
 *.egg
+*.tar.gz
 docs/_build
 build/
 dist/

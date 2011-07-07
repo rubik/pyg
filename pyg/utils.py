@@ -257,16 +257,18 @@ class FileMapper(collections.defaultdict):
 
 
 class TempDir(object):
-    def __init__(self, prefix='pyg-', suffix='-record'):
+    def __init__(self, prefix='pyg-', suffix='-record', dont_remove=False):
         self.prefix = prefix
         self.suffix = suffix
+        self.dont_remove = dont_remove
 
     def __enter__(self):
         self.tempdir = tempfile.mkdtemp(self.suffix, self.prefix)
         return self.tempdir
 
     def __exit__(self, *args):
-        shutil.rmtree(self.tempdir)
+        if not self.dont_remove:
+            shutil.rmtree(self.tempdir)
 
 
 class ChDir(object):
@@ -285,7 +287,7 @@ class ChDir(object):
 ## ZipFile subclass for Python < 2.7
 ## In Python 2.6 zipfile.ZipFile and tarfile.TarFile do not have __enter__ and
 ## __exit__ methods
-## EDIT: Removed TarFile since it causes problems
+## EDIT: Removed TarFile since it caused problems
 
 class ZipFile(zipfile.ZipFile):
     def __enter__(self):

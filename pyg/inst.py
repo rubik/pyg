@@ -493,13 +493,17 @@ class Bundler(object):
 {0}
 '''
 
-    def __init__(self, reqs, bundle_name, exclude=[]):
+    def __init__(self, reqs, bundle_name, exclude=[], dest=None, callback=None):
         self.reqs = reqs
         if not bundle_name.endswith(('.pyb', '.pybundle')):
             bundle_name += '.pyb'
         self.bundle_name = bundle_name
         self.bundled = [] # To keep track of the all bundled packages
         self.exclude = exclude
+        self.destination = dest or os.getcwd()
+        # callback is a function called after each package is downloaded
+        # it should accept one argument, the SDist object.
+        self.callback = callback or (lambda a:a)
 
     def _download(self, dir, req):
         '''
@@ -525,7 +529,7 @@ class Bundler(object):
             logger.debug('debug: Removing: {0}', file)
             os.remove(os.path.join(dir, file))
 
-    def bundle(self, include_manifest=True, build_dir=True, additional_files=[]):
+    def bundle(self, include_manifest=True, build_dir=True, additional_files=[], add_func=None):
         '''
         Create a bundle of the specified package:
 
@@ -545,7 +549,7 @@ class Bundler(object):
                     _add_to_archive(zfile, path)
 
         with TempDir() as tempdir, TempDir() as bundle_dir:
-            ## Step 1: we create the `build` directory
+            ## Step 0: we create the `build` directory
             ## If you choose to create a bundle without the build directory,
             ## be aware that your bundle will not be compatible with Pip.
             #####
@@ -556,7 +560,7 @@ class Bundler(object):
                 build = tempdir
             tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
 
-            ## Step 2: we *recursively* download all required packages
+            ## Step 1: we *recursively* download all required packages
             #####
             reqs = list(self.reqs)
             already_downloaded = set()
@@ -570,15 +574,20 @@ class Bundler(object):
                 logger.indent = 8
                 try:
                     dist = SDist(self._download(build, r))
+                    self.callback(dist)
                 except ConfigParser.MissingSectionHeaderError:
                     continue
                 try:
                     logger.info('Looking for {0} dependencies', r)
                     logger.indent += 8
+                    found = False
                     for requirement in dist.file('requires.txt'):
                         if requirement not in already_downloaded:
                             logger.info('Found: {0}', requirement)
                             reqs.append(Requirement(requirement))
+                            found = True
+                    if not found:
+                        logger.info('None found')
                 except KeyError:
                     logger.debug('debug: requires.txt not found for {0}', dist)
                 try:
@@ -589,12 +598,12 @@ class Bundler(object):
             logger.indent = 0
             logger.success('Finished processing dependencies')
 
-            ## Step 3: we remove all files in the build directory, so we make sure
+            ## Step 2: we remove all files in the build directory, so we make sure
             ## that when we collect packages we collect only dirs
             #####
             self._clean(build)
 
-            ## Step 4: we collect the downloaded packages and bundle all together
+            ## Step 3: we collect the downloaded packages and bundle all together
             ## in a single file (zipped)
             #####
             logger.info('Adding packages to the bundle')
@@ -612,11 +621,13 @@ class Bundler(object):
                     _add_to_archive(bundle, path)
                 except (IOError, OSError):
                     logger.debug('debug: Error while adding an additional file: {0}', path)
+            if add_func is not None:
+                _add_to_archive(bundle, add_func())
             bundle.close()
 
             ## Last step: move the bundle to the current working directory
-            dest = os.path.join(os.getcwd(), self.bundle_name)
+            dest = os.path.join(self.destination, self.bundle_name)
             if os.path.exists(dest):
                 logger.debug('debug: dest already exists, removing it')
                 os.remove(dest)
-            shutil.move(tmp_bundle, os.getcwd())
+            shutil.move(tmp_bundle, self.destination)
