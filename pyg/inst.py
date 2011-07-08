@@ -502,8 +502,8 @@ class Bundler(object):
         self.exclude = exclude
         self.destination = dest or os.getcwd()
         # callback is a function called after each package is downloaded
-        # it should accept one argument, the SDist object.
-        self.callback = callback or (lambda a:a)
+        # it should accept two arguments, the package name and the SDist object.
+        self.callback = callback or (lambda *a:a)
 
     def _download(self, dir, req):
         '''
@@ -513,6 +513,7 @@ class Bundler(object):
         manager = ReqManager(req, ('.tar.gz', '.tar.bz2', '.zip'))
         manager.download(dir)
         d_name, version = manager.downloaded_name, manager.downloaded_version
+        req.version = version
         arch_name = os.path.join(dir, d_name)
         unpack(arch_name)
         self.bundled.append('{0}=={1}'.format(name(d_name).split('-')[0], version))
@@ -566,7 +567,7 @@ class Bundler(object):
             already_downloaded = set()
             while reqs:
                 r = reqs.pop()
-                if any(rq.name == r.name and rq.match(r.version) for rq in self.exclude):
+                if any(r == rq for rq in self.exclude):
                     logger.info('Excluding {0}', r)
                     continue
                 logger.indent = 0
@@ -574,7 +575,7 @@ class Bundler(object):
                 logger.indent = 8
                 try:
                     dist = SDist(self._download(build, r))
-                    self.callback(dist)
+                    self.callback(r, dist)
                 except ConfigParser.MissingSectionHeaderError:
                     continue
                 try:
@@ -586,6 +587,7 @@ class Bundler(object):
                             logger.info('Found: {0}', requirement)
                             reqs.append(Requirement(requirement))
                             found = True
+                    # XXX: Does not work, don't know why!
                     if not found:
                         logger.info('None found')
                 except KeyError:

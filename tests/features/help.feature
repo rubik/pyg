@@ -22,7 +22,9 @@ Scenario: Specific help
     Then one line matches usage:
     Then one line matches optional arguments:
     Then the return code is 0
+
     Examples:
+
         | cmd      | opt       |
         | install  | -h        |
         | install  | --help    |
