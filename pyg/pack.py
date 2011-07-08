@@ -162,5 +162,5 @@ sys.path.insert(0, {0!r})
 
 
 if __name__ == '__main__':
-    p = Packer(Requirement(sys.argv[1]), 'pyg_test_pack', os.path.expanduser('~'))
+    p = Packer(Requirement(sys.argv[1]), sys.argv[1], os.path.abspath(os.path.curdir))
     p.gen_pack()
