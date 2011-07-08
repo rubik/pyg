@@ -146,5 +146,6 @@ packages = [
 
 
 if __name__ == '__main__':
-    p = Packer(Requirement('pyg'), 'pyg_test_pack', os.path.expanduser('~'))
+    p = Packer(Requirement(sys.argv[1]), sys.argv[1], os.path.abspath(os.path.curdir))
     p.gen_pack()
+
