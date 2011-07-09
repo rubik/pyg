@@ -71,27 +71,27 @@ Install packages from a bundle is dead simple, and you don't need internet acces
 
 For example, here is ``Pyg`` bundle::
 
-    $ pyg bundle pyg.pyb pyg==0.4
-    pyg==0.4:
-            Retrieving data for pyg
-            Writing data into pyg-0.4.tar.gz
+    $ pyg bundle pyg.pyb pyg
+    pyg:
+            Retrieving data for pyg [100% - 472.3 Kb / 472.3 Kb]               
+            Writing data into pyg-0.6.tar.gz
             pyg downloaded successfully
             Looking for pyg dependencies
                     Found: setuptools
-                    Found: pkgtools>=0.3.1
+                    Found: pkgtools>=0.4
                     Found: argh>=0.14
     argh>=0.14:
-            Retrieving data for argh
+            Retrieving data for argh [100% - 11.4 Kb / 11.4 Kb]             
             Writing data into argh-0.14.0.tar.gz
             argh downloaded successfully
             Looking for argh>=0.14 dependencies
-    pkgtools>=0.3.1:
-            Retrieving data for pkgtools
-            Writing data into pkgtools-0.3.1.tar.gz
+    pkgtools>=0.4:
+            Retrieving data for pkgtools [100% - 28.7 Kb / 28.7 Kb]              
+            Writing data into pkgtools-0.6.tar.gz
             pkgtools downloaded successfully
-            Looking for pkgtools>=0.3.1 dependencies
+            Looking for pkgtools>=0.4 dependencies
     setuptools:
-            Retrieving data for setuptools
+            Retrieving data for setuptools [100% - 250.8 Kb / 250.8 Kb]
             Writing data into setuptools-0.6c11.tar.gz
             setuptools downloaded successfully
             Looking for setuptools dependencies

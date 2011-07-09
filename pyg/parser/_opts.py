@@ -8,7 +8,7 @@ from pkgtools.pypi import PyPIXmlRpc
 from pyg.vcs import vcs
 from pyg.log import logger
 from pyg.req import Requirement
-from pyg.freeze import freeze, list_releases
+from pyg.freeze import freeze, list_releases, site_info
 from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
@@ -143,15 +143,16 @@ def check_func(name, info=False):
         except pkg_resources.DistributionNotFound:
             logger.info(False)
 
-def freeze_func(args):
+def site_func(no_info, count, file):
     f = freeze()
-    if args_manager['freeze']['count']:
-        sys.stdout.write(str(len(freeze())) + '\n')
+    if count:
+        sys.stdout.write(str(len(f)) + '\n')
         return
     f = '\n'.join(f) + '\n'
-    if args_manager['freeze']['file']:
-        path = args.file or args_manager['freeze']['file']
-        with open(os.path.abspath(path), 'w') as req_file:
+    if not no_info:
+        f = site_info() + f
+    if file:
+        with open(os.path.abspath(file), 'w') as req_file:
             req_file.write(f)
     return sys.stdout.write(f)
 

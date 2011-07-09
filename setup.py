@@ -7,7 +7,7 @@ use_setuptools()
 from setuptools import setup
 
 
-requires = ['setuptools', 'pkgtools', 'argh']
+requires = ['setuptools', 'pkgtools>=0.6.1', 'argh']
 if sys.version_info[:2] < (2, 7):
     requires.append('argparse>=1.2.1')
 

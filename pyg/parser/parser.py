@@ -91,8 +91,8 @@ def init_parser(version=None):
         Remove a package
         '''
 
-        args_manager['remove']['yes'] = args.yes
-        args_manager['remove']['info'] = args.info
+        args_manager['remove']['yes'] = bool(args.yes)
+        args_manager['remove']['info'] = bool(args.info)
         opts.remove_func(args.packname, args.req_file,
                          args_manager['remove']['yes'], args_manager['remove']['info'])
 
@@ -105,17 +105,20 @@ def init_parser(version=None):
         opts.list_func(packname)
 
     @arg('-c', '--count', action='store_true', help='Only returns requirements count')
+    @arg('-n', '--no-info', action='store_true', help='Do not add site information')
     @arg('-f', '--file', metavar='<path>', help='Writes requirements into the specified file')
-    def freeze(args):
+    def site(args):
         '''
-        Freeze current environment (i.e. installed packages)
+        Show installed packages and some site information
         '''
 
-        if args.count:
-            args_manager['freeze']['count'] = True
+        args_manager['site']['count'] = bool(args.count)
+        args_manager['site']['no_info'] = bool(args.no_info)
         if args.file:
-            args_manager['freeze']['file'] = args.file
-        opts.freeze_func(args)
+            args_manager['site']['file'] = args.file
+        count, no_info, file = args_manager['site']['count'], \
+            args_manager['site']['no_info'], args_manager['site']['file']
+        opts.site_func(count, no_info, file)
 
     @command
     def link(path):
@@ -132,8 +135,7 @@ def init_parser(version=None):
         Remove a previously added directory (with link) from PYTHONPATH
         '''
 
-        if args.all:
-            args_manager['unlink']['all'] = True
+        args_manager['unlink']['all'] = bool(args.all)
         opts.unlink_func(args)
 
     @arg('query', nargs='+')
@@ -177,8 +179,7 @@ def init_parser(version=None):
         Check for updates for installed packages
         '''
 
-        if args.yes:
-            args_manager['update']['yes'] = True
+        args_manager['update']['yes'] = bool(args.yes)
         opts.update_func(args)
 
     @command
@@ -208,7 +209,7 @@ def init_parser(version=None):
 
         return
 
-    parser.add_commands([install, remove, freeze, link, unlink, list,
+    parser.add_commands([install, remove, site, link, unlink, list,
                          search, check, download, update, shell, bundle, help])
     parser.formatter_class = _formatter(parser)
     if parser.parse_args(sys.argv[1:]).no_colors:

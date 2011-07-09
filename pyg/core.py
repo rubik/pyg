@@ -336,8 +336,9 @@ class ArgsManager(object):
             'yes': False,
             'info': False,
         },
-        'freeze': {
+        'site': {
             'count': False,
+            'no_info': False,
             'file': None
         },
         'unlink': {

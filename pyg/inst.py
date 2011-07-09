@@ -363,6 +363,7 @@ class Updater(object):
             self.working_set = list(iter(pkg_resources.working_set))
             logger.info('{0} packages loaded', len(self.working_set))
         self.removed = {}
+        self.yes = args_manager['update']['yes']
 
     def remove_files(self, package):
         uninst = Uninstaller(package, yes=True)
@@ -502,7 +503,7 @@ class Bundler(object):
         self.exclude = exclude
         self.destination = dest or os.getcwd()
         # callback is a function called after each package is downloaded
-        # it should accept two arguments, the package name and the SDist object.
+        # it should accept two arguments, the requirement and the SDist object.
         self.callback = callback or (lambda *a:a)
 
     def _download(self, dir, req):
