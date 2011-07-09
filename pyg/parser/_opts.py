@@ -143,7 +143,7 @@ def check_func(name, info=False):
         except pkg_resources.DistributionNotFound:
             logger.info(False)
 
-def site_func(no_info, count, file):
+def site_func(count, no_info, file):
     f = freeze()
     if count:
         sys.stdout.write(str(len(f)) + '\n')
