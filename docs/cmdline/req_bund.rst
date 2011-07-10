@@ -128,7 +128,7 @@ You can download the generated example bundle :download:`here <../files/pyg.pyb>
 
     Specify packages to exclude from the bundle (can be repeated many times)::
 
-        $ pyg bundle pyg.pyb pyg -e argh -e pkgtools<=0.3
+        $ pyg bundle pyg.pyb pyg -e argh -e "pkgtools<=0.3"
 
 
 .. option:: -d, --use-develop
@@ -176,6 +176,56 @@ Packs
 .. versionadded:: 0.7
 
 Packs are zip files containing an egg (which includes all necessary packages) and a Python executable file (:file:`run.py`).
+The :command:`pack` command has the following syntax::
+
+    pyg pack {packname} {package} [{options}, ...]
+
+Its name can either have the ``.zip`` extension or not.
+
 You can create a pack with the following command::
 
-    TODO
+    $ pyg pack pyg pyg -d pyg
+    Generating the bundle...
+    pyg:
+            Retrieving data for pyg [100% - 472.3 Kb / 472.3 Kb]               
+            Writing data into pyg-0.6.tar.gz
+            pyg downloaded successfully
+            Looking for pyg dependencies
+                    Found: setuptools
+                    Found: pkgtools>=0.4
+                    Found: argh>=0.14
+    argh>=0.14:
+            Retrieving data for argh [100% - 11.4 Kb / 11.4 Kb]             
+            Writing data into argh-0.14.0.tar.gz
+            argh downloaded successfully
+            Looking for argh>=0.14 dependencies
+    pkgtools>=0.4:
+            Retrieving data for pkgtools [100% - 27.2 Kb / 27.2 Kb]              
+            Writing data into pkgtools-0.6.1.tar.gz
+            pkgtools downloaded successfully
+            Looking for pkgtools>=0.4 dependencies
+    setuptools:
+            Retrieving data for setuptools [100% - 250.8 Kb / 250.8 Kb] 
+            Writing data into setuptools-0.6c11.tar.gz
+            setuptools downloaded successfully
+            Looking for setuptools dependencies
+    Finished processing dependencies
+    Adding packages to the bundle
+    Generating EGG-INFO...
+
+
+.. option:: --dest <path>
+
+    The destination. It can be either a relative path or an absolute one.
+
+.. option:: -e <requirement>, --exclude <requirement>
+
+    Specify packages to exclude from the pack (can be repeated many times)::
+
+        $ pyg pack pyg.zip pyg -e argh -e "pkgtools<=0.3"
+
+.. option:: -d, --use-develop
+
+    If specified, for every package look for a local (*develop*) package. If it does not find it, it will download it from PyPI.
+
+    (See also :option:`bundle -d`.)

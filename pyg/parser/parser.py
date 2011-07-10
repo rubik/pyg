@@ -208,7 +208,9 @@ def init_parser(version=None):
 
     @arg('packname', help='Name of the pack to create')
     @arg('package', help='Name of the package to pack')
-    @arg('-d', '--dir', metavar='<path>', default='.', help='Destination')
+    @arg('--dest', metavar='<path>', default='.', help='Destination')
+    @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
+    @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
     def pack(args):
         '''
         Create packs
