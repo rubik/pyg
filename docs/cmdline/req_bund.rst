@@ -166,6 +166,8 @@ You can download the generated example bundle :download:`here <../files/pyg.pyb>
         Adding the manifest file
 
 
+.. _pack_doc:
+
 Packs
 -----
 

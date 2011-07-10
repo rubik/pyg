@@ -8,7 +8,7 @@ CHANGELOG
 + #70: Upgrade :class:`pyg.req.Requirement` to honor setuptools extras.
 
 0.8 (planning)
--------------
+--------------
 
 + #78: Allow installing packages from *dev* version: ``pyg==dev``.
 + #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.

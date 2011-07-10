@@ -57,7 +57,7 @@ Pyg can uninstall most installed packages with::
 It tries to detect the directory where the packages have been installed and delete them.
 Pyg can uninstall all packages, except those that have been installed in editable mode.
 
-See also: :ref:`uninst`
+See also: :ref:`uninst`.
 
 
 Package upgrading
@@ -66,7 +66,7 @@ Package upgrading
 This is a feature unique to Pyg: by running ``pyg update`` you can check all your installed packages and upgrade those for which there is a newer release.
 Pyg collects all packages that can upgrade and then check for updates.
 
-See also: :ref:`upd`
+See also: :ref:`upd`.
 
 Pyg and virtualenv
 ------------------
@@ -157,7 +157,7 @@ You can launch Pyg Shell with::
 
 and it will open a shell where you can use all Pyg's command. This is particularly useful on when you need root privileges to installs packages (e.g. Unix): if you need to execute many commands you can fire up the shell and then use Pyg without worrying about root privileges.
 
-See also: :ref:`shell`
+See also: :ref:`shell`.
 
 
 Bundles
@@ -173,16 +173,17 @@ In addition to that, you can easily create bundles with Pyg. For example, if you
 
     $ pyg bundle pyg-bundle.pyb pyg
 
-See also: :ref:`bundles`
+See also: :ref:`bundles`.
 
-.. _packs
+.. _packs:
 
 Packs
 -----
 
 .. versionadded:: 0.7
 
-Packs are very similar to bundles, except that they can contain Python executables too. Packs were invented by Fabien Devaux for Zicbee (check it at PyPI: `Zicbee <http://pypi.python.org/pypi/zicbee`_).
+Packs are very similar to bundles, except that they can contain Python executables too. Packs were invented by Fabien Devaux for the Zicbee project (check it at PyPI: `Zicbee <http://pypi.python.org/pypi/zicbee>`_).
 
-A pack contains a folder containing an egg (which includes all necessary packages) and a :file:`run.py` file. You can unpack the pack and then run the executable without touching the egg!
-See also: :ref:`pack_doc`
+A pack contains a folder in which there is an egg (with all necessary packages) and a :file:`run.py` file. You can unpack the pack and then run the executable without touching the egg! Like a bundle, a pack does not require an internet connection to work: all required package are inside the zipped egg.
+
+See also: :ref:`pack_doc`.
