@@ -100,7 +100,7 @@ For example, here is ``Pyg`` bundle::
     Adding the manifest file
 
 
-You can download the generated bundle :download:`here <../files/pyg.pyb>` (direct link to download).
+You can download the generated example bundle :download:`here <../files/pyg.pyb>` (direct link to download).
 
 .. option:: -r <path>, --req-file <path>
 
@@ -114,6 +114,19 @@ You can download the generated bundle :download:`here <../files/pyg.pyb>` (direc
 
     Specify packages to exclude from the bundle (can be repeated many times)::
 
-        $ pyg bundle pyg -e argh -e pkgtools<=0.3
+        $ pyg bundle pyg.pyb pyg -e argh -e pkgtools<=0.3
 
     .. versionadded:: 0.5
+
+
+Packs
+-----
+
+.. program:: pack
+
+.. versionadded:: 0.7
+
+Packs are zip files containing an egg (which includes all necessary packages) and a Python executable file (:file:`run.py`).
+You can create a pack with the following command::
+
+    TODO

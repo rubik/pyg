@@ -155,7 +155,7 @@ You can launch Pyg Shell with::
 
     $ pyg shell
 
-and it will open a shell where you can use all Pyg's command. This is particularly useful on system where you need root privileges to installs packages (e.g. Unix): if you need to execute many commands you can fire up the shell and then use Pyg without worrying about root privileges.
+and it will open a shell where you can use all Pyg's command. This is particularly useful on when you need root privileges to installs packages (e.g. Unix): if you need to execute many commands you can fire up the shell and then use Pyg without worrying about root privileges.
 
 See also: :ref:`shell`
 
@@ -174,3 +174,15 @@ In addition to that, you can easily create bundles with Pyg. For example, if you
     $ pyg bundle pyg-bundle.pyb pyg
 
 See also: :ref:`bundles`
+
+.. _packs
+
+Packs
+-----
+
+.. versionadded:: 0.7
+
+Packs are very similar to bundles, except that they can contain Python executables too. Packs were invented by Fabien Devaux for Zicbee (check it at PyPI: `Zicbee <http://pypi.python.org/pypi/zicbee`_).
+
+A pack contains a folder containing an egg (which includes all necessary packages) and a :file:`run.py` file. You can unpack the pack and then run the executable without touching the egg!
+See also: :ref:`pack_doc`
