@@ -8,6 +8,7 @@ from pkgtools.pypi import PyPIXmlRpc
 from pyg.vcs import vcs
 from pyg.log import logger
 from pyg.req import Requirement
+from pyg.pack import Packer
 from pyg.freeze import freeze, list_releases, site_info
 from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
@@ -255,6 +256,12 @@ def bundle_func(packages, bundlename, exclude, req_file, develop):
     exclude = [Requirement(r) for r in (exclude or [])]
     b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, use_develop=develop)
     b.bundle()
+
+def pack_func(package, packname, dir):
+    dir = os.path.abspath(dir)
+    if packname.endswith('.zip'):
+        packname = packname[:-4]
+    Packer(Requirement(package), packname, dir).gen_pack()
 
 def shell_func():
     check_and_exit()

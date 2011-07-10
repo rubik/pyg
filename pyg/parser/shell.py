@@ -10,7 +10,7 @@ __all__ = ['PygShell']
 
 
 SUPPORTED_COMMANDS = ['install', 'remove', 'list', 'freeze', 'link', 'unlink',
-                      'search', 'download', 'check', 'update', 'bundle']
+                      'search', 'download', 'check', 'update', 'bundle', 'pack']
 ADDITIONAL_COMMANDS = ['cd', 'pwd', 'ls']
 HELP = '''Supported commands:
 ===================

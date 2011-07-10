@@ -191,7 +191,7 @@ def init_parser(version=None):
         opts.shell_func()
 
     @arg('bundlename', help='Name of the bundle to create')
-    @arg('packages', nargs='*', help='Name of the package to bundle')
+    @arg('packages', nargs='*', help='Name of the package(s) to bundle')
     @arg('-r', '--req-file', action='append', metavar='<path>', help='Requirement files which contains packages to bundle')
     @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
     @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
@@ -206,6 +206,16 @@ def init_parser(version=None):
         exclude, use_develop = args_manager['bundle']['exclude'], args_manager['bundle']['use_develop']
         opts.bundle_func(args.packages, args.bundlename, exclude, args.req_file, use_develop)
 
+    @arg('packname', help='Name of the pack to create')
+    @arg('package', help='Name of the package to pack')
+    @arg('-d', '--dir', metavar='<path>', default='.', help='Destination')
+    def pack(args):
+        '''
+        Create packs
+        '''
+
+        return opts.pack_func(args.package, args.packname, args.dir)
+
     @command
     def help():
         '''
@@ -214,7 +224,7 @@ def init_parser(version=None):
 
         return
 
-    parser.add_commands([install, remove, site, link, unlink, list,
+    parser.add_commands([install, remove, site, link, unlink, list, pack,
                          search, check, download, update, shell, bundle, help])
     parser.formatter_class = _formatter(parser)
     if parser.parse_args(sys.argv[1:]).no_colors:

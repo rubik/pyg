@@ -9,6 +9,7 @@ import glob
 import shutil
 import platform
 
+from pyg.log import logger
 from pyg.req import Requirement
 from pyg.web import highest_version
 from pyg.inst import Bundler
@@ -90,6 +91,7 @@ sys.path.insert(0, {0!r})
     def _mk_egg_info(self):
         ## This function should return the EGG-INFO path
 
+        logger.info('Generating EGG-INFO...')
         with TempDir(dont_remove=True) as tempdir:
             egg_info = os.path.join(tempdir, 'EGG-INFO')
             os.mkdir(egg_info)
@@ -143,6 +145,7 @@ sys.path.insert(0, {0!r})
 
     def gen_pack(self):
         with TempDir() as tempdir:
+            logger.info('Generating the bundle...')
             b = Bundler([self.req], self.bundle_name, dest=tempdir, callback=self._bundle_callback)
             b.bundle(include_manifest=False, build_dir=False, add_func=self._mk_egg_info)
 
