@@ -6,51 +6,63 @@ Requirement files and bundles
 Freezing requirements
 ---------------------
 
+.. versionchanged:: 0.7
+    From Pyg v0.7 onwards, this command has been renamed ``pyg site``.
+
 When you launch::
 
-    $ pyg freeze
+    $ pyg site
 
 Pyg tries to detect all installed packages and prints requirements on Standard Output::
 
-    BeautifulSoup==3.2.0
+    # Python version: '2.7.1+ (r271:86832, Apr 11 2011, 18:05:24) \n[GCC 4.5.2]'
+    # Python version info: '2.7.1.final.0'
+    # Python Prefix: '/usr'
+    # Platform: 'linux-i686'
+    # Pyg version: '0.6'
+    
+    Brlapi==0.5.5
     BzrTools==2.3.1
-    Fabric==0.9.3
-    Jinja2==2.5.5
-    Logbook==0.3
-    Mako==0.3.6
-    MarkupSafe==0.9.2
-    PAM==0.4.2
-    Pygments==1.4
-    SQLAlchemy==0.6.4
-    Sphinx==1.0.7
+    Cython==0.14.1
     ...
-    pytz==2010b
-    simplejson==2.1.2
-    system_service==0.1.6
-    ubuntu_dev_tools==0.120
-    ufw==0.30.0_3ubuntu1
-    unattended_upgrades==0.1
-    urllib3==0.3.1
     wadllib==1.1.8
-    wsgi_intercept==0.4
+    wsgi-intercept==0.4
+    wsgiref==0.1.2
     xkit==0.0.0
     zope.interface==3.6.1
 
-.. program:: freeze
+Note that the first lines -- information about the site -- are commented, so that if they're written into a requirement file, they will be ignored.
+
+.. program:: site
 
 .. option:: -f <path>, --file <path>
 
     Write requirements into the specified file.
     Equivalent to::
 
-        $ pyg freeze > reqfile.txt
+        $ pyg site > reqfile.txt
 
 .. option:: -c, --count
 
     Return the number of installed packages::
 
-        $ pyg freeze -c
+        $ pyg site -c
         55
+
+.. option:: -n, --no-info
+
+    Do not add site information::
+
+        $ pyg site -n
+        Brlapi==0.5.5
+        BzrTools==2.3.1
+        Cython==0.14.1
+        ...
+        wadllib==1.1.8
+        wsgi-intercept==0.4
+        wsgiref==0.1.2
+        xkit==0.0.0
+        zope.interface==3.6.1
 
 .. _bundles:
 
@@ -104,19 +116,54 @@ You can download the generated example bundle :download:`here <../files/pyg.pyb>
 
 .. option:: -r <path>, --req-file <path>
 
+    .. versionadded:: 0.5
+
     Specify requirement files containing packages to add. This option can be repeated many times::
 
         $ pyg bundle bundlename.pybundle -r myreqs.txt -r other_reqs ...
 
-    .. versionadded:: 0.5
-
 .. option:: -e <requirement>, --exclude <requirement>
+
+    .. versionadded:: 0.5
 
     Specify packages to exclude from the bundle (can be repeated many times)::
 
         $ pyg bundle pyg.pyb pyg -e argh -e pkgtools<=0.3
 
-    .. versionadded:: 0.5
+
+.. option:: -d, --use-develop
+
+    .. versionadded:: 0.7
+
+    If specified, for every package look for a local (*develop*) package. If it does not find it, it will download it from PyPI::
+
+        $ pyg bundle pyg pyg -d
+        pyg:
+                Looking for a local package...
+                Looking for pyg dependencies
+                        Found: setuptools
+                        Found: pkgtools>=0.6.1
+                        Found: argh
+        argh:
+                Looking for a local package...
+                Cannot find the location of argh
+                Retrieving data for argh [100% - 11.4 Kb / 11.4 Kb]             
+                Writing data into argh-0.14.0.tar.gz
+                argh downloaded successfully
+                Looking for argh dependencies
+        pkgtools>=0.6.1:
+                Looking for a local package...
+                Looking for pkgtools>=0.6.1 dependencies
+        setuptools:
+                Looking for a local package...
+                Cannot find the location of setuptools
+                Retrieving data for setuptools [100% - 250.8 Kb / 250.8 Kb] 
+                Writing data into setuptools-0.6c11.tar.gz
+                setuptools downloaded successfully
+                Looking for setuptools dependencies
+        Finished processing dependencies
+        Adding packages to the bundle
+        Adding the manifest file
 
 
 Packs
