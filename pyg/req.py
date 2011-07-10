@@ -66,6 +66,8 @@ class Requirement(object):
         return Version(''.join(v).strip('.')) ## FIXME do we really need .strip() ?
 
     def match(self, v):
+        if v is None:
+            return True
         return self.OPMAP[self.op](v, self.version)
 
     #def best_match(self, reqs):

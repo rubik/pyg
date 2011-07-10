@@ -252,7 +252,8 @@ def bundle_func(packages, bundlename, exclude, req_file, develop):
     reqs = []
     if req_file:
         reqs = [Requirement(r) for f in req_file for r in get_reqs(f)]
-    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude or [], use_develop=develop)
+    exclude = [Requirement(r) for r in (exclude or [])]
+    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, use_develop=develop)
     b.bundle()
 
 def shell_func():
