@@ -193,13 +193,18 @@ def init_parser(version=None):
     @arg('bundlename', help='Name of the bundle to create')
     @arg('packages', nargs='*', help='Name of the package to bundle')
     @arg('-r', '--req-file', action='append', metavar='<path>', help='Requirement files which contains packages to bundle')
-    @arg('-e', '--exclude', action='append', metavar='<requirement>', help='Exclude packages matching `requirement`')
+    @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
+    @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
     def bundle(args):
         '''
         Create bundles (like Pip's ones)
         '''
 
-        opts.bundle_func(args)
+        if args.exclude:
+            args_manager['bundle']['exclude'] = args.exclude
+        args_manager['bundle']['use_develop'] = bool(args.use_develop)
+        exclude, use_develop = args_manager['bundle']['exclude'], args_manager['bundle']['use_develop']
+        opts.bundle_func(args.packages, args.bundlename, exclude, args.req_file, use_develop)
 
     @command
     def help():

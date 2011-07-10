@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import glob
 import shutil
 import tarfile
 import zipfile
@@ -10,13 +11,13 @@ import ConfigParser
 import pkg_resources
 
 from pkgtools.pypi import PyPIJson
-from pkgtools.pkg import SDist
+from pkgtools.pkg import SDist, Develop
 
 from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, call_setup, print_output
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -494,7 +495,7 @@ class Bundler(object):
 {0}
 '''
 
-    def __init__(self, reqs, bundle_name, exclude=[], dest=None, callback=None):
+    def __init__(self, reqs, bundle_name, exclude=[], dest=None, callback=None, use_develop=False):
         self.reqs = reqs
         if not bundle_name.endswith(('.pyb', '.pybundle')):
             bundle_name += '.pyb'
@@ -505,12 +506,49 @@ class Bundler(object):
         # callback is a function called after each package is downloaded
         # it should accept two arguments, the requirement and the SDist object.
         self.callback = callback or (lambda *a:a)
+        # If this flag is set to True, Pyg will look for local packages before
+        # downloading them
+        self.use_develop = use_develop
+
+    def _find_develop(self, dir, req):
+        try:
+            logger.info('Looking for a local package...')
+            try:
+                dist = Develop(req.name)
+            except (ValueError, AttributeError):
+                logger.error('Cannot find the location of {0}', req.name, exc=PygError)
+            else:
+                # XXX: Add a `location` attribute in pkgtools' next release
+                location = os.path.abspath(dist._arg_name)
+                path = os.path.dirname(location)
+                if not req.match(Version(dist.version)):
+                    logger.error('Found {0}, but it does not match the requirement', path, exc=PygError)
+                setup_py = os.path.join(path, 'setup.py')
+                if not os.path.exists(setup_py):
+                    logger.error('Cannot find setup.py for {0}', req.name, exc=PygError)
+                with TempDir() as tempdir:
+                    code, output = call_setup(path, ['sdist', '-d', tempdir])
+                    if code != 0:
+                        logger.fatal('setup.py failed to create the source distribution')
+                        print_output(output, 'setup.py sdist')
+                        raise PygError
+                    arch = glob.glob(os.path.join(tempdir, '*{0}*'.format(req.name)))[0]
+                    shutil.move(arch, dir)
+                    arch_name = os.path.join(dir, os.path.basename(arch))
+                    unpack(arch_name)
+                    return arch_name
+        except (PygError, IndexError, ValueError):
+            return False
 
     def _download(self, dir, req):
         '''
         Given a destination directory and a requirement to meet, download it and return the archive path.
         '''
 
+        if self.use_develop:
+            arch_name = self._find_develop(dir, req)
+            if arch_name:
+                return arch_name
         manager = ReqManager(req, ('.tar.gz', '.tar.bz2', '.zip'))
         manager.download(dir)
         d_name, version = manager.downloaded_name, manager.downloaded_version

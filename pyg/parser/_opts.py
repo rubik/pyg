@@ -236,7 +236,7 @@ def update_func(args):
     up = Updater()
     up.update()
 
-def bundle_func(args):
+def bundle_func(packages, bundlename, exclude, req_file, develop):
     def get_reqs(path):
         path = os.path.abspath(path)
         reqs = set()
@@ -247,12 +247,12 @@ def bundle_func(args):
                     continue
                 reqs.add(line)
         return reqs
-    if not args.packages:
+    if not packages:
         logger.fatal('Error: You must specify at least one package', exc=PygError)
     reqs = []
-    if args.req_file:
-        reqs = [Requirement(r) for f in args.req_file for r in get_reqs(f)]
-    b = Bundler(map(Requirement, args.packages) + reqs, args.bundlename)
+    if req_file:
+        reqs = [Requirement(r) for f in req_file for r in get_reqs(f)]
+    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude or [], use_develop=develop)
     b.bundle()
 
 def shell_func():

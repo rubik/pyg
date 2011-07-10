@@ -354,6 +354,7 @@ class ArgsManager(object):
         },
         'bundle': {
             'exclude': None,
+            'use_develop': False,
         }
     }
 
