@@ -37,8 +37,8 @@ def init_env(*a):
 
     try:
         shutil.rmtree(VENV_DIR)
-    except OSError:
-        pass
+    except OSError, e:
+        print "Unable to remove %r : %r"%(VENV_DIR, e)
     os.mkdir(VENV_DIR)
 
 @after.all
