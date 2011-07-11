@@ -1,6 +1,7 @@
 from lettuce import *
 import os
 import re
+import json
 import shutil
 import tempfile
 import itertools
@@ -10,7 +11,27 @@ from subprocess import Popen, PIPE, call
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
 
-ENVIRONMENTS = { 'standard': os.path.join(VENV_DIR, 'standard') }
+try:
+    ENVIRONMENTS = { p:os.path.join(VENV_DIR, p)
+     for p in os.listdir(VENV_DIR)
+      if os.path.isdir(os.path.join(VENV_DIR, p))
+    }
+except OSError:
+    ENVIRONMENTS = {}
+
+#ENVIRONMENTS = { 'standard': os.path.join(VENV_DIR, 'standard') }
+
+def refresh_json():
+    info_path = os.path.join(VENV_DIR, 'infos.js')
+    try:
+        d = json.load(open(info_path))
+        d.update(ENVIRONMENTS)
+    except Exception, e:
+        d = ENVIRONMENTS
+        print "Error reading js file: %r"%e
+
+    print "dumping", d
+    json.dump(d, open(info_path, 'w'))
 
 @before.each_feature
 def remove_std_packages(*a):
@@ -47,6 +68,35 @@ def destroy_env(*a):
         print "Env. path: %s" % VENV_DIR
     else:
         shutil.rmtree(VENV_DIR)
+        ENVIRONMENTS.clear()
+    refresh_json()
+
+@step('I use "(.*)" temporary folder')
+def given_i_use_tmp_folder(step, folder_name):
+    p = os.path.join(VENV_DIR, folder_name)
+    try:
+        os.mkdir(p)
+    except:
+        pass
+
+    os.chdir(p)
+    world.cur_dir = folder_name
+
+@step('I remove "(.*)"')
+def i_remove_xxx(step, fname):
+    if os.path.isdir(fname):
+        shutil.rmtree(fname)
+    elif os.path.exists(fname):
+        os.unlink(fname)
+
+@step('there is (\d+) files')
+def there_is_xx_files(self, num):
+    current = len(os.listdir(os.path.curdir))-2
+    if current != int(num):
+        raise AssertionError('Wrong number of files in %s, expected: %s, got: %s.'%(
+            world.cur_dir,
+            num,
+            current))
 
 @step('I use "(.*)" environment')
 def given_i_use_venv(step, env_name):
