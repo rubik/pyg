@@ -19,19 +19,17 @@ try:
 except OSError:
     ENVIRONMENTS = {}
 
-#ENVIRONMENTS = { 'standard': os.path.join(VENV_DIR, 'standard') }
-
 def refresh_json():
-    info_path = os.path.join(VENV_DIR, 'infos.js')
-    try:
-        d = json.load(open(info_path))
-        d.update(ENVIRONMENTS)
-    except Exception, e:
-        d = ENVIRONMENTS
-        print "Error reading js file: %r"%e
-
-    print "dumping", d
-    json.dump(d, open(info_path, 'w'))
+    if 'KEEPENV' in os.environ:
+        info_path = os.path.join(VENV_DIR, 'infos.js')
+        try:
+            d = json.load(open(info_path))
+            d.update(ENVIRONMENTS)
+        except (OSError, IOError), e:
+            d = ENVIRONMENTS
+            print "Warn: can't read js file: %r"%e
+        print "env: ", d
+        json.dump(d, open(info_path, 'w'))
 
 @before.each_feature
 def remove_std_packages(*a):
