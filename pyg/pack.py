@@ -143,10 +143,11 @@ sys.path.insert(0, {0!r})
 
             return egg_info
 
-    def gen_pack(self):
+    def gen_pack(self, exclude=[], use_develop=False):
         with TempDir() as tempdir:
             logger.info('Generating the bundle...')
-            b = Bundler([self.req], self.bundle_name, dest=tempdir, callback=self._bundle_callback)
+            b = Bundler([self.req], self.bundle_name, exclude=exclude, dest=tempdir, \
+                callback=self._bundle_callback, use_develop=use_develop)
             b.bundle(include_manifest=False, build_dir=False, add_func=self._mk_egg_info)
 
             bundle = os.path.join(b.destination, b.bundle_name)
@@ -162,8 +163,3 @@ sys.path.insert(0, {0!r})
             if os.path.exists(dest):
                 os.remove(dest)
             shutil.move(pack, self.dest)
-
-
-if __name__ == '__main__':
-    p = Packer(Requirement(sys.argv[1]), sys.argv[1], os.path.abspath(os.path.curdir))
-    p.gen_pack()

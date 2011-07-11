@@ -357,7 +357,9 @@ class ArgsManager(object):
             'use_develop': False,
         },
         'pack': {
-            'dir': '.'
+            'dir': '.',
+            'exclude': None,
+            'use_develop': False
         }
     }
 

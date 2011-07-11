@@ -265,9 +265,9 @@ class Uninstaller(object):
         if glob_folder:
             # track individual files inside that folder
 
-            for file in os.listdir(pkg_loc):
-                if any(u_re.match(file) for u_re in _uninstall_re):
-                    to_del.add(os.path.join(pkg_loc, file))
+                for file in os.listdir(pkg_loc):
+                    if any(u_re.match(file) for u_re in _uninstall_re):
+                        to_del.add(os.path.join(pkg_loc, file))
         else: # specific folder (non site-packages)
             if os.path.isdir(pkg_loc):
                 to_del.add(pkg_loc)
@@ -516,7 +516,7 @@ class Bundler(object):
             try:
                 dist = Develop(req.name)
             except (ValueError, AttributeError):
-                logger.error('Cannot find the location of {0}', req.name, exc=PygError)
+                logger.error('Cannot find a local distribution for {0}', req.name, exc=PygError)
             else:
                 # XXX: Add a `location` attribute in pkgtools' next release
                 location = os.path.abspath(dist._arg_name)
@@ -526,6 +526,7 @@ class Bundler(object):
                 setup_py = os.path.join(path, 'setup.py')
                 if not os.path.exists(setup_py):
                     logger.error('Cannot find setup.py for {0}', req.name, exc=PygError)
+                logger.info('Found a package matching in {0}', path)
                 with TempDir() as tempdir:
                     code, output = call_setup(path, ['sdist', '-d', tempdir])
                     if code != 0:

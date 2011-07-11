@@ -59,13 +59,20 @@ def init_parser(version=None):
         Install a package
         '''
 
-        args_manager['install']['no_deps'] = args.no_deps
-        args_manager['install']['upgrade'] = args.upgrade
-        args_manager['install']['no_scripts'] = args.no_scripts
-        args_manager['install']['no_data'] = args.no_data
-        args_manager['install']['ignore'] = args.ignore
-        args_manager['install']['force_egg_install'] = args.force_egg_install
-        args_manager['install']['index_url'] = args.index_url
+        if args.no_deps:
+            args_manager['install']['no_deps'] = True
+        if args.upgrade:
+            args_manager['install']['upgrade'] = True
+        if args.no_script:
+            args_manager['install']['no_scripts'] = True
+        if args.no_data:
+            args_manager['install']['no_data'] = True
+        if args.ignore:
+            args_manager['install']['ignore'] = True
+        if args.force_egg_install:
+            args_manager['install']['force_egg_install'] = True
+        if args.index_url:
+            args_manager['install']['index_url'] = args.index_url
         if args.upgrade_all:
             args_manager['install']['upgrade_all'] = True
             args_manager['install']['upgrade'] = True
@@ -91,8 +98,10 @@ def init_parser(version=None):
         Remove a package
         '''
 
-        args_manager['remove']['yes'] = bool(args.yes)
-        args_manager['remove']['info'] = bool(args.info)
+        if args.yes:
+            args_manager['remove']['yes'] = True
+        if args.info:
+            args_manager['remove']['info'] = True
         opts.remove_func(args.packname, args.req_file,
                          args_manager['remove']['yes'], args_manager['remove']['info'])
 
@@ -112,8 +121,10 @@ def init_parser(version=None):
         Show installed packages and some site information
         '''
 
-        args_manager['site']['count'] = bool(args.count)
-        args_manager['site']['no_info'] = bool(args.no_info)
+        if args.count:
+            args_manager['site']['count'] = True
+        if args.no_info:
+            args_manager['site']['no_info'] = True
         if args.file:
             args_manager['site']['file'] = args.file
         count, no_info, file = args_manager['site']['count'], \
@@ -135,7 +146,8 @@ def init_parser(version=None):
         Remove a previously added directory (with link) from PYTHONPATH
         '''
 
-        args_manager['unlink']['all'] = bool(args.all)
+        if args.all:
+            args_manager['unlink']['all'] = True
         opts.unlink_func(args)
 
     @arg('query', nargs='+')
@@ -170,7 +182,8 @@ def init_parser(version=None):
             args_manager['download']['download_dir'] = args.download_dir
         if args.prefer != args_manager['download']['prefer']:
             args_manager['download']['prefer'] = args.prefer
-        args_manager['download']['unpack'] = args.unpack
+        if args.unpack:
+            args_manager['download']['unpack'] = True
         opts.download_func(args)
 
     @arg('-y', '--yes', action='store_true', help='Do not ask confirmation for the upgrade')
@@ -179,8 +192,9 @@ def init_parser(version=None):
         Check for updates for installed packages
         '''
 
-        args_manager['update']['yes'] = bool(args.yes)
-        opts.update_func(args)
+        if args.yes:
+            args_manager['update']['yes'] = True
+        opts.update_func()
 
     @command
     def shell():
@@ -202,7 +216,8 @@ def init_parser(version=None):
 
         if args.exclude:
             args_manager['bundle']['exclude'] = args.exclude
-        args_manager['bundle']['use_develop'] = bool(args.use_develop)
+        if args.use_develop:
+            args_manager['bundle']['use_develop'] = True
         exclude, use_develop = args_manager['bundle']['exclude'], args_manager['bundle']['use_develop']
         opts.bundle_func(args.packages, args.bundlename, exclude, args.req_file, use_develop)
 
@@ -216,7 +231,13 @@ def init_parser(version=None):
         Create packs
         '''
 
-        return opts.pack_func(args.package, args.packname, args.dir)
+        # XXX: Duplication is evil. (See above.)
+        if args.exclude:
+            args_manager['pack']['exclude'] = args.exclude
+        if args.use_develop:
+            args_manager['pack']['use_develop'] = True
+        exclude, use_develop = args_manager['pack']['exclude'], args_manager['pack']['use_develop']
+        return opts.pack_func(args.package, args.packname, args.dest, exclude, use_develop)
 
     @command
     def help():

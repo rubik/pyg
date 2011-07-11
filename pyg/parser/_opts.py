@@ -232,7 +232,7 @@ def download_func(args):
         logger.info('Unpacking {0} to {1}', os.path.basename(path), os.getcwd())
         unpack(path)
 
-def update_func(args):
+def update_func():
     check_and_exit()
     up = Updater()
     up.update()
@@ -257,11 +257,12 @@ def bundle_func(packages, bundlename, exclude, req_file, develop):
     b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, use_develop=develop)
     b.bundle()
 
-def pack_func(package, packname, dir):
+def pack_func(package, packname, dir, exclude, use_develop):
     dir = os.path.abspath(dir)
     if packname.endswith('.zip'):
         packname = packname[:-4]
-    Packer(Requirement(package), packname, dir).gen_pack()
+    exclude = [Requirement(r) for r in (exclude or [])]
+    Packer(Requirement(package), packname, dir).gen_pack(exclude, use_develop)
 
 def shell_func():
     check_and_exit()
