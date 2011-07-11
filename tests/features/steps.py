@@ -10,6 +10,8 @@ from subprocess import Popen, PIPE, call
 
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
+if VENV_DIR.isdigit() or VENV_DIR.lower() in ('true', 'yes'):
+    VENV_DIR = tempfile.mkdtemp(prefix='pyg_env_')
 
 try:
     ENVIRONMENTS = { p:os.path.join(VENV_DIR, p)
@@ -50,9 +52,11 @@ def remove_std_packages(*a):
 @before.all
 def init_env(*a):
     """ Ensure VENV_DIR folder exists and is empty (unless KEEPENV is used) """
+    tmp_folder = '/tmp'
+    world.temp_content = set(os.listdir(tmp_folder))
+
     if 'KEEPENV' in os.environ and os.path.exists(VENV_DIR):
         return
-
     try:
         shutil.rmtree(VENV_DIR)
     except OSError, e:
@@ -62,6 +66,13 @@ def init_env(*a):
 @after.all
 def destroy_env(*a):
     """ Ensure VENV_DIR folder is destroyed, set KEEPENV=/some/folder to disable. """
+    tmp_folder = '/tmp'
+    current_temp_content = set(os.listdir(tmp_folder))
+    if current_temp_content != world.temp_content:
+        print "WARNING: Stale temporary files:"
+        for name in current_temp_content.difference(world.temp_content):
+            print "* ", name
+
     if 'KEEPENV' in os.environ:
         print "Env. path: %s" % VENV_DIR
     else:
