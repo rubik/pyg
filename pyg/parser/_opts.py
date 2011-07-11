@@ -254,15 +254,16 @@ def bundle_func(packages, bundlename, exclude, req_file, develop):
     if req_file:
         reqs = [Requirement(r) for f in req_file for r in get_reqs(f)]
     exclude = [Requirement(r) for r in (exclude or [])]
-    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, use_develop=develop)
+    bundlename = os.path.abspath(bundlename)
+    dest, bundlename = os.path.dirname(bundlename), os.path.basename(bundlename)
+    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, dest, use_develop=develop)
     b.bundle()
 
-def pack_func(package, packname, dir, exclude, use_develop):
-    dir = os.path.abspath(dir)
-    if packname.endswith('.zip'):
-        packname = packname[:-4]
+def pack_func(package, packname, exclude, use_develop):
+    packname = os.path.abspath(packname)
+    dest, packname = os.path.dirname(packname), os.path.basename(packname)
     exclude = [Requirement(r) for r in (exclude or [])]
-    Packer(Requirement(package), packname, dir).gen_pack(exclude, use_develop)
+    Packer(Requirement(package), packname, dest).gen_pack(exclude, use_develop)
 
 def shell_func():
     check_and_exit()

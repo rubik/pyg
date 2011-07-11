@@ -55,6 +55,9 @@ sys.path.insert(0, {0!r})
     def __init__(self, req, bundle_name, dest=None):
         self.req = req
         self.bundle_name = bundle_name
+        self.pack_name = bundle_name
+        if not self.pack_name.endswith('.zip'):
+            self.pack_name = self.pack_name + '.zip'
         self.dest = dest
         self.bundled = {}
 
@@ -151,15 +154,14 @@ sys.path.insert(0, {0!r})
             b.bundle(include_manifest=False, build_dir=False, add_func=self._mk_egg_info)
 
             bundle = os.path.join(b.destination, b.bundle_name)
-            packname = self.bundle_name + '.zip'
-            pack = os.path.join(tempdir, packname)
+            pack = os.path.join(tempdir, self.pack_name)
             eggname = self.req.name + '.egg'
             folder_name = '{0.name}-{0.version}'.format(self.bundled[self.req.name])
             with ZipFile(pack, mode='w') as z:
                 z.write(bundle, '/'.join([folder_name, eggname]))
                 # XXX: run.py should not be empty
                 z.writestr('/'.join([folder_name, 'run.py']), self.RUN_PY.format(eggname))
-            dest = os.path.join(self.dest, packname)
+            dest = os.path.join(self.dest, self.pack_name)
             if os.path.exists(dest):
                 os.remove(dest)
             shutil.move(pack, self.dest)

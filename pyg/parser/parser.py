@@ -223,7 +223,6 @@ def init_parser(version=None):
 
     @arg('packname', help='Name of the pack to create')
     @arg('package', help='Name of the package to pack')
-    @arg('--dest', metavar='<path>', default='.', help='Destination')
     @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
     @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
     def pack(args):
@@ -237,7 +236,7 @@ def init_parser(version=None):
         if args.use_develop:
             args_manager['pack']['use_develop'] = True
         exclude, use_develop = args_manager['pack']['exclude'], args_manager['pack']['use_develop']
-        return opts.pack_func(args.package, args.packname, args.dest, exclude, use_develop)
+        return opts.pack_func(args.package, args.packname, exclude, use_develop)
 
     @command
     def help():
