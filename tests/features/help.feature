@@ -35,7 +35,8 @@ Scenario: Specific help
         | shell    | --help    |
         | help     | --help    |
         | check    | --help    |
-        | freeze   | --help    |
+        | site     | --help    |
+        | pack     | --help    |
         | remove   | --help    |
         | download | --help    |
         | bundle   | --help    |
