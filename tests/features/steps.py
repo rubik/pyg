@@ -31,7 +31,6 @@ def remove_std_packages(*a):
 @before.all
 def init_env(*a):
     """ Ensure VENV_DIR folder exists and is empty (unless KEEPENV is used) """
-
     if 'KEEPENV' in os.environ and os.path.exists(VENV_DIR):
         return
 
@@ -44,7 +43,6 @@ def init_env(*a):
 @after.all
 def destroy_env(*a):
     """ Ensure VENV_DIR folder is destroyed, set KEEPENV=/some/folder to disable. """
-
     if 'KEEPENV' in os.environ:
         print "Env. path: %s" % VENV_DIR
     else:
@@ -113,7 +111,7 @@ def the_return_code_is(step, given_code):
         raise AssertionError('Invalid code, got %s, expected %s\n%s' % (
          code, given_code, out_desc))
 
-@step('(?P<num>\d+|many|all|one|a single|no)\s*(?P<what>\w+)?\s*lines? matches\s+(?P<expression>.*)')
+@step('(?P<num>\d+|many|all|one|a single|no)\s*(?P<what>\w+)?\s*lines? matche?s?\s+(?P<expression>.*)')
 def x_line_matches(step, num, expression, what):
     # prepare arguments
     if num in ('one', 'a single'):
