@@ -63,7 +63,7 @@ def init_parser(version=None):
             args_manager['install']['no_deps'] = True
         if args.upgrade:
             args_manager['install']['upgrade'] = True
-        if args.no_script:
+        if args.no_scripts:
             args_manager['install']['no_scripts'] = True
         if args.no_data:
             args_manager['install']['no_data'] = True
