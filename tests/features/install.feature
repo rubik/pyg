@@ -44,7 +44,7 @@ Scenario: Dump installed packages list
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
     When I execute pyg site -f requirements
-    Then many lines match [a-zA-Z_]==\d+[\d.]*.*
+    Then many lines match [a-zA-Z_]+==\d+[\d.]*.*
     Then the return code is 0
 
 Scenario: Upgrade all packages
