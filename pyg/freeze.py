@@ -5,7 +5,7 @@ import pkg_resources
 from pyg import __version__
 from pyg.req import Requirement
 from pyg.web import get_versions
-from pyg.utils import is_installed
+from pyg.utils import is_installed, installed_distributions
 from pyg.locations import under_virtualenv
 
 
@@ -16,7 +16,7 @@ def freeze():
     '''Freeze the current environment (i.e. all installed packages).'''
 
     packages = []
-    for dist in pkg_resources.working_set:
+    for dist in installed_distributions():
         packages.append('{0.project_name}=={0.version}'.format(dist))
     return sorted(packages)
 

@@ -73,6 +73,13 @@ def is_installed(req):
     else:
         return True
 
+def installed_distributions():
+    for dist in pkg_resources.working_set:
+        # Filter out Python==version, in case Pyg is executed in a virtual env
+        if dist.project_name.lower() == 'python':
+            continue
+        yield dist
+
 def is_windows():
     '''Return True when Pyg is running on a Windows system, False otherwise.'''
 

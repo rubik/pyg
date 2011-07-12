@@ -17,7 +17,8 @@ from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, unpack, call_setup, print_output
+from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, \
+    unpack, call_setup, print_output, installed_distributions
 from pyg.log import logger
 from pyg.parser.parser import init_parser
 
@@ -361,7 +362,7 @@ class Updater(object):
         ##>>> u.upgrade(package_name, json, version)
         if not skip:
             logger.debug('Loading list of installed packages... ', addn=False)
-            self.working_set = list(iter(pkg_resources.working_set))
+            self.working_set = list(installed_distributions())
             logger.info('{0} packages loaded', len(self.working_set))
         self.removed = {}
         self.yes = args_manager['update']['yes']
@@ -607,6 +608,8 @@ class Bundler(object):
             already_downloaded = set()
             while reqs:
                 r = reqs.pop()
+                if r.name.lower == 'python':
+                    continue
                 if any(r.name == rq.name for rq in already_downloaded):
                     logger.debug('debug: Already downloaded: {0}', r)
                     continue
