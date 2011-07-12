@@ -602,7 +602,7 @@ class Bundler(object):
                 else:
                     build = tempdir
                 tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
-
+    
                 ## Step 1: we *recursively* download all required packages
                 #####
                 reqs = list(self.reqs)
@@ -645,39 +645,39 @@ class Bundler(object):
                     except KeyError:
                         as_req = str(r)
                     already_downloaded.add(Requirement(as_req))
-            logger.indent = 0
-            logger.success('Finished processing dependencies')
-
-            ## Step 2: we remove all files in the build directory, so we make sure
-            ## that when we collect packages we collect only dirs
-            #####
-            self._clean(build)
-
-            ## Step 3: we collect the downloaded packages and bundle all together
-            ## in a single file (zipped)
-            #####
-            logger.info('Adding packages to the bundle')
-            bundle = zipfile.ZipFile(tmp_bundle, mode='w')
-            _add_to_archive(bundle, build)
-
-            ## Step 4: add the manifest file
-            if include_manifest:
-                logger.info('Adding the manifest file')
-                bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
-
-            # Additional files to add
-            for path in additional_files:
-                try:
-                    _add_to_archive(bundle, path)
-                except (IOError, OSError):
-                    logger.debug('debug: Error while adding an additional file: {0}', path)
-            if add_func is not None:
-                _add_to_archive(bundle, add_func())
-            bundle.close()
-
-            ## Last step: move the bundle to the current working directory
-            dest = os.path.join(self.destination, self.bundle_name)
-            if os.path.exists(dest):
-                logger.debug('debug: dest already exists, removing it')
-                os.remove(dest)
-            shutil.move(tmp_bundle, self.destination)
+                logger.indent = 0
+                logger.success('Finished processing dependencies')
+    
+                ## Step 2: we remove all files in the build directory, so we make sure
+                ## that when we collect packages we collect only dirs
+                #####
+                self._clean(build)
+    
+                ## Step 3: we collect the downloaded packages and bundle all together
+                ## in a single file (zipped)
+                #####
+                logger.info('Adding packages to the bundle')
+                bundle = zipfile.ZipFile(tmp_bundle, mode='w')
+                _add_to_archive(bundle, build)
+    
+                ## Step 4: add the manifest file
+                if include_manifest:
+                    logger.info('Adding the manifest file')
+                    bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
+    
+                # Additional files to add
+                for path in additional_files:
+                    try:
+                        _add_to_archive(bundle, path)
+                    except (IOError, OSError):
+                        logger.debug('debug: Error while adding an additional file: {0}', path)
+                if add_func is not None:
+                    _add_to_archive(bundle, add_func())
+                bundle.close()
+    
+                ## Last step: move the bundle to the current working directory
+                dest = os.path.join(self.destination, self.bundle_name)
+                if os.path.exists(dest):
+                    logger.debug('debug: dest already exists, removing it')
+                    os.remove(dest)
+                shutil.move(tmp_bundle, self.destination)
