@@ -242,7 +242,9 @@ class PygPackageIndex(PackageIndex):
     the download.
     '''
 
-    urls = set()
+    def __init__(self, *a, **k):
+        PackageIndex.__init__(self, *a, **k)
+        self.urls = set()
 
     def _download_to(self, url, filename):
         self.urls.add(url)
