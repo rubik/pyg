@@ -602,7 +602,7 @@ class Bundler(object):
                 else:
                     build = tempdir
                 tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
-    
+
                 ## Step 1: we *recursively* download all required packages
                 #####
                 reqs = list(self.reqs)
@@ -629,7 +629,11 @@ class Bundler(object):
                         logger.info('Looking for {0} dependencies', r)
                         logger.indent += 8
                         found = False
-                        for requirement in dist.file('requires.txt'):
+                        try:
+                            requirements = dist.file('requires.txt')
+                        except KeyError:
+                            requirements = []
+                        for requirement in requirements:
                             rq = Requirement(requirement)
                             if rq not in already_downloaded:
                                 logger.info('Found: {0}', requirement)
@@ -647,24 +651,24 @@ class Bundler(object):
                     already_downloaded.add(Requirement(as_req))
                 logger.indent = 0
                 logger.success('Finished processing dependencies')
-    
+
                 ## Step 2: we remove all files in the build directory, so we make sure
                 ## that when we collect packages we collect only dirs
                 #####
                 self._clean(build)
-    
+
                 ## Step 3: we collect the downloaded packages and bundle all together
                 ## in a single file (zipped)
                 #####
                 logger.info('Adding packages to the bundle')
                 bundle = zipfile.ZipFile(tmp_bundle, mode='w')
                 _add_to_archive(bundle, build)
-    
+
                 ## Step 4: add the manifest file
                 if include_manifest:
                     logger.info('Adding the manifest file')
                     bundle.writestr('pyg-manifest.txt', Bundler.MANIFEST.format('\n'.join(self.bundled)))
-    
+
                 # Additional files to add
                 for path in additional_files:
                     try:
@@ -674,7 +678,7 @@ class Bundler(object):
                 if add_func is not None:
                     _add_to_archive(bundle, add_func())
                 bundle.close()
-    
+
                 ## Last step: move the bundle to the current working directory
                 dest = os.path.join(self.destination, self.bundle_name)
                 if os.path.exists(dest):

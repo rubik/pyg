@@ -165,8 +165,10 @@ packages = [
                 with open(os.path.join(egg_info, mfile), 'w') as f:
                     # FIXME: this is a bit ugly
                     if mfile == 'entry_points.txt':
-                        raw = content.split('[console_scripts]')[1].split('[', 1)[0].split('\n')
-
+                        try:
+                            raw = content.split('[console_scripts]')[1].split('[', 1)[0].split('\n')
+                        except IndexError:
+                            raw = []
                         for line in raw:
                             line = line.strip()
                             if not line:
