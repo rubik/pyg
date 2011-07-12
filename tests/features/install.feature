@@ -64,7 +64,7 @@ Scenario: Upgrade all packages
 Scenario: Bundle all packages
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
-    When I execute pyg bundle -r requirements mybundle mercurial
+    When I execute pyg bundle -r requirements mybundle
     Then the return code is 0
 
 Scenario: Remove all packages

@@ -14,10 +14,10 @@ if VENV_DIR.isdigit() or VENV_DIR.lower() in ('true', 'yes'):
     VENV_DIR = tempfile.mkdtemp(prefix='pyg_env_')
 
 try:
-    ENVIRONMENTS = { p:os.path.join(VENV_DIR, p)
-     for p in os.listdir(VENV_DIR)
-      if os.path.isdir(os.path.join(VENV_DIR, p))
-    }
+    ENVIRONMENTS = dict((p, os.path.join(VENV_DIR, p))
+        for p in os.listdir(VENV_DIR)
+        if os.path.isdir(os.path.join(VENV_DIR, p))
+    )
 except OSError:
     ENVIRONMENTS = {}
 
