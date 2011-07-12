@@ -4,7 +4,23 @@ Quickstart
 Installing Pyg
 --------------
 
-To install Pyg it only takes one simple command::
+The :file:`get-pyg.py` file
++++++++++++++++++++++++++++++
+
+The preferred way to install Pyg (and the easiest one) is to download the :file:`get-pyg.py` file from `Github <https://raw.github.com/rubik/pyg/master/get-pyg.py>`_ and to launch it::
+
+    $ curl -O https://raw.github.com/rubik/pyg/master/get-pyg.py
+    $ python get-pyg.py
+
+This will install the latest stable release, but if you want to install the development version, just do::
+
+    $ python get-pyg.py --dev
+
+
+Using ``Pip`` or ``easy_install``
++++++++++++++++++++++++++++++++++
+
+If you have ``easy_install`` or ``Pip`` installed, to install Pyg it only takes one simple command::
 
     $ pip install pyg
 
@@ -12,7 +28,7 @@ or if you must::
 
     $ easy_install pyg
 
-And then you should no longer need them.
+And then you should no longer need them!
 
 .. _get:
 

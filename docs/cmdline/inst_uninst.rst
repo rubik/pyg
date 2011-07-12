@@ -46,7 +46,19 @@ Pyg supports these file-types:
 
     All fields are required. The last part (``#egg=<package_name>``) specifies the package name.
 
+    You can give it a path as well. Actually, this::
+
+        $ pyg install -e path/to/a/directory
+        ...
+
+    is equivalent to::
+
+        $ cd path/to/a/directory
+        $ python setup.py develop
+
     .. versionadded:: 0.3
+    .. versionchanged:: 0.7
+        Allow directories as well.
 
 .. option:: --no-script
 
@@ -81,7 +93,7 @@ Pyg supports these file-types:
         Running setup.py install for pypol_
         pypol_ installed successfully
 
-    Later you may want to re-install the package. Instead of running :command:`remove`` and then :command:`install`, you can use the :option:`-U` option::
+    Later you may want to re-install the package. Instead of running :command:`remove` and then :command:`install`, you can use the :option:`-U` option::
 
         $ pyg install -U pypol_
         Best match: pypol_==0.5
@@ -90,7 +102,7 @@ Pyg supports these file-types:
         Installing pypol_ egg file
         pypol_ installed successfully
 
-    This command **does not** upgrade dependencies.
+    This command **does not** upgrade dependencies (see :option:`install -A`).
 
     .. versionadded:: 0.2
 
