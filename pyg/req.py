@@ -114,7 +114,7 @@ class Requirement(object):
         ## Bad eggs are eggs which require a different Python version.
         ## If we don't find anything more, we check bad eggs.s
         txt = 'Found only eggs for another Python version, which one do you want to install'
-        choice = logger.ask(txt, choices={v[1]: v for v in bad_eggs})
+        choice = logger.ask(txt, choices=dict((v[1], v) for v in bad_eggs))
         self._download_and_install(*choice)
 
     def _download_and_install(self, url, filename, packname, hash=None):

@@ -590,60 +590,61 @@ class Bundler(object):
                 elif os.path.isdir(path):
                     _add_to_archive(zfile, path)
 
-        with TempDir() as tempdir, TempDir() as bundle_dir:
-            ## Step 0: we create the `build` directory
-            ## If you choose to create a bundle without the build directory,
-            ## be aware that your bundle will not be compatible with Pip.
-            #####
-            if build_dir:
-                build = os.path.join(tempdir, 'build')
-                os.mkdir(build)
-            else:
-                build = tempdir
-            tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
+        with TempDir() as tempdir:
+            with TempDir() as bundle_dir:
+                ## Step 0: we create the `build` directory
+                ## If you choose to create a bundle without the build directory,
+                ## be aware that your bundle will not be compatible with Pip.
+                #####
+                if build_dir:
+                    build = os.path.join(tempdir, 'build')
+                    os.mkdir(build)
+                else:
+                    build = tempdir
+                tmp_bundle = os.path.join(bundle_dir, self.bundle_name)
 
-            ## Step 1: we *recursively* download all required packages
-            #####
-            reqs = list(self.reqs)
-            already_downloaded = set()
-            while reqs:
-                r = reqs.pop()
-                if r.name.lower == 'python':
-                    continue
-                if any(r.name == rq.name for rq in already_downloaded):
-                    logger.debug('debug: Already downloaded: {0}', r)
-                    continue
-                if any(r == rq for rq in self.exclude):
-                    logger.info('Excluding {0}', r)
-                    continue
-                logger.indent = 0
-                logger.info('{0}:', r)
-                logger.indent = 8
-                try:
-                    dist = SDist(self._download(build, r))
-                    self.callback(r, dist)
-                except ConfigParser.MissingSectionHeaderError:
-                    continue
-                try:
-                    logger.info('Looking for {0} dependencies', r)
-                    logger.indent += 8
-                    found = False
-                    for requirement in dist.file('requires.txt'):
-                        rq = Requirement(requirement)
-                        if rq not in already_downloaded:
-                            logger.info('Found: {0}', requirement)
-                            reqs.append(rq)
-                            found = True
-                    # XXX: Does not work, don't know why!
-                    if not found:
-                        logger.info('None found')
-                except KeyError:
-                    logger.debug('debug: requires.txt not found for {0}', dist)
-                try:
-                    as_req = dist.as_req
-                except KeyError:
-                    as_req = str(r)
-                already_downloaded.add(Requirement(as_req))
+                ## Step 1: we *recursively* download all required packages
+                #####
+                reqs = list(self.reqs)
+                already_downloaded = set()
+                while reqs:
+                    r = reqs.pop()
+                    if r.name.lower == 'python':
+                        continue
+                    if any(r.name == rq.name for rq in already_downloaded):
+                        logger.debug('debug: Already downloaded: {0}', r)
+                        continue
+                    if any(r == rq for rq in self.exclude):
+                        logger.info('Excluding {0}', r)
+                        continue
+                    logger.indent = 0
+                    logger.info('{0}:', r)
+                    logger.indent = 8
+                    try:
+                        dist = SDist(self._download(build, r))
+                        self.callback(r, dist)
+                    except ConfigParser.MissingSectionHeaderError:
+                        continue
+                    try:
+                        logger.info('Looking for {0} dependencies', r)
+                        logger.indent += 8
+                        found = False
+                        for requirement in dist.file('requires.txt'):
+                            rq = Requirement(requirement)
+                            if rq not in already_downloaded:
+                                logger.info('Found: {0}', requirement)
+                                reqs.append(rq)
+                                found = True
+                        # XXX: Does not work, don't know why!
+                        if not found:
+                            logger.info('None found')
+                    except KeyError:
+                        logger.debug('debug: requires.txt not found for {0}', dist)
+                    try:
+                        as_req = dist.as_req
+                    except KeyError:
+                        as_req = str(r)
+                    already_downloaded.add(Requirement(as_req))
             logger.indent = 0
             logger.success('Finished processing dependencies')
 
