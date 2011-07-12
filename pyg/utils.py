@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import atexit
 import shutil
 import tarfile
 import zipfile
@@ -264,6 +265,9 @@ class FileMapper(collections.defaultdict):
 
 
 class TempDir(object):
+
+    not_removed = set()
+
     def __init__(self, prefix='pyg-', suffix='-record', dont_remove=False):
         self.prefix = prefix
         self.suffix = suffix
@@ -271,11 +275,28 @@ class TempDir(object):
 
     def __enter__(self):
         self.tempdir = tempfile.mkdtemp(self.suffix, self.prefix)
+        self.not_removed.add(self.tempdir)
         return self.tempdir
 
     def __exit__(self, *args):
         if not self.dont_remove:
             shutil.rmtree(self.tempdir)
+
+def __clean_tempdir(to_remove):
+    if to_remove:
+        print "Cleaning temporary folders",
+        for fold in to_remove:
+            if os.path.isdir(fold):
+                print ".",
+                try:
+                    shutil.rmtree(fold)
+                except (OSError, IOError):
+                    print "\bx",
+        sys.stdout.flush()
+    print ""
+
+atexit.register(__clean_tempdir, TempDir.not_removed)
+del(__clean_tempdir)
 
 
 class ChDir(object):
