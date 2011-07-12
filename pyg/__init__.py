@@ -37,11 +37,8 @@ def main():
     except Exception as e:
         if logger.level == logger.DEBUG:
             raise
-        try:
-            msg = e.args[0]
-        except IndexError:
-            msg = repr(e)
-        logger.exit('Unknown error occurred: {0}'.format(msg))
+        logger.exit('Unknown error occurred: {0}'.format(e))
+
     sys.exit(0)
 
 if __name__ == '__main__':

@@ -607,6 +607,9 @@ class Bundler(object):
             already_downloaded = set()
             while reqs:
                 r = reqs.pop()
+                if any(r.name == rq.name for rq in already_downloaded):
+                    logger.debug('debug: Already downloaded: {0}', r)
+                    continue
                 if any(r == rq for rq in self.exclude):
                     logger.info('Excluding {0}', r)
                     continue
@@ -623,9 +626,10 @@ class Bundler(object):
                     logger.indent += 8
                     found = False
                     for requirement in dist.file('requires.txt'):
-                        if requirement not in already_downloaded:
+                        rq = Requirement(requirement)
+                        if rq not in already_downloaded:
                             logger.info('Found: {0}', requirement)
-                            reqs.append(Requirement(requirement))
+                            reqs.append(rq)
                             found = True
                     # XXX: Does not work, don't know why!
                     if not found:
@@ -636,7 +640,7 @@ class Bundler(object):
                     as_req = dist.as_req
                 except KeyError:
                     as_req = str(r)
-                already_downloaded.add(as_req)
+                already_downloaded.add(Requirement(as_req))
             logger.indent = 0
             logger.success('Finished processing dependencies')
 
