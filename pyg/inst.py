@@ -526,7 +526,7 @@ class Bundler(object):
                 setup_py = os.path.join(path, 'setup.py')
                 if not os.path.exists(setup_py):
                     logger.error('Cannot find setup.py for {0}', req.name, exc=PygError)
-                logger.info('Found a package matching in {0}', path)
+                logger.info('Found a matching package in {0}', path)
                 with TempDir() as tempdir:
                     code, output = call_setup(path, ['sdist', '-d', tempdir])
                     if code != 0:
