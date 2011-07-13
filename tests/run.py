@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
+import threading
+import pypi_cache_server
+
+cache = threading.Thread(target=pypi_cache_server.run)
+cache.setDaemon(True)
+cache.start()
 
 try:
     from lettuce.lettuce_cli import main
