@@ -8,7 +8,7 @@ import itertools
 from glob import glob
 from subprocess import Popen, PIPE, call
 
-USE_PROXY = True
+USE_PROXY = False # TODO: pypi_cache_server is not stable enough
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
 
