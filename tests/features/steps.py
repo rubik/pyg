@@ -8,6 +8,7 @@ import itertools
 from glob import glob
 from subprocess import Popen, PIPE, call
 
+USE_PROXY = True
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
 if VENV_DIR.isdigit() or VENV_DIR.lower() in ('true', 'yes'):
@@ -59,6 +60,7 @@ def init_env(*a):
     if 'KEEPENV' in os.environ and os.path.exists(VENV_DIR):
         return
     try:
+        print "removing old venv..."
         shutil.rmtree(VENV_DIR)
     except OSError, e:
         print "Unable to remove %r : %r"%(VENV_DIR, e)
@@ -77,6 +79,7 @@ def destroy_env(*a):
     if 'KEEPENV' in os.environ:
         print "Env. path: %s" % VENV_DIR
     else:
+        print "removing venv..."
         shutil.rmtree(VENV_DIR)
         ENVIRONMENTS.clear()
     refresh_json()
@@ -126,10 +129,12 @@ def given_i_use_venv(step, env_name):
         else:
             args = []
 
+        print "Installing venv..."
         call(['virtualenv'] + args + ['--no-site-packages', world.env_path])
 
     # Install pyg if not found
     if not os.path.exists(os.path.join(world.env_path, 'bin', 'pyg')):
+        print "Copying pyg..."
         dn = os.path.dirname
         pyg_dir = dn(dn(dn(__file__))) + '/'
         os.chdir(pyg_dir)
@@ -138,7 +143,7 @@ def given_i_use_venv(step, env_name):
             shutil.rmtree(install_dir)
         shutil.copytree(os.path.curdir, install_dir)
         os.chdir(install_dir)
-
+        print "Installing pyg..."
         call('. %s ; python %s develop' % (
          os.path.join(world.env_path, 'bin', 'activate'),
          os.path.join(pyg_dir, 'setup.py'),
@@ -153,8 +158,25 @@ def wait_and_set():
         world.proc = None
     return (world.returncode, world.stdout, world.stderr)
 
-@step('I execute +(.*)')
+@step('I execute pyg\s+(.*)')
 def i_execute(step, cmd):
+    if ' ' in cmd:
+        cmd, args = (x.strip() for x in cmd.split(None, 1))
+    else:
+        args = ''
+
+    if USE_PROXY and cmd in (
+            "install",
+            "bundle",
+            "download",
+            "pack",
+            "search",
+            "list",
+            "update"):
+        cmd = "pyg -d %s -i http://localhost:8080 %s"%(cmd, args)
+    else:
+        cmd = "pyg -d %s %s"%(cmd, args)
+
     prefixed_cmd = os.path.join(world.env_path, 'bin', cmd)
     world.last_cmd = prefixed_cmd
     world.proc = Popen(prefixed_cmd,
