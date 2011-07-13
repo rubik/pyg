@@ -11,6 +11,7 @@ from subprocess import Popen, PIPE, call
 USE_PROXY = True
 
 VENV_DIR = os.getenv('KEEPENV', None) or tempfile.mkdtemp(prefix='pyg_env_')
+
 if VENV_DIR.isdigit() or VENV_DIR.lower() in ('true', 'yes'):
     VENV_DIR = tempfile.mkdtemp(prefix='pyg_env_')
 
@@ -114,7 +115,6 @@ def there_is_xx_files(self, num):
 @step('I use "(.*)" environment')
 def given_i_use_venv(step, env_name):
     world.env_path = os.path.join(VENV_DIR, env_name)
-
     # build python version from environment name
     py_version = re.compile('.*?(\d+\.?\d*)$').match(env_name)
 
@@ -136,9 +136,12 @@ def given_i_use_venv(step, env_name):
     if not os.path.exists(os.path.join(world.env_path, 'bin', 'pyg')):
         print "Copying pyg..."
         dn = os.path.dirname
-        pyg_dir = dn(dn(dn(__file__))) + '/'
+        pyg_dir = os.path.abspath(dn(dn(dn(__file__))) + '/')
         os.chdir(pyg_dir)
-        install_dir = os.path.join(world.env_path, 'pyg-current')
+        install_dir = os.path.abspath(os.path.join(world.env_path, 'pyg-current'))
+        if install_dir.startswith(pyg_dir):
+            print "Can't use a virtual environment inside sources folder !"
+            raise SystemExit()
         if os.path.exists(install_dir):
             shutil.rmtree(install_dir)
         shutil.copytree(os.path.curdir, install_dir)
@@ -165,17 +168,20 @@ def i_execute(step, cmd):
     else:
         args = ''
 
-    if USE_PROXY and cmd in (
-            "install",
-            "bundle",
-            "download",
-            "pack",
-            "search",
-            "list",
-            "update"):
-        cmd = "pyg -d %s -i http://localhost:8080 %s"%(cmd, args)
+    if cmd != 'help' and not cmd.startswith('-'):
+        if USE_PROXY and cmd in (
+                "install",
+                "bundle",
+                "download",
+                "pack",
+                "search",
+                "list",
+                "update"):
+            cmd = "pyg -d %s -i http://localhost:8080 %s"%(cmd, args)
+        else:
+            cmd = "pyg -d %s %s"%(cmd, args)
     else:
-        cmd = "pyg -d %s %s"%(cmd, args)
+        cmd = "pyg %s %s"%(cmd, args)
 
     prefixed_cmd = os.path.join(world.env_path, 'bin', cmd)
     world.last_cmd = prefixed_cmd

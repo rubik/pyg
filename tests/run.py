@@ -39,7 +39,8 @@ if want_install:
 # go to that file's folder and set KEEPENV if not set
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 if 'KEEPENV' not in os.environ:
-    os.environ['KEEPENV'] = os.path.abspath('test_env')
+    from tempfile import gettempdir
+    os.environ['KEEPENV'] = os.path.join(gettempdir(), 'test_env')
 
 # start lettuce !
 sys.exit(main())

@@ -7,6 +7,7 @@ PROXY_PORT = 8080
 import BaseHTTPServer
 import hashlib
 import os
+import cgi
 import urllib2
 
 class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
