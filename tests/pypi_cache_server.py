@@ -11,21 +11,32 @@ import urllib2
 
 class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
-      print "GET".center(80)
-      m = hashlib.md5()
-      m.update(self.path)
-      cache_filename = m.hexdigest()
-      if os.path.exists(cache_filename):
-          print "Cache hit"
-          data = open(cache_filename).readlines()
-      else:
-          print "Cache miss", self.path
-          data = urllib2.urlopen(REAL_SERVER + self.path).readlines()
-          open(cache_filename, 'wb').writelines(data)
-      self.send_response(200)
-      self.end_headers()
-      self.wfile.writelines(data)
-      print "-eot-"
+        print '-'*80
+        ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+        if ctype == 'multipart/form-data':
+            postvars = cgi.parse_multipart(self.rfile, pdict)
+        elif ctype == 'application/x-www-form-urlencoded':
+            length = int(self.headers.getheader('content-length'))
+            postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+        else:
+            postvars = {}
+        m = hashlib.md5()
+        m.update(self.path)
+        m.update(''.join(''.join(x) for x in postvars.iteritems()))
+        cache_filename = m.hexdigest()
+        if os.path.exists(cache_filename):
+            print "Cache hit"
+            data = open(cache_filename).readlines()
+        else:
+            print "Cache miss", self.path
+            data = urllib2.urlopen(REAL_SERVER + self.path).readlines()
+            open(cache_filename, 'wb').writelines(data)
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.writelines(data)
+        print "-eot-"
+
+    do_POST = do_GET
 
 def run():
     server_address = ('0.0.0.0', PROXY_PORT)
