@@ -42,7 +42,7 @@ def get_versions(req):
     ## Slow way: we need to search versions by ourselves
     if not versions:
         _vre = re.compile(_version_re.format(name), re.I)
-        data = request('http://pypi.python.org/simple/{0}'.format(name))
+        data = request((args_manager['install']['packages_url']+'/{0}').format(name))
         versions = map(Version, set(v.strip('.') for v in _vre.findall(data)))
     return (v for v in versions if req.match(v))
 
@@ -149,6 +149,8 @@ class ReqManager(object):
         else:
             self.package_manager = PyPIJson(self.name, highest_version(self.req))
 
+        url = args_manager['install']['index_url'] + '/' + self.package_manager.URL.split('/pypi/', 1)[1]
+        self.package_manager.URL = url
         self._set_prefs(pref)
         self.downloaded_name = None
         self.downloaded_version = None
@@ -180,7 +182,7 @@ class ReqManager(object):
         found = list(self.package_manager.find())
         if not found:
             logger.warn('Warning: did not find any files on PyPI')
-            for link in get_links(self.name, args_manager['install']['index_url']):
+            for link in get_links(self.name, args_manager['install']['packages_url']):
                 package_name = _remove_query(link).split('/')[-1]
                 version = _get_version(package_name)
                 found.append((version, package_name, None, link))
@@ -255,11 +257,11 @@ class PygPackageIndex(PackageIndex):
         return
 
 
-def get_links(package, index_url='http://pypi.python.org/simple'):
-    ## Correction for standard installations when index_url is
+def get_links(package, index_url=None):
+    ## Correction for standard installations when index_url looks standard
     ## http://pypi.python.org/pypi.
-    if index_url == 'http://pypi.python.org/pypi':
-        index_url = 'http://pypi.python.org/simple'
+    if index_url is None:
+        index_url = args_manager['install']['packages_url']
     logger.info('Looking for packages at {0}', index_url)
     urls = set()
     package_index = PygPackageIndex(index_url)

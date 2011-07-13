@@ -4,6 +4,7 @@ because we don't want to execute code before the parser is created and when Pyg 
 used as a library.
 '''
 
+ITERABLE_T = (list, tuple)
 
 def load_options():
     import os.path
@@ -39,6 +40,7 @@ def init_parser(version=None):
     if version is not None:
         parser.add_argument('-v', '--version', action='version', version=version)
     parser.add_argument('--no-colors', action='store_true', help='Disable colors')
+    #parser.add_argument('-i', '--index-url', default='http://pypi.python.org', metavar="<url>", help='Base URL of Python Package Index (default to %(default)s)')
 
 
     @arg('packname', nargs='*')
@@ -48,7 +50,7 @@ def init_parser(version=None):
     @arg('-A', '--upgrade-all', action='store_true', help='Install again dependencies too')
     @arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @arg('-g', '--ignore', action='store_true', help='Ignore local files or directories')
-    @arg('-i', '--index-url', default='http://pypi.python.org/pypi', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-d', '--install-dir', default=INSTALL_DIR, metavar='<path>', help='Base installation directory')
     @arg('-u', '--user', action='store_true', help='Install to user site')
     @arg('--no-scripts', action='store_true', help='Do not install scripts')
@@ -71,8 +73,12 @@ def init_parser(version=None):
             args_manager['install']['ignore'] = True
         if args.force_egg_install:
             args_manager['install']['force_egg_install'] = True
-        if args.index_url:
-            args_manager['install']['index_url'] = args.index_url
+        if True or args.index_url:
+            if isinstance(args.index_url, ITERABLE_T):
+                args.index_url = args.index_url[0]
+
+            args_manager['install']['packages_url'] = args.index_url + '/simple'
+            args_manager['install']['index_url'] = args.index_url + '/pypi'
         if args.upgrade_all:
             args_manager['install']['upgrade_all'] = True
             args_manager['install']['upgrade'] = True
@@ -105,13 +111,20 @@ def init_parser(version=None):
         opts.remove_func(args.packname, args.req_file,
                          args_manager['remove']['yes'], args_manager['remove']['info'])
 
-    @command
-    def list(packname):
+    @arg('packname', nargs=1)
+    @arg('-i', '--index-url', nargs=1, default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
+    def list(args):
         '''
         List all versions for a package
         '''
 
-        opts.list_func(packname)
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
+
+        opts.list_func(args.packname[0])
 
     @arg('-c', '--count', action='store_true', help='Only returns requirements count')
     @arg('-n', '--no-info', action='store_true', help='Do not add site information')
@@ -151,12 +164,19 @@ def init_parser(version=None):
         opts.unlink_func(args)
 
     @arg('query', nargs='+')
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-e', '--exact', action='store_true', help='List only exact hits')
     @arg('-a', '--all', action='store_true', help='Show all versions for specified package')
     def search(args):
         '''
         Search PyPI
         '''
+
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
 
         opts.search_func(args.query, args.exact, args.all)
 
@@ -170,6 +190,7 @@ def init_parser(version=None):
         opts.check_func(args.packname, args.info)
 
     @arg('packname')
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
     @arg('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
     @arg('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
@@ -177,6 +198,12 @@ def init_parser(version=None):
         '''
         Download a package
         '''
+
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
 
         if args.download_dir != args_manager['download']['download_dir']:
             args_manager['download']['download_dir'] = args.download_dir
@@ -186,11 +213,18 @@ def init_parser(version=None):
             args_manager['download']['unpack'] = True
         opts.download_func(args)
 
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-y', '--yes', action='store_true', help='Do not ask confirmation for the upgrade')
     def update(args):
         '''
         Check for updates for installed packages
         '''
+
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
 
         if args.yes:
             args_manager['update']['yes'] = True
@@ -206,6 +240,7 @@ def init_parser(version=None):
 
     @arg('bundlename', help='Name of the bundle to create')
     @arg('packages', nargs='*', help='Name of the package(s) to bundle')
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-r', '--req-file', action='append', metavar='<path>', help='Requirement files which contains packages to bundle')
     @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
     @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
@@ -214,6 +249,13 @@ def init_parser(version=None):
         Create bundles (like Pip's ones)
         '''
 
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+
+
+        if args.index_url:
+            args_manager['install']['packages_url'] = args.index_url + '/simple'
+            args_manager['install']['index_url'] = args.index_url + '/pypi'
         if args.exclude:
             args_manager['bundle']['exclude'] = args.exclude
         if args.use_develop:

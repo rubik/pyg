@@ -87,9 +87,8 @@ class Requirement(object):
     def _install_from_links(self, package_index):
         ## Monkey-patch for pyg.inst.Updater:
         ## it does not know the real index url!
-        if package_index == 'http://pypi.python.org/pypi':
-            package_index = 'http://pypi.python.org/simple'
         logger.info('Looking for links on {0}', package_index)
+
         try:
             links = get_links(self, package_index)
             if not links:

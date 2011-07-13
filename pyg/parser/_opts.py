@@ -174,7 +174,7 @@ def search_func(query, exact, show_all_version):
     def _pkgresources_order(item):
         return (item[0],) +  item[2].v
 
-    res = sorted(PyPIXmlRpc().search({'name': query, 'summary': query}, 'or'))
+    res = sorted(PyPIXmlRpc(index_url=args_manager['install']['index_url']).search({'name': query, 'summary': query}, 'or'))
     processed = {}
     for release in res:
         name, version, summary = release['name'], Version(release['version']), release['summary']

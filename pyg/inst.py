@@ -450,7 +450,7 @@ class Updater(object):
         else:
             logger.warn('Error: Did not find any installable release on PyPI for {0}', package_name)
             try:
-                Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['index_url'])
+                Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['packages_url'])
             except Exception as e:
                 logger.fatal('Error: {0}', e, exc=InstallationError)
                 logger.info('Restoring uninstalled files')
