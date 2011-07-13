@@ -133,6 +133,11 @@ def given_i_use_venv(step, env_name):
         dn = os.path.dirname
         pyg_dir = dn(dn(dn(__file__))) + '/'
         os.chdir(pyg_dir)
+        install_dir = os.path.join(world.env_path, 'pyg-current')
+        if os.path.exists(install_dir):
+            shutil.rmtree(install_dir)
+        shutil.copytree(os.path.curdir, install_dir)
+        os.chdir(install_dir)
 
         call('. %s ; python %s develop' % (
          os.path.join(world.env_path, 'bin', 'activate'),
