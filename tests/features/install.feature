@@ -23,6 +23,7 @@ Scenario: Install misc packages
         | lk        |
         | grin      |
         | gevent    |
+        | buzhug    |
 
 Scenario: Pack & bundle them individually
     Given I use "standard-2.7" environment
@@ -39,6 +40,7 @@ Scenario: Pack & bundle them individually
         | lk        |
         | grin      |
         | gevent    |
+        | buzhug    |
 
 Scenario: Dump installed packages list
     Given I use "standard-2.7" environment
@@ -59,6 +61,7 @@ Scenario: Upgrade all packages
         | lk        |
         | grin      |
         | gevent    |
+        | buzhug    |
 
 
 Scenario: Bundle all packages
@@ -79,6 +82,7 @@ Scenario: Remove all packages
         | lk        |
         | grin      |
         | gevent    |
+        | buzhug    |
 
 
 Scenario: UnBundle all packages

@@ -41,6 +41,7 @@ def remove_std_packages(*a):
                 'remove',
                 '-y',
                 'bottle',
+                'buzhug',
                 'mercurial',
                 'lk',
                 'grin',
