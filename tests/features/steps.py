@@ -235,7 +235,10 @@ def x_line_matches(step, num, expression, what):
 
     if num == 'all':
         if cnt != total:
-          raise AssertionError('Some line mismatch!'+err_desc)
+          if abs(cnt-total) < 2:
+              print "Warning ! Log file tolerance, got %s instead of %s"%(cnt, total)
+          else:
+            raise AssertionError('Some line mismatch!'+err_desc)
     elif num == 'no':
         if cnt:
           raise AssertionError('Got matches!'+err_desc)
