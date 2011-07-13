@@ -73,12 +73,12 @@ def init_parser(version=None):
             args_manager['install']['ignore'] = True
         if args.force_egg_install:
             args_manager['install']['force_egg_install'] = True
-        if True or args.index_url:
-            if isinstance(args.index_url, ITERABLE_T):
-                args.index_url = args.index_url[0]
 
-            args_manager['install']['packages_url'] = args.index_url + '/simple'
-            args_manager['install']['index_url'] = args.index_url + '/pypi'
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
+
         if args.upgrade_all:
             args_manager['install']['upgrade_all'] = True
             args_manager['install']['upgrade'] = True
@@ -251,11 +251,9 @@ def init_parser(version=None):
 
         if isinstance(args.index_url, ITERABLE_T):
             args.index_url = args.index_url[0]
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
 
-
-        if args.index_url:
-            args_manager['install']['packages_url'] = args.index_url + '/simple'
-            args_manager['install']['index_url'] = args.index_url + '/pypi'
         if args.exclude:
             args_manager['bundle']['exclude'] = args.exclude
         if args.use_develop:
@@ -265,12 +263,18 @@ def init_parser(version=None):
 
     @arg('packname', help='Name of the pack to create')
     @arg('package', help='Name of the package to pack')
+    @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-d', '--use-develop', action='store_true', help='Look for local packages before downloading them')
     @arg('-e', '--exclude', action='append', default=[], metavar='<requirement>', help='Exclude packages matching `requirement`')
     def pack(args):
         '''
         Create packs
         '''
+
+        if isinstance(args.index_url, ITERABLE_T):
+            args.index_url = args.index_url[0]
+        args_manager['install']['packages_url'] = args.index_url + '/simple'
+        args_manager['install']['index_url'] = args.index_url + '/pypi'
 
         # XXX: Duplication is evil. (See above.)
         if args.exclude:
