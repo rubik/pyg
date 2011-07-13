@@ -21,6 +21,10 @@ RUN_PY = '''#!/usr/bin/env python
 
 import os
 import sys
+import re
+
+# For now this is "safe", should be improved with time
+p_re = re.compile('.*(\.egg|python\d+[.\d]+[^/]*|lib-\w+|plat-\w+)$')
 egg_name = {0!r}
 
 exists = os.path.exists
@@ -32,7 +36,7 @@ if not(my_dir):
     print "Unable to find {0!r} file !"
     raise SystemExit()
 
-sys.path.insert(0, os.path.join(my_dir[0], egg_name))
+sys.path = [os.path.join(my_dir[0], egg_name)] + [x for x in sys.path if p_re.match(x)]
 
 import {1}
 sys.exit({1}.{2}())
