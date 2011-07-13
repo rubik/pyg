@@ -11,8 +11,7 @@ import cgi
 import urllib2
 
 class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_GET(self):
-        print '-'*80
+    def do_POST(self):
         ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
         if ctype == 'multipart/form-data':
             postvars = cgi.parse_multipart(self.rfile, pdict)
@@ -21,9 +20,13 @@ class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
         else:
             postvars = {}
+        return self.do_GET(''.join(''.join(x) for x in postvars.iteritems()))
+
+    def do_GET(self, args=''):
+        print '-'*80
         m = hashlib.md5()
         m.update(self.path)
-        m.update(''.join(''.join(x) for x in postvars.iteritems()))
+        m.update(args)
         cache_filename = m.hexdigest()
         if os.path.exists(cache_filename):
             print "Cache hit"
