@@ -280,23 +280,27 @@ class TempDir(object):
 
     def __exit__(self, *args):
         if not self.dont_remove:
-            shutil.rmtree(self.tempdir)
+            try:
+                shutil.rmtree(self.tempdir)
+            ## Experimental (remember to remove before releasing)
+            except Exception as e:
+                print 'Ahah: ', e
 
-def __clean_tempdir(to_remove):
-    if to_remove:
-        print "Cleaning temporary folders",
-        for fold in to_remove:
-            if os.path.isdir(fold):
-                print ".",
-                try:
-                    shutil.rmtree(fold)
-                except (OSError, IOError):
-                    print "\bx",
-        sys.stdout.flush()
-    print ""
-
-atexit.register(__clean_tempdir, TempDir.not_removed)
-del(__clean_tempdir)
+    @staticmethod
+    @atexit.register
+    def __clean_tempdir():
+        to_remove = TempDir.not_removed
+        if to_remove:
+            print "Cleaning temporary folders",
+            for fold in to_remove:
+                if os.path.isdir(fold):
+                    print ".",
+                    try:
+                        shutil.rmtree(fold)
+                    except (OSError, IOError):
+                        print "\bx",
+            sys.stdout.flush()
+        print ""
 
 
 class ChDir(object):
