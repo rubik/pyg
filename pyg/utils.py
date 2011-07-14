@@ -248,6 +248,8 @@ def unpack(path):
     elif e in ('.tar', '.tar.gz', '.tar.bz2'):
         mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
         arch = tarfile.open(path, mode=mode)
+    else:
+        logger.error('Unknown extension: {0}', e, exc=TypeError)
     arch.extractall(d)
 
 

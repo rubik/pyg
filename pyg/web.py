@@ -239,6 +239,9 @@ class ReqManager(object):
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 try:
+                    # Fix for packages with no version in the name
+                    if '-' not in name:
+                        name = '{0}-{1}{2}'.format(name, v, p)
                     logger.info('Writing data into {0}', name)
                     with open(os.path.join(dest, name), 'w') as f:
                         f.write(data)
