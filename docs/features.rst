@@ -185,5 +185,6 @@ Packs
 Packs are very similar to bundles, except that they can contain Python executables too. Packs were invented by Fabien Devaux for the Zicbee project (check it at PyPI: `Zicbee <http://pypi.python.org/pypi/zicbee>`_).
 
 A pack contains a folder in which there is an egg (with all necessary packages) and a :file:`run.py` file. You can unpack the pack and then run the executable without touching the egg! Like a bundle, a pack does not require an internet connection to work: all required package are inside the zipped egg.
+The advantage of packs over bundles is that you can run included Python executables without installing the library, because everything necessary is included in the egg!
 
 See also: :ref:`pack_doc`.
