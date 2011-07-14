@@ -325,6 +325,7 @@ class ArgsManager(object):
             'upgrade_all': False,
             'no_deps': False,
             'index_url': 'http://pypi.python.org/pypi',
+            'packages_url': 'http://pypi.python.org/simple',
             'install_dir': INSTALL_DIR,
             'user': False,
             'no_scripts': False,

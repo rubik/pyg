@@ -265,10 +265,12 @@ class Uninstaller(object):
 
         if glob_folder:
             # track individual files inside that folder
-
+            try:
                 for file in os.listdir(pkg_loc):
                     if any(u_re.match(file) for u_re in _uninstall_re):
                         to_del.add(os.path.join(pkg_loc, file))
+            except OSError:
+                logger.debug('debug: OSError when trying to listdir {0}', pkg_loc)
         else: # specific folder (non site-packages)
             if os.path.isdir(pkg_loc):
                 to_del.add(pkg_loc)

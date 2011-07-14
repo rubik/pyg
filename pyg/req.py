@@ -111,19 +111,18 @@ class Requirement(object):
 
     def _check_bad_eggs(self, bad_eggs):
         ## Bad eggs are eggs which require a different Python version.
-        ## If we don't find anything more, we check bad eggs.s
+        ## If we don't find anything more, we check bad eggs.
         txt = 'Found only eggs for another Python version, which one do you want to install'
         choice = logger.ask(txt, choices=dict((v[1], v) for v in bad_eggs))
         self._download_and_install(*choice)
 
-    def _download_and_install(self, url, filename, packname, hash=None):
+    def _download_and_install(self, url, filename, packname, e, hash=None):
         fobj = download(url, 'Downloading {0}'.format(self.name))
         if hash is not None:
             logger.info('Checking md5 sum')
             if md5(fobj.getvalue()).hexdigest() != hash:
                 logger.fatal('Error: {0} appears to be corrupted', self.name)
                 return
-        e = ext(filename)
         if e in ('.tar.gz', '.tar.bz2', '.zip'):
             installer = Archive(fobj, e, packname, self.reqset)
         elif e == '.egg':
@@ -146,17 +145,15 @@ class Requirement(object):
         except (urllib2.URLError, urllib2.HTTPError) as e:
             raise InstallationError(repr(e.reason) if hasattr(e, 'reason') else e.msg)
         bad_eggs = []
-        for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg'):
+        for pext in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
             for v, name, hash, url in files[pext]:
                 if pext == '.egg' and not right_egg(name):
                     if args_manager['install']['force_egg_install']:
-                        bad_eggs.append( (url, name, p.name, hash) )
-                    continue
-                if ext(name) not in ('.tar.gz', '.tar.bz2', '.zip', '.egg') + WINDOWS_EXT:
+                        bad_eggs.append((url, name, p.name, pext, hash))
                     continue
                 logger.info('Best match: {0}=={1}', self.name, v)
                 try:
-                    self._download_and_install(url, name, p.name, hash)
+                    self._download_and_install(url, name, p.name, pext, hash)
                 except InstallationError:
                     logger.info('Trying another file (if there is one)...')
                     continue
