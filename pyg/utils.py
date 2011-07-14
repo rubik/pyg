@@ -256,6 +256,10 @@ class FileMapper(collections.defaultdict):
     Container for pyg.web.ReqManager, which needs it to hold files preferences.
     '''
 
+    def __init__(self, pref):
+        self.pref = pref
+        super(FileMapper, self).__init__(list)
+
     def __missing__(self, key):
         if key in self.pref:
             if key not in self:

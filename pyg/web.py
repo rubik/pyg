@@ -139,6 +139,13 @@ def download(url, msg):
 
 
 class ReqManager(object):
+
+    _pkg_re = re.compile('(?P<package_name>[\w][\w\d]+)-'              # alphanumeric / underscore + alphanumeric / digit / underscore
+                         '(?P<version>\d[\d\w.]+)'                     # digit + digit / dot / alphanumeric
+                         '.*?'                                         # anything
+                         '(?P<ext>\.(?:tar\.gz|tar\.bz2|zip|egg|tgz))' # the extension
+    )
+
     def __init__(self, req, pref=None):
         self.req = req
         self.req.name = self.name = real_name(self.req.name)
@@ -166,6 +173,11 @@ class ReqManager(object):
         self.pref = pref
 
     def find(self):
+        def _get_all(url):
+            match = self._pkg_re.search(url)
+            if match is None:
+                return None, None, None
+            return map(match.group, ('package_name', 'version', 'ext'))
         def _remove_query(url):
             return urlparse.urlunsplit(urlparse.urlsplit(url)[:3] + ('',) * 2)
         def _get_version(filename):
@@ -185,14 +197,16 @@ class ReqManager(object):
             for link in get_links(self.name, args_manager['install']['packages_url']):
                 package_name = _remove_query(link).split('/')[-1]
                 version = _get_version(package_name)
-                found.append((version, package_name, None, link))
+                e = ext(package_name)
+                if package_name is None or version is None:
+                    package_name, version, e = _get_all(link)
+                found.append((version, package_name, None, link, e))
         return found
 
     def files(self):
-        files = FileMapper(list)
-        files.pref = self.pref
+        files = FileMapper(self.pref)
         for release in self.find():
-            files[ext(release[1])].append(release)
+            files[release[-1]].append(release[:-1])
         return files
 
     def download(self, dest):
