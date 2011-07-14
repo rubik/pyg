@@ -175,7 +175,7 @@ Packs
 
 .. versionadded:: 0.7
 
-Packs are zip files containing an egg (which includes all necessary packages) and some Python executable files (:file:`run_{name}.py`).
+Packs are zip files containing an egg (which includes all necessary packages) and some Python executable files (:file:`run_\{name\}.py`).
 The :command:`pack` command has the following syntax::
 
     pyg pack {packname} {package} [{options}, ...]
@@ -184,7 +184,7 @@ Its name can either have the ``.zip`` extension or not.
 
 You can create a pack with the following command::
 
-    $ pyg pack pyg pyg -d pyg
+    $ pyg pack pyg.zip pyg
     Generating the bundle...
     pyg:
             Retrieving data for pyg [100% - 472.3 Kb / 472.3 Kb]               
