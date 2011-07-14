@@ -214,6 +214,17 @@ You can create a pack with the following command::
     Generating EGG-INFO...
 
 
+For example, Pyg Pack has the following structure::
+
+    pyg-0.6
+        ├── pyg.egg
+        ├── run_easy_install-2.3.py
+        ├── run_easy_install.py
+        └── run_pyg.py
+
+As you can see, there are already some executable files (Pyg looks for them in the packages' :file:`entry_points.txt` file) and you can run them without installing Pyg: everything necessary is in :file:`pyg.egg`.
+Amazing!
+
 .. option:: --dest <path>
 
     The destination. It can be either a relative path or an absolute one.

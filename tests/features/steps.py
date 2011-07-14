@@ -1,6 +1,7 @@
 from lettuce import *
 import os
 import re
+import sys
 import json
 import shutil
 import tempfile
@@ -125,7 +126,7 @@ def given_i_use_venv(step, env_name):
     if not os.path.exists(world.env_path):
         ENVIRONMENTS[env_name] = world.env_path
         if py_version:
-            args = ['--python', 'python'+py_version]
+            args = ['--python', 'python' + py_version]
         else:
             args = []
 
@@ -140,8 +141,7 @@ def given_i_use_venv(step, env_name):
         os.chdir(pyg_dir)
         install_dir = os.path.abspath(os.path.join(world.env_path, 'pyg-current'))
         if install_dir.startswith(pyg_dir):
-            print "Can't use a virtual environment inside sources folder !"
-            raise SystemExit()
+            sys.exit("Can't use a virtual environment inside sources folder !")
         if os.path.exists(install_dir):
             shutil.rmtree(install_dir)
         shutil.copytree(os.path.curdir, install_dir)

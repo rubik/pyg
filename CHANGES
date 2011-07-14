@@ -29,7 +29,8 @@ Bugs fixed
 + #64: Fixed ``pyg install --user``.
 + #66: ``pyg install -d {dir}`` could be ineffective.
 + #73: Sometimes the :command:`search` did not find anything (even if the package really exists).
-+ #74: VCS install error.
++ #74: Fixed VCS install error.
++ #94: Error when bundling same packages.
 
 Features added
 ++++++++++++++
@@ -39,15 +40,11 @@ Features added
 + #68: Now you can install local directories in development mode with the :option:`install -e` option.
 + #72: Default argparse help is incomplete: wrote Pyg's own HelpFormatter.
 + #72b: Added colored output.
-+ #76: Allow installing eggs which requires a different Python installation.
++ #76: Allow installing eggs which requires a different Python installation (added an :option:`install --force-egg-install` option).
 + #77: Improved uninstaller's file-detection.
 + #90: Now it is possible to create Packs: see :ref:`packs`.
 + #91: Replaced :command:`pyg freeze` with :command:`pyg site`.
 + #92: Now it is possible to bundle local packages.
-
-To solve:
-
-+ #87: ``pyg update`` is not dynamic.
 
 0.6 (May 15, 2011)
 ------------------
