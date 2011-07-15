@@ -40,9 +40,7 @@ if want_install:
 # go to that file's folder and set KEEPENV if not set
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 if 'KEEPENV' not in os.environ:
-    from tempfile import gettempdir, mkdtemp
-    # temporary change, to use a brand-new copy of Pyg
-    #os.environ['KEEPENV'] = os.path.join(gettempdir(), 'test_env')
+    from tempfile import mkdtemp
     os.environ['KEEPENV'] = mkdtemp('_test_env', 'pyg_')
 
 # start lettuce !

@@ -39,9 +39,9 @@ def get_url(url):
     return min(installable, key=lambda item: item['size'])['url']
 
 
-def install(pkg):
+def install(pkg, dev=False):
     log('Installing {0}'.format(pkg))
-    if '--dev' in sys.argv and pkg == 'pyg':
+    if dev and pkg == 'pyg':
         url = 'https://github.com/rubik/pyg/tarball/master'
     else:
         url = get_url(URL.format(pkg))
@@ -62,7 +62,13 @@ def main():
         import setuptools
     except ImportError:
         install('setuptools')
-    install('pyg')
+    if '--test' in sys.argv:
+        for pkg in ('virtualenv', 'lettuce'):
+            try:
+                __import__(pkg)
+            except ImportError:
+                install(pkg)
+    install('pyg', '--dev' in sys.argv)
 
 
 if __name__ == '__main__':
