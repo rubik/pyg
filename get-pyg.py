@@ -38,6 +38,13 @@ def get_url(url):
     installable = (release for release in json_data['urls'] if release['packagetype'] == 'sdist')
     return min(installable, key=lambda item: item['size'])['url']
 
+def call(args, **kwargs):
+    try:
+        subprocess.check_call(args, **kwargs)
+    except subprocess.CalledProcessError as e:
+        log('Installation failed. Installation command returned non-zero ' \
+            'exit status: ' + str(e.returncode) + '\n')
+
 
 def install(pkg, dev=False):
     log('Installing {0}'.format(pkg))
@@ -50,25 +57,21 @@ def install(pkg, dev=False):
     log('Unpacking archive...')
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
-    try:
-        log('Running setup.py install...')
-        subprocess.check_call([sys.executable, setup_py, 'install'], cwd=path)
-    except subprocess.CalledProcessError as e:
-        log('Installation failed. Installation command returned non-zero ' \
-            'exit status: ' + str(e.returncode) + '\n')
+    log('Running setup.py install...')
+    call([sys.executable, setup_py, 'install'], cwd=path)
 
 def main():
     try:
         import setuptools
     except ImportError:
         install('setuptools')
-    if '--test' in sys.argv:
+    install('pyg', '--dev' in sys.argv)
+    if '--tests' in sys.argv:
         for pkg in ('virtualenv', 'lettuce'):
             try:
                 __import__(pkg)
             except ImportError:
-                install(pkg)
-    install('pyg', '--dev' in sys.argv)
+                call(['pyg', 'install', pkg])
 
 
 if __name__ == '__main__':
