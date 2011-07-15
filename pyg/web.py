@@ -149,9 +149,7 @@ class ReqManager(object):
     def __init__(self, req, pref=None):
         self.req = req
         self.req.name = self.name = real_name(self.req.name)
-        if self.req.op is None:
-            self.package_manager = PyPIJson(self.name)
-        elif self.req.op == '==': ## LOL
+        if self.req.op == '==': ## LOL
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
             self.package_manager = PyPIJson(self.name, highest_version(self.req))

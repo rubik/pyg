@@ -15,7 +15,7 @@ except ImportError:
     import json
 
 
-URL = 'http://pypi.python.org/pypi/pyg/json'
+URL = 'http://pypi.python.org/pypi/{0}/json'
 
 
 def log(msg):
@@ -32,30 +32,38 @@ def unpack(path):
     archive.extractall(tempdir)
     return os.path.join(tempdir, os.listdir(tempdir)[0])
 
-def get_url():
-    data = urllib2.urlopen(URL).read()
+def get_url(url):
+    data = urllib2.urlopen(url).read()
     json_data = json.loads(data)
     installable = (release for release in json_data['urls'] if release['packagetype'] == 'sdist')
     return min(installable, key=lambda item: item['size'])['url']
 
-def install():
-    if '--dev' in sys.argv:
+
+def install(pkg):
+    log('Installing {0}'.format(pkg))
+    if '--dev' in sys.argv and pkg == 'pyg':
         url = 'https://github.com/rubik/pyg/tarball/master'
     else:
-        url = get_url()
+        url = get_url(URL.format(pkg))
     log('Retrieving archive from {0}'.format(url))
     path = urllib.urlretrieve(url)[0]
     log('Unpacking archive...')
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
-    python = 'python{0}.{1}'.format(*sys.version_info[:2])
     try:
         log('Running setup.py install...')
-        subprocess.check_call([python, setup_py, 'install'], cwd=path)
+        subprocess.check_call([sys.executable, setup_py, 'install'], cwd=path)
     except subprocess.CalledProcessError as e:
         log('Installation failed. Installation command returned non-zero ' \
             'exit status: ' + str(e.returncode) + '\n')
 
+def main():
+    try:
+        import setuptools
+    except ImportError:
+        install('setuptools')
+    install('pyg')
+
 
 if __name__ == '__main__':
-    install()
+    main()
