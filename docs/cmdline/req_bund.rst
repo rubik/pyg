@@ -7,7 +7,7 @@ Freezing requirements
 ---------------------
 
 .. versionchanged:: 0.7
-    From Pyg v0.7 onwards, this command has been renamed ``pyg site``.
+    From Pyg 0.7 onwards, this command has been renamed ``pyg site``.
 
 When you launch::
 
@@ -180,7 +180,7 @@ The :command:`pack` command has the following syntax::
 
     pyg pack {packname} {package} [{options}, ...]
 
-Its name can either have the ``.zip`` extension or not.
+Its name can either have the ``.zip`` extension or not, and can be a path.
 
 You can create a pack with the following command::
 
@@ -225,18 +225,19 @@ For example, Pyg Pack has the following structure::
 As you can see, there are already some executable files (Pyg looks for them in the packages' :file:`entry_points.txt` file) and you can run them without installing Pyg: everything necessary is in :file:`pyg.egg`.
 Amazing!
 
-.. option:: --dest <path>
-
-    The destination. It can be either a relative path or an absolute one.
-
 .. option:: -e <requirement>, --exclude <requirement>
 
     Specify packages to exclude from the pack (can be repeated many times)::
 
         $ pyg pack pyg.zip pyg -e argh -e "pkgtools<=0.3"
 
+    .. warning::
+        If you exclude some packages from the pack it is very likely that its executables will not work, without some dependencies.
+
 .. option:: -d, --use-develop
 
-    If specified, for every package look for a local (*develop*) package. If it does not find it, it will download it from PyPI.
+    If specified, for every package look for a local (*develop*) distribution. If it does not find it, it will download it from PyPI.
+
+    On certain systems (probably Unix-like ones) the :command:`pack` command with this option enabled may require root privileges, because Pyg will run the :command:`sdist` command (``python setup.py sdist``) for every local distribution.
 
     (See also :option:`bundle -d`.)

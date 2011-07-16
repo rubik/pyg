@@ -33,6 +33,10 @@ Pyg supports these file-types:
 
 .. option:: -e <URL>, --editable <URL>
 
+    .. versionadded:: 0.3
+    .. versionchanged:: 0.7
+        Allow paths as arguments as well.
+
     Install a package in editable mode (``python setup.py develop``) from an online repository. Supported VCS are:
 
         * Git (prefix ``git+``)
@@ -46,7 +50,7 @@ Pyg supports these file-types:
 
     All fields are required. The last part (``#egg=<package_name>``) specifies the package name.
 
-    You can give it a path as well. Actually, this::
+    You can run it with a path as well. Actually, this::
 
         $ pyg install -e path/to/a/directory
         ...
@@ -56,21 +60,17 @@ Pyg supports these file-types:
         $ cd path/to/a/directory
         $ python setup.py develop
 
-    .. versionadded:: 0.3
-    .. versionchanged:: 0.7
-        Allow directories as well.
-
 .. option:: --no-script
+
+    .. versionadded:: 0.3
 
     Do not install packages' scripts.
 
-    .. versionadded:: 0.3
-
 .. option:: --no-data
 
-    Do not install packages' data files.
-
     .. versionadded:: 0.3
+
+    Do not install packages' data files.
 
 .. option:: -r <path>, --req-file <path>
 
@@ -81,6 +81,8 @@ Pyg supports these file-types:
     See also: :ref:`reqs`
 
 .. option:: -U, --upgrade
+
+    .. versionadded:: 0.2
 
     If the package is already installed, install it again.
     For example, if you have installed ``pypol_ v0.4``::
@@ -104,13 +106,11 @@ Pyg supports these file-types:
 
     This command **does not** upgrade dependencies (see :option:`install -A`).
 
-    .. versionadded:: 0.2
-
 .. option:: -A, --upgrade-all
 
-    Like, :option:`install --upgrade`, but upgrade dependencies too.
-
     .. versionadded:: 0.5
+
+    Like, :option:`install --upgrade`, but upgrade dependencies too.
 
 .. option:: -n, --no-deps
 
@@ -257,6 +257,6 @@ You can supply both ``packname`` (one or more) and requirement files::
 
 .. note::
 
-    You can remove Pyg either with ``pyg remove pyg`` or ``pyg remove yourself``!
+    You can remove Pyg either with ``pyg remove pyg`` or ``pyg remove yourself``.
 
     .. versionadded:: 0.5
