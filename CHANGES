@@ -7,21 +7,23 @@ CHANGELOG
 + #69: Write tests. We haven't chosen the test framework to use yet.
 + #70: Upgrade :class:`pyg.req.Requirement` to honor setuptools extras.
 
-0.8 (planning)
---------------
-
-+ #78: Allow installing packages from *dev* version: ``pyg==dev``.
-+ #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.
-+ #80: Add a new method: :meth:`pyg.log.Logger.ask`.
-+ #81: Read :file:`~/.pypirc` file.
-+ #82: Allow comments in Pyg's configuration files.
-+ #83: Add support for environment variables like :envvar:`PYG_CONFIG_FILE` or :envvar:`PYG_HOME`.
-+ #95: Add TAB autocompletion for Unix shells.
-+ #96: Add an ``argv=`` keyword argument to :func:`pyg.main` function.
-+ #97: Optimize uninstaller file deletion.
-
-0.7 (in development)
+0.8 (in development)
 --------------------
+
+To fix:
+
+    + #78: Allow installing packages from *dev* version: ``pyg==dev``.
+    + #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.
+    + #80: Add a new method: :meth:`pyg.log.Logger.ask`.
+    + #81: Read :file:`~/.pypirc` file.
+    + #82: Allow comments in Pyg's configuration files.
+    + #83: Add support for environment variables like :envvar:`PYG_CONFIG_FILE` or :envvar:`PYG_HOME`.
+    + #95: Add TAB autocompletion for Unix shells.
+    + #96: Add an ``argv=`` keyword argument to :func:`pyg.main` function.
+    + #97: Optimize uninstaller file deletion.
+
+0.7 (July 16, 2011)
+-------------------
 
 Bugs fixed
 ++++++++++
