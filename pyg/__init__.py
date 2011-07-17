@@ -1,7 +1,7 @@
 __version__ = '0.7'
 
 
-def main():
+def main(argv=None):
     import sys
     import urllib2
 
@@ -17,15 +17,15 @@ def main():
 
     try:
         parser = init_parser(__version__)
-        args = parser.parse_args()
+        args = parser.parse_args(argv or sys.argv[1:])
         if args.verbose:
             logger.level = logger.VERBOSE
         if args.debug:
             logger.level = logger.DEBUG
         load_options()
-        if args_manager['global']['no_colors']:
+        if args.no_colors or args_manager['global']['no_colors']:
             logger.disable_colors()
-        parser.dispatch()
+        parser.dispatch(argv=argv)
     except (PygError, InstallationError, ValueError) as e:
         sys.exit(1)
     except AlreadyInstalled:
