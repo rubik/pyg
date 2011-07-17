@@ -333,7 +333,7 @@ class Uninstaller(object):
         logger.indent -= 8
         do_it = logger.ask('Proceed', bool=('remove files', 'cancel'), dont_ask=self.yes)
         if do_it:
-            for d in to_del:
+            for d in sorted(to_del, key=lambda i: len(i), reversed=True):
                 try:
                     logger.verbose('Deleting: {0}', d)
                     shutil.rmtree(d)
