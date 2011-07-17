@@ -322,7 +322,7 @@ class Uninstaller(object):
     def uninstall(self):
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        to_del = self.find_files()
+        to_del = sorted(self.find_files(), key=lambda i: len(i), reverse=True)
         if not to_del:
             logger.warn('{0}: did not find any files to delete', self.name)
             raise PygError
@@ -333,7 +333,7 @@ class Uninstaller(object):
         logger.indent -= 8
         do_it = logger.ask('Proceed', bool=('remove files', 'cancel'), dont_ask=self.yes)
         if do_it:
-            for d in sorted(to_del, key=lambda i: len(i), reversed=True):
+            for d in to_del:
                 try:
                     logger.verbose('Deleting: {0}', d)
                     shutil.rmtree(d)
