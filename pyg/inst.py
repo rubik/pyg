@@ -321,7 +321,7 @@ class Uninstaller(object):
 
     def _filter_paths(self, paths):
         ## This function keeps only pathnames that are prefixes to the others
-        paths.sorted(key=lambda i: len(i))
+        paths = sorted(paths, key=lambda i: len(i))
         prefixes = [paths[0]]
         paths = paths[1:]
         for i in paths:
