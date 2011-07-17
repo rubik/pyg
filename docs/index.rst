@@ -18,6 +18,10 @@ Welcome to Pyg's documentation!
 
 Pyg is a Python Package Manager that is meant to be an alternative to *easy_install* and *Pip*. It can install, remove, bundle Python packages and much more.
 
+.. note::
+
+    These is Pyg 0.7 documentation. Latest development docs are also available here: http://pyg.readthedocs.org/en/develop/
+
 .. toctree::
    :maxdepth: 1
 
