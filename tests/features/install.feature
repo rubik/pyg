@@ -11,7 +11,7 @@ Scenario: Install hg-git
     Then one line matches True
     Then the return code is 0
 
-Scenario: Install misc packages
+Scenario Outline: Install misc packages
     Given I use "standard-2.7" environment
     When I execute pyg install <pkg>
     Then the return code is 0
@@ -49,7 +49,7 @@ Scenario: Dump installed packages list
     Then many lines match [a-zA-Z_]+==\d+[\d.]*.*
     Then the return code is 0
 
-Scenario: Upgrade all packages
+Scenario Outline: Upgrade all packages
     Given I use "standard-2.7" environment
     When I execute pyg install -U <pkg>
     Then the return code is 0
@@ -70,7 +70,7 @@ Scenario: Bundle all packages
     When I execute pyg bundle -r requirements mybundle
     Then the return code is 0
 
-Scenario: Remove all packages
+Scenario Outline: Remove all packages
     Given I use "standard-2.7" environment
     When I execute pyg remove -y <pkg>
     Then the return code is 0
@@ -90,6 +90,22 @@ Scenario: UnBundle all packages
     Given I use "tmp_install" temporary folder
     When I execute pyg install -r requirements mybundle
     Then the return code is 0
+
+
+Scenario Outline: Install misc packages (with operators)
+    Given I use "standard-2.7" environment
+    Given I use "tmp_install" temporary folder
+    When I execute pyg install -U "<pkg>"
+    Then the return code is 0
+
+    Examples:
+        | pkg            |
+        | bottle==0.9.5  |
+        | dulwich!=0.7.1 |
+        | grin<=1.2.1    |
+        | buzhug>1.6     |
+        | gevent<0.13.6  |
+        | lk>=1          |
 
 
 #Scenario: Install a dev package [not supported yet, see #78]

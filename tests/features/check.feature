@@ -18,7 +18,7 @@ Scenario: Check Uninstalled packages
             | invalid   |
             | flask     |
             | ZODB3     |
-            | gevent    |
+            | dulwich   |
 
 Scenario: Check Installed packages
     Given I use "standard-2.7" environment

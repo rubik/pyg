@@ -14,12 +14,19 @@ except ImportError:
     want_install = raw_input("Lettuce package is not detected,\nauto-install (ONLY WORKS AS ADMIN) ? ") in 'yY'
 else:
     want_install = False
+try:
+    import pyg
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.pardir))
+    import pyg
+# dev version causes troubles when bundling and packing all packages (see tests),
+# that's because Pyg cannot handle dev versions yet.
+if pyg.__version__ == 'dev':
+    pyg.__version__ = '0.7'
 
 if want_install:
-    # backup python path & args before changing it
-    sys_path = sys.path
+    # backup python args before changing it
     sys_argv = sys.argv
-    sys.path.insert(0, os.path.abspath(os.path.pardir))
     # now the path is altered, import pyg
     import pyg
     # try to run lettuce's installation or upgrade
@@ -30,10 +37,9 @@ if want_install:
         print("Install failed ! Code:", e)
     else:
         if r:
-            print("Install failed ! Code:", r)
+            print "Install failed ! Code:", r
 
     # restore standard variables
-    sys.path = sys_path
     sys.argv = sys_argv
     from lettuce.lettuce_cli import main
 
