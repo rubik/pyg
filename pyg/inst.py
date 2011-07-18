@@ -320,19 +320,12 @@ class Uninstaller(object):
         return to_del
 
     def _filter_paths(self, paths):
-        ## This function keeps only pathnames that are prefixes to the others
-        paths = sorted(paths, key=lambda i: len(i))
-        prefixes = [paths[0]]
-        paths = paths[1:]
-        for i in paths:
-            if not any(os.path.basename(os.path.commonprefix([pr, i])) in i.split(os.sep) for pr in prefixes):
-                prefixes.append(i)
-        return prefixes
+        raise NotImplementedError
 
     def uninstall(self):
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        to_del = self._filter_paths(self.find_files())
+        to_del = sorted(self.find_files(), key=lambda i: len(i), reverse=True)
         if not to_del:
             logger.error('{0}: did not find any files to delete', self.name, exc=PygError)
         logger.info('Uninstalling {0}', self.name)
