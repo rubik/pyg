@@ -325,7 +325,7 @@ class Uninstaller(object):
     def uninstall(self):
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        to_del = sorted(self.find_files(), key=lambda i: len(i), reverse=True)
+        to_del = sorted(self.find_files(), key=lambda i: len(i.split(os.sep)), reverse=True)
         if not to_del:
             logger.error('{0}: did not find any files to delete', self.name, exc=PygError)
         logger.info('Uninstalling {0}', self.name)
