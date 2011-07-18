@@ -19,10 +19,6 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.pardir))
     import pyg
-# dev version causes troubles when bundling and packing all packages (see tests),
-# that's because Pyg cannot handle dev versions yet.
-if pyg.__version__ == 'dev':
-    pyg.__version__ = '0.7'
 
 if want_install:
     # backup python args before changing it
