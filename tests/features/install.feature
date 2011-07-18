@@ -108,6 +108,21 @@ Scenario Outline: Install misc packages (with operators)
         | lk>=1          |
 
 
+Scenario Outline: Install packages from VCS
+    Given I use "standard-2.7" environment
+    Given I use "tmp_install" temporary folder
+    When I execute pyg install <prefix>+<url>#egg=<egg>
+    Then the return code is 0
+
+    Examples:
+        | prefix | url                                           | egg      |
+        | git    | git@github.com:rubik/pkgtools.git             | pkgtools |
+        | git    | https://github.com/fdev31/zicbee.git          | zicbee   |
+        | hg     | https://rubik@bitbucket.org/neithere/argh     | argh     |
+        | hg     | https://rubik@bitbucket.org/birkenfeld/sphinx | sphinx   |
+        | bzr    | lp:wadllib                                    | wadllib  |
+
+
 #Scenario: Install a dev package [not supported yet, see #78]
 #    Given I use "standard-2.7" environment
 #    When I execute pyg install bottle==dev
