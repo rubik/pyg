@@ -152,7 +152,9 @@ class ReqManager(object):
         if self.req.op == '==': ## LOL
             self.package_manager = PyPIJson(self.name, self.req.version)
         else:
-            self.package_manager = PyPIJson(self.name, highest_version(self.req))
+            hi = highest_version(self.req)
+            self.req.version = hi
+            self.package_manager = PyPIJson(self.name, hi)
 
         url = args_manager['install']['index_url'] + '/' + self.package_manager.URL.split('/pypi/', 1)[1]
         self.package_manager.URL = url

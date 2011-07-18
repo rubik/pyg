@@ -30,8 +30,6 @@ Scenario: Pack & bundle them individually
     When I remove "foobar.zip"
     When I execute pyg pack foobar.zip <pkg>
     Then the return code is 0
-    When I execute pyg pack -d foobar.zip <pkg>
-    Then the return code is 0
 
     Examples:
         | pkg       |
@@ -108,7 +106,7 @@ Scenario Outline: Install misc packages (with operators)
         | lk>=1          |
 
 
-Scenario Outline: Install packages from VCS
+Scenario Otline: Install packages from VCS
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
     When I execute pyg install <prefix>+<url>#egg=<egg>
@@ -121,6 +119,17 @@ Scenario Outline: Install packages from VCS
         | hg     | https://rubik@bitbucket.org/neithere/argh     | argh     |
         | hg     | https://rubik@bitbucket.org/birkenfeld/sphinx | sphinx   |
         | bzr    | lp:wadllib                                    | wadllib  |
+
+Scenario Outline: Install misc packages (with multiple versions)
+    Given I use "standard-2.7" environment
+    Given I use "tmp_install" temporary folder
+    When I execute pyg install -U "<pkg>"
+    Then the return code is 0
+
+    Examples:
+        | pkg                        |
+        | pkgtools>=0.4,!=0.5,<0.6.3 |
+        | zicbee>0.7,!=0.8,<1        |
 
 
 #Scenario: Install a dev package [not supported yet, see #78]

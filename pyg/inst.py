@@ -94,6 +94,7 @@ class Installer(object):
             Installer._install_deps(r.reqset, r.name, updater)
             logger.success('{0} installed successfully', r.name)
         except (KeyboardInterrupt, Exception) as e:
+            raise
             try:
                 msg = e.args[0]
             except IndexError:
