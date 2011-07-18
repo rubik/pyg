@@ -41,7 +41,6 @@ class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.writelines(data)
         print "-eot-"
 
-    do_POST = do_GET
 
 def run():
     server_address = ('0.0.0.0', PROXY_PORT)
