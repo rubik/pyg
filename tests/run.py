@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
-import threading
-import pypi_cache_server
+import subprocess
 
-cache = threading.Thread(target=pypi_cache_server.run)
-cache.setDaemon(True)
-cache.start()
+cache_server = subprocess.Popen([sys.executable, 'pypi_cache_server.py'])
 
 try:
     from lettuce.lettuce_cli import main
@@ -46,4 +43,12 @@ if 'KEEPENV' not in os.environ:
     os.environ['KEEPENV'] = mkdtemp('_test_env', 'pyg_')
 
 # start lettuce !
-sys.exit(main())
+try:
+    r = main()
+except:
+    r = 1
+finally:
+    os.kill(cache_server.pid, 15)
+    print "waiting for http server to shut down"
+    cache_server.wait()
+    sys.exit(r)

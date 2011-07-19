@@ -1,51 +1,109 @@
-#!/usr/bin/env python
-# rewrite this with bottle + request (?)
-# Copy of http://sharebear.co.uk/blog/2009/09/17/very-simple-python-caching-proxy/
+'''
+Pypi cache server
+Original author: Victor-mortal
+'''
 
-REAL_SERVER = "http://pypi.python.org"
-PROXY_PORT = 8080
-
-import BaseHTTPServer
-import hashlib
 import os
-import cgi
-import urllib2
+import httplib
+import urlparse
+import logging
+import datetime
+import locale
+import types
+import json
+import hashlib
+import webob
+import gevent
+from gevent import wsgi as wsgi_fast, pywsgi as wsgi, monkey
 
-class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_POST(self):
-        ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-        if ctype == 'multipart/form-data':
-            postvars = cgi.parse_multipart(self.rfile, pdict)
-        elif ctype == 'application/x-www-form-urlencoded':
-            length = int(self.headers.getheader('content-length'))
-            postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-        else:
-            postvars = {}
-        return self.do_GET(''.join(''.join(x) for x in postvars.iteritems()))
+CACHE_DIR = '.cache'
+wsgi = wsgi_fast # comment to use pywsgi
 
-    def do_GET(self, args=''):
-        print '-'*80
-        m = hashlib.md5()
-        m.update(self.path)
-        m.update(args)
-        cache_filename = m.hexdigest()
-        if os.path.exists(cache_filename):
-            print "Cache hit"
-            data = open(cache_filename).readlines()
-        else:
-            print "Cache miss", self.path
-            data = urllib2.urlopen(REAL_SERVER + self.path).readlines()
-            open(cache_filename, 'wb').writelines(data)
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.writelines(data)
-        print "-eot-"
+host = '0.0.0.0'
+port = 8080
 
 
-def run():
-    server_address = ('0.0.0.0', PROXY_PORT)
-    httpd = BaseHTTPServer.HTTPServer(server_address, CacheHandler)
-    httpd.serve_forever()
+class Proxy(object):
+    """A WSGI based web proxy application
+    """
+
+    def __init__(self, chunkSize=4096, timeout=60, dropHeaders=['transfer-encoding'], pypiHost=None, log=None):
+        """
+        @param log: logger of logging library
+        """
+        self.log = log
+        if self.log is None:
+            self.log = logging.getLogger('proxy')
+
+        self.chunkSize = chunkSize
+        self.timeout = timeout
+        self.dropHeaders = dropHeaders
+        self.pypiHost = pypiHost
+
+    def yieldData(self, response, cache_file=None):
+        while True:
+            data = response.read(self.chunkSize)
+            yield data
+            if cache_file:
+                cache_file.write(data)
+            if len(data) < self.chunkSize:
+                break
+        if cache_file:
+            cache_file.close()
+
+    def _rewrite(self, req, start_response):
+        path = req.path_info
+        if req.query_string:
+            path += '?' + req.query_string
+        parts = urlparse.urlparse(path)
+        headers = req.headers
+
+        md = hashlib.md5()
+        md.update(' '.join('%s:%s'%v for v in headers.iteritems()))
+        md.update(path)
+
+        cache_file = os.path.join(CACHE_DIR, md.hexdigest())
+        if os.path.exists(cache_file):
+            o = json.load( open(cache_file+'.js', 'rb') )
+            start_response(o['response'], o['headers'])
+            return self.yieldData( open(cache_file) )
+
+        self.log.debug('Request from %s to %s', req.remote_addr, path)
+
+        url = path
+        conn = httplib.HTTPConnection(self.pypiHost, timeout=self.timeout)
+        #headers['X-Forwarded-For'] = req.remote_addr
+        #headers['X-Real-IP'] = req.remote_addr
+
+        try:
+            conn.request(req.method, url, headers=headers, body=req.body)
+            response = conn.getresponse()
+        except Exception, e:
+            msg = str(e)
+            if os.name == 'nt':
+                _, encoding = locale.getdefaultlocale()
+                msg = msg.decode(encoding)
+            self.log.warn('Bad gateway with reason: %s', msg, exc_info=True)
+            start_response('502 Bad gateway', [])
+            return ['Bad gateway']
+
+        headers = [(k, v) for (k, v) in response.getheaders()\
+                   if k not in self.dropHeaders]
+        start_response('%s %s' % (response.status, response.reason),
+                       headers)
+        json.dump( {'headers': headers, 'response': '%s %s' % (response.status, response.reason)}, open(cache_file+'.js', 'wb'))
+        return self.yieldData(response, cache_file=open(cache_file, 'wb'))
+
+    def __call__(self, env, start_response):
+        req = webob.Request(env)
+        return self._rewrite(req, start_response)
 
 if __name__ == '__main__':
-    run()
+        if not os.path.isdir(CACHE_DIR):
+            os.mkdir(CACHE_DIR)
+
+        monkey.patch_all()
+        handler = Proxy(pypiHost='pypi.python.org:80')
+
+        wsgi.WSGIServer((host, port), handler).serve_forever()
+        run()
