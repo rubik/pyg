@@ -4,6 +4,10 @@ import site
 import platform
 
 
+__all__ = ['under_virtualenv', 'INSTALL_DIR', 'USER_SITE', 'ALL_SITE_PACKAGES',
+           'EASY_INSTALL', 'PYG_LINKS', 'BIN', 'HOME', 'PYG_HOME', 'CFG_FILES']
+
+
 def under_virtualenv():
     return hasattr(sys, 'real_prefix')
 
@@ -85,24 +89,32 @@ else:
 ## environment variable will be set. We can use that to get the user's home
 ## We also set to None all the variables that depend on HOME.
 
+## Look for environment variables: HOME, PYG_CONFIG_FILE, 
 HOME = os.getenv('HOME')
-PYG_HOME = None
-CFG_FILES = [os.path.join(os.getcwd(), 'pyg.conf')]
+CFG_FILES = os.getenv('PYG_CONFIG_FILE')
+if CFG_FILES is not None:
+    CFG_FILES = CFG_FILES.split(':')
+else:
+    CFG_FILES = []
+CFG_FILES.append(os.path.join(os.getcwd(), 'pyg.conf'))
+
+## Look for SUDO_UID environment variable (Unix)
 _sudo_uid = os.getenv('SUDO_UID')
 if _sudo_uid:
     import pwd
     _sudo_uid = int(_sudo_uid)
     HOME = pwd.getpwuid(_sudo_uid).pw_dir
+if HOME is not None:
+    CFG_FILES.append(os.path.join(HOME, 'pyg.conf'))
 
 ## Here is Pyg's HOME directory
 ## If it does not exists we create it
-if HOME is not None:
+PYG_HOME = os.getenv('PYG_HOME')
+if PYG_HOME is None and HOME is not None:
     PYG_HOME = os.path.join(HOME, '.pyg')
-    if not os.path.exists(PYG_HOME):
-        os.makedirs(PYG_HOME)
-
-    ## PACKAGES_CACHE has been removed because with `pkg_resources.working_set` we
-    ## don't need a cache
-    CFG_FILES.extend([os.path.join(HOME, 'pyg.conf'),
-                      os.path.join(PYG_HOME, 'pyg.conf')]
-                    )
+if PYG_HOME and not os.path.exists(PYG_HOME):
+    os.makedirs(PYG_HOME)
+## PACKAGES_CACHE has been removed because with `pkg_resources.working_set` we
+## don't need a cache
+if PYG_HOME is not None:
+    CFG_FILES.append(os.path.join(PYG_HOME, 'pyg.conf'))
