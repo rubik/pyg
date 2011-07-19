@@ -5,6 +5,7 @@ import glob
 import shutil
 import tarfile
 import zipfile
+import urllib2
 import tempfile
 import urlparse
 import ConfigParser
@@ -94,13 +95,11 @@ class Installer(object):
             Installer._install_deps(r.reqset, r.name, updater)
             logger.success('{0} installed successfully', r.name)
         except (KeyboardInterrupt, Exception) as e:
-            try:
-                msg = e.args[0]
-            except IndexError:
-                msg = repr(e)
-
+            msg = str(e)
             if isinstance(e, KeyboardInterrupt):
                 logger.warn('Process interrupted...')
+            elif isinstance(e, urllib2.HTTPError):
+                logger.error('HTTP Error: {0}', msg[msg.find('HTTP Error')+11:])
             else:
                 logger.warn('Error: An error occurred during the {0} of {1}: {2}',
                         'upgrading' if self.upgrading else 'installation',
