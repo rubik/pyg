@@ -1,4 +1,4 @@
-__version__ = 'dev'
+__version__ = '0.8a'
 
 
 def main(argv=None):
