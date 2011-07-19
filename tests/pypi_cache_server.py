@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# rewrite this with bottle + request (?)
 # Copy of http://sharebear.co.uk/blog/2009/09/17/very-simple-python-caching-proxy/
 
 REAL_SERVER = "http://pypi.python.org"
@@ -40,7 +41,6 @@ class CacheHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.writelines(data)
         print "-eot-"
 
-    do_POST = do_GET
 
 def run():
     server_address = ('0.0.0.0', PROXY_PORT)
