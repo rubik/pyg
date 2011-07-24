@@ -215,13 +215,11 @@ class Uninstaller(object):
         _un2_re = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
         _un3_re = re.compile(r'{0}.*\.so'.format(self.name), re.I)
         _uninstall_re = [_un_re, _un2_re, _un3_re]
-        
         to_del = set()
         try:
             dist = pkg_resources.get_distribution(self.name)
         except pkg_resources.DistributionNotFound:
             logger.debug('debug: Distribution not found: {0}', self.name)
-        
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
             class FakeDist(object):
@@ -234,20 +232,16 @@ class Uninstaller(object):
                         return (lambda *a: self._orig_o.name + '.egg')
                     return (lambda *a: False)
             dist = FakeDist(self)
-        
         pkg_loc = dist.location
-        
         glob_folder = False
-        
         if pkg_loc in ALL_SITE_PACKAGES:
-        
             # try to detect the real package location
             if dist.has_metadata('top_level.txt'):
                 pkg_loc = os.path.join( pkg_loc,
                     dist.get_metadata_lines('top_level.txt').next())
             else:
                 glob_folder = True
-        
+
         # detect egg-info location
         _base_name = dist.egg_name().split('-')
         for n in range(len(_base_name) + 1):
@@ -261,7 +255,7 @@ class Uninstaller(object):
                         to_del.add(os.path.join(egg_info_dir, file))
                 to_del.add(egg_info_dir)
                 break
-        
+
         if glob_folder:
             # track individual files inside that folder
             try:
@@ -273,7 +267,6 @@ class Uninstaller(object):
         else: # specific folder (non site-packages)
             if os.path.isdir(pkg_loc):
                 to_del.add(pkg_loc)
-        
             # finding package's files into that folder
             if os.path.isdir(pkg_loc):
                 for file in os.listdir(pkg_loc):
@@ -285,12 +278,12 @@ class Uninstaller(object):
                     _p = pkg_loc + ext
                     if os.path.exists(_p):
                         to_del.add(_p)
-        
+
         ## Checking for package's scripts...
         if dist.has_metadata('scripts') and dist.metadata_isdir('scripts'):
             for script in dist.metadata_listdir('scripts'):
                 to_del.add(os.path.join(BIN, script))
-        
+
                 ## If we are on Windows we have to remove *.bat files too
                 if is_windows():
                     to_del.add(os.path.join(BIN, script) + '.bat')
@@ -304,11 +297,11 @@ class Uninstaller(object):
             if config.has_section('console_scripts'):
                 for name, value in config.items('console_scripts'):
                     n = os.path.join(BIN, name)
-        
+
                     ## Searches in the local path
                     if not os.path.exists(n) and n.startswith('/usr/bin'):
                         n = os.path.join('/usr/local/bin', name)
-        
+
                     ## Check existance before adding to `to-del` set.
                     if os.path.exists(n):
                         to_del.add(n)
