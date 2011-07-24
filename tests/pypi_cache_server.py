@@ -98,12 +98,13 @@ class Proxy(object):
         req = webob.Request(env)
         return self._rewrite(req, start_response)
 
+
 if __name__ == '__main__':
-        if not os.path.isdir(CACHE_DIR):
-            os.mkdir(CACHE_DIR)
+    if not os.path.isdir(CACHE_DIR):
+        os.mkdir(CACHE_DIR)
 
-        monkey.patch_all()
-        handler = Proxy(pypiHost='pypi.python.org:80')
+    monkey.patch_all()
+    handler = Proxy(pypiHost='pypi.python.org:80')
 
-        wsgi.WSGIServer((host, port), handler).serve_forever()
-        run()
+    wsgi.WSGIServer((host, port), handler).serve_forever()
+    run()

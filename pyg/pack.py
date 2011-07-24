@@ -36,16 +36,19 @@ if not(my_dir):
     print "Unable to find {0!r} file !"
     raise SystemExit()
 
-sys.path = [os.path.join(my_dir[0], egg_name)] + [x for x in sys.path if p_re.match(x)]
+#sys.path = [os.path.join(my_dir[0], egg_name)] + [x for x in sys.path if p_re.match(x)]
+# Temporary fix
+{1}
 
-import {1}
-sys.exit({1}.{2}())
+import {2}
+sys.exit({2}.{3}())
 '''
 
 ## Now it is still a placeholder
-def _gen_executable(eggname, code):
-    import_tok, func = code.split(':')
-    return RUN_PY.format(eggname, import_tok, func)
+def _gen_executable(eggname, code, modules):
+    import_tok, func = map(str.strip, code.split(':'))
+    sys_path = '\n'.join('sys.path.insert(0, "{0}/{1}")'.format(eggname, path) for path in modules)
+    return RUN_PY.format(eggname, sys_path, import_tok, func)
 
 
 class Packer(object):
@@ -84,11 +87,14 @@ packages = [
             self.pack_name = self.pack_name + '.zip'
         self.dest = dest
         self.bundled = {}
+        ## For now this is a simple placeholder
+        self.modules = []
         self.entry_points = {}
 
     def _bundle_callback(self, req, sdist):
         sdist._name, sdist._version = req.name, req.version
         self.bundled[sdist.name] = sdist
+        self.modules.append('{0}-{1}'.format(sdist.name, sdist.version))
 
     def _fill_metadata(self):
         content = self.EGG_FILES['spec/depend']
@@ -198,8 +204,8 @@ packages = [
                 z.write(bundle, '/'.join([folder_name, eggname]))
                 # write executable files
                 for command_name, code in self.entry_points.iteritems():
-                    z.writestr('/'.join([folder_name, 'run_%s.py'%command_name]),
-                        _gen_executable(eggname, code))
+                    z.writestr('/'.join([folder_name, 'run_%s.py' % command_name]),
+                        _gen_executable(eggname, code, self.modules))
             dest = os.path.join(self.dest, self.pack_name)
             if os.path.exists(dest):
                 os.remove(dest)
