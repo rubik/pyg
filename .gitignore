@@ -12,3 +12,4 @@ temp/
 *.nja
 .ninjaproject
 .ropeproject
+tests/.cache
