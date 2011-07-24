@@ -318,7 +318,7 @@ class Uninstaller(object):
             return self._old_find_files()
 
         to_del = files['lib']
-        for name in f['bin']:
+        for name in files['bin']:
             bin = os.path.join(BIN, name)
             if not os.path.exists(bin) and bin.startswith('/usr/bin'):
                 bin = os.path.join('/usr/local/bin', name)
