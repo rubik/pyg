@@ -25,33 +25,39 @@ import os
 import sys
 import re
 
-# For now this is "safe", should be improved with time
-p_re = re.compile('.*(\.egg|python\d+[.\d]+[^/]*|lib-\w+|plat-\w+)$')
-egg_name = {0!r}
+p_re = re.compile('.*(python\d+[.\d]+[^/]*|lib-\w+|plat-\w+)$')
 
 exists = os.path.exists
 j = os.path.join
-paths = [os.getcwd()] + sys.path
+# we don't care about order
+paths = set(sys.path)
+paths.add(os.getcwd())
 
-my_dir = [p for p in paths if exists(j(p, egg_name))]
+my_dir = [p for p in paths if exists(j(p, {egg!r}))]
 if not(my_dir):
-    print "Unable to find {0!r} file !"
+    print "Unable to find {egg!r} file !"
     raise SystemExit()
 
-#sys.path = [os.path.join(my_dir[0], egg_name)] + [x for x in sys.path if p_re.match(x)]
-# Temporary fix
-{1}
+# keep the first egg found
+egg_path = os.path.join(my_dir[0], {egg!r})
 
-import {2}
-sys.exit({2}.{3}())
+sys.path = [os.path.join(egg_path, mod) for mod in {modules!r}] \\
+    + [x for x in sys.path if p_re.match(x)]
+
+# run!
+import {mod_name}
+sys.exit({mod_name}.{callable}())
 '''
 
 ## Now it is still a placeholder
 def _gen_executable(eggname, code, modules):
     import_tok, func = map(str.strip, code.split(':'))
-    sys_path = '\n'.join('sys.path.insert(0, "{0}/{1}")'.format(eggname, path) for path in modules)
-    return RUN_PY.format(eggname, sys_path, import_tok, func)
-
+    return RUN_PY.format(
+        egg = eggname,
+        mod_name = import_tok,
+        callable = func,
+        modules = tuple(modules),
+    )
 
 class Packer(object):
 
