@@ -16,11 +16,11 @@ Welcome to Pyg's documentation!
 :Keywords: python, easy_install, packages, pypi, command line, cli
 :Date: |today|
 
-Pyg is a Python Package Manager that is meant to be an alternative to *easy_install* and *Pip*. It can install, remove, bundle Python packages and much more.
-
 .. note::
 
     This is Pyg |version| documentation. Latest development docs are also available here: http://pyg.readthedocs.org/en/develop/
+
+Pyg is a Python Package Manager that is meant to be an alternative to *easy_install* and *Pip*. It can install, remove, bundle Python packages and much more.
 
 .. toctree::
    :maxdepth: 1
