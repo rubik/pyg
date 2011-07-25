@@ -1,3 +1,4 @@
+import os
 import sys
 import pyg
 
@@ -9,6 +10,13 @@ except ImportError:
 
 from setuptools import setup
 
+
+# Remove *.pyc files, since setuptools doesn't do that (even with the
+# exclude_package_data keyword)
+for dir, subdirs, files in os.walk(os.path.abspath('.')):
+    for file in files:
+        if file.endswith('.pyc'):
+            os.remove(os.path.join(dir, file))
 
 requires = ['setuptools', 'pkgtools>=0.7', 'argh']
 if sys.version_info[:2] < (2, 7):
