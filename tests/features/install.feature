@@ -109,7 +109,7 @@ Scenario Outline: Install misc packages (with operators)
 Scenario Otline: Install packages from VCS
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
-    When I execute pyg install <prefix>+<url>#egg=<egg>
+    When I execute pyg install "<prefix>+<url>#egg=<egg>"
     Then the return code is 0
 
     Examples:

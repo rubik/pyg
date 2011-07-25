@@ -256,8 +256,8 @@ def bundle_func(packages, bundlename, exclude, req_file, develop):
     exclude = [Requirement(r) for r in (exclude or [])]
     bundlename = os.path.abspath(bundlename)
     dest, bundlename = os.path.dirname(bundlename), os.path.basename(bundlename)
-    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, dest, use_develop=develop)
-    b.bundle()
+    b = Bundler(map(Requirement, packages) + reqs, bundlename, exclude, use_develop=develop)
+    b.bundle(dest=dest)
 
 def pack_func(package, packname, exclude, use_develop):
     packname = os.path.abspath(packname)
