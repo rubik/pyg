@@ -243,8 +243,9 @@ packages = [
                     z.write(bundle, '/'.join([folder_name, eggname]))
                     # write executable files
                     for command_name, code in self.entry_points.iteritems():
-                        z.writestr('/'.join([folder_name, 'run_%s.py' % command_name]),
-                            _gen_executable(eggname, code, self.modules))
+                        z.add_executable('/'.join((folder_name, 'run_%s.py' % command_name)),
+                            _gen_executable(eggname, code, self.modules)
+                        )
                 dest = os.path.join(self.dest, self.pack_name)
                 if os.path.exists(dest):
                     os.remove(dest)

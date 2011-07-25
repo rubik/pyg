@@ -345,6 +345,11 @@ class ZipFile(zipfile.ZipFile):
     def __exit__(self, type, value, traceback):
         self.close()
 
+    def add_executable(self, filename, content):
+        zi = zipfile.ZipInfo(filename)
+        zi.external_attr = 0777 << 16L
+        self.writestr(zi, content)
+
 #class TarFile(tarfile.TarFile):
 #    def __enter__(self):
 #        return self
