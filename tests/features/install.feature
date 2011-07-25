@@ -70,6 +70,7 @@ Scenario: Bundle all packages
     When I execute pyg bundle -r requirements mybundle
     Then the return code is 0
 
+
 Scenario: Remove all packages
     Given I use "standard-2.7" environment
     When I execute pyg remove -y <pkg>

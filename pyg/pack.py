@@ -3,6 +3,7 @@ Create Packs, like Zicbee Pack (at http://pypi.python.org/zicbee).
 Inspired by zicbee-workshop's manage.py
 '''
 
+import re
 import os
 import sys
 import glob
@@ -13,7 +14,8 @@ from pyg.log import logger
 from pyg.req import Requirement
 from pyg.web import highest_version
 from pyg.inst import Bundler
-from pyg.utils import TempDir, ZipFile
+from pyg.core import PygError
+from pyg.utils import TempDir, ZipFile, call_setup, print_output, unpack
 
 
 RUN_PY = '''#!/usr/bin/env python
@@ -181,26 +183,63 @@ packages = [
                             self.entry_points[cmd] = code
                     f.write(content)
 
-            return egg_info
+                # this is for Bundler._add_to_archive: it needs the temporary
+                # directory length
+                tempdir_len = len(tempdir)
+            return egg_info, tempdir_len
+
+    def _gen_eggs(self, source_dir, egg_dir):
+        r = re.compile(r'-py\d\.\d')
+        def unzip_egg(arch_path):
+            arch = os.path.basename(arch_path)
+            eggname = arch[:r.search(arch).start()]
+            with ZipFile(arch_path) as z:
+                z.extractall(os.path.join(egg_dir, eggname))
+
+        with TempDir() as tempdir:
+            for dist in os.listdir(source_dir):
+                code, output = call_setup(os.path.join(source_dir, dist), ['bdist_egg', '-d', tempdir])
+                if code != 0:
+                    logger.fatal('Error: cannot generate egg for {0}', dist)
+                    print_output(output, 'setup.py bdist_egg')
+                    raise PygError('cannot generate egg for {0}'.format(dist))
+                arch = glob.glob(os.path.join(tempdir, dist) + '*.egg')[0]
+                unzip_egg(arch)
 
     def gen_pack(self, exclude=[], use_develop=False):
+        # This is where to download all packages
+        # and where to build the pack
         with TempDir() as tempdir:
-            logger.info('Generating the bundle...')
-            b = Bundler([self.req], self.bundle_name, exclude=exclude, dest=tempdir, \
-                callback=self._bundle_callback, use_develop=use_develop)
-            b.bundle(include_manifest=False, build_dir=False, add_func=self._mk_egg_info)
+            # This is where to store the egg
+            with TempDir() as bundle_dir:
+                logger.info('Generating the bundle...')
+                b = Bundler([self.req], self.bundle_name, exclude=exclude, \
+                    callback=self._bundle_callback, use_develop=use_develop)
 
-            bundle = os.path.join(b.destination, b.bundle_name)
-            pack = os.path.join(tempdir, self.pack_name)
-            eggname = self.req.name + '.egg'
-            folder_name = '{0.name}-{0.version}'.format(self.bundled[self.req.name])
-            with ZipFile(pack, mode='w') as z:
-                z.write(bundle, '/'.join([folder_name, eggname]))
-                # write executable files
-                for command_name, code in self.entry_points.iteritems():
-                    z.writestr('/'.join([folder_name, 'run_%s.py'%command_name]),
-                        _gen_executable(eggname, code))
-            dest = os.path.join(self.dest, self.pack_name)
-            if os.path.exists(dest):
-                os.remove(dest)
-            shutil.move(pack, self.dest)
+                # we download packages without creating the bundle to build
+                # eggs
+                b._download_all(tempdir)
+                b._clean(tempdir)
+
+                bundle = os.path.join(bundle_dir, self.req.name) + '.egg'
+                with ZipFile(bundle, mode='w') as egg:
+                    # Create a new directory to store unpacked eggs
+                    with TempDir() as egg_dir:
+                        self._gen_eggs(tempdir, egg_dir)
+                        b._add_to_archive(egg, egg_dir, len(egg_dir))
+                        egg_info, tl = self._mk_egg_info()
+                        b._add_to_archive(egg, egg_info, tl)
+
+                pack = os.path.join(tempdir, self.pack_name)
+                eggname = self.req.name + '.egg'
+                folder_name = '{0.name}-{0.version}'.format(self.bundled[self.req.name])
+                with ZipFile(pack, mode='w') as z:
+                    z.write(bundle, '/'.join([folder_name, eggname]))
+                    # write executable files
+                    for command_name, code in self.entry_points.iteritems():
+                        z.writestr('/'.join([folder_name, 'run_%s.py' % command_name]),
+                            _gen_executable(eggname, code, self.modules))
+                dest = os.path.join(self.dest, self.pack_name)
+                if os.path.exists(dest):
+                    os.remove(dest)
+                shutil.move(pack, self.dest)

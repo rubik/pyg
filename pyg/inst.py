@@ -505,7 +505,6 @@ class Bundler(object):
         self.bundle_name = bundle_name
         self.bundled = [] # To keep track of the all bundled packages
         self.exclude = exclude
-        self.destination = dest or os.getcwd()
         # callback is a function called after each package is downloaded
         # it should accept two arguments, the requirement and the SDist object.
         self.callback = callback or (lambda *a:a)
@@ -562,6 +561,63 @@ class Bundler(object):
         self.bundled.append('{0}=={1}'.format(name(d_name).split('-')[0], version))
         return arch_name
 
+    def _download_all(self, dir):
+        reqs = list(self.reqs)
+        already_downloaded = set()
+        while reqs:
+            r = reqs.pop()
+            # Hack for virtualenvs
+            if r.name.lower == 'python':
+                continue
+            if any(r.name == rq.name for rq in already_downloaded):
+                logger.debug('debug: Already downloaded: {0}', r)
+                continue
+            if any(r == rq for rq in self.exclude):
+                logger.info('Excluding {0}', r)
+                continue
+            logger.indent = 0
+            logger.info('{0}:', r)
+            logger.indent = 8
+            try:
+                dist = SDist(self._download(dir, r))
+                self.callback(r, dist)
+            except ConfigParser.MissingSectionHeaderError:
+                continue
+            try:
+                logger.info('Looking for {0} dependencies', r)
+                logger.indent += 8
+                found = False
+                try:
+                    requirements = dist.file('requires.txt')
+                except KeyError:
+                    requirements = []
+                for requirement in requirements:
+                    rq = Requirement(requirement)
+                    if rq not in already_downloaded:
+                        logger.info('Found: {0}', requirement)
+                        reqs.append(rq)
+                        found = True
+                if not found:
+                    logger.info('None found')
+            except KeyError:
+                logger.debug('debug: requires.txt not found for {0}', dist)
+            try:
+                as_req = dist.as_req
+            except KeyError:
+                as_req = str(r)
+            already_downloaded.add(Requirement(as_req))
+        logger.indent = 0
+        logger.success('Finished processing dependencies')
+
+    @staticmethod
+    def _add_to_archive(zfile, dir, tempdir_len):
+        for file in os.listdir(dir):
+            path = os.path.join(dir, file)
+            if os.path.isfile(path):
+                zfile.write(path, os.path.join(dir, file)[tempdir_len:])
+            elif os.path.isdir(path):
+                Bundler._add_to_archive(zfile, path, tempdir_len)
+
     @staticmethod
     def _clean(dir):
         '''
@@ -573,7 +629,7 @@ class Bundler(object):
             logger.debug('debug: Removing: {0}', file)
             os.remove(os.path.join(dir, file))
 
-    def bundle(self, include_manifest=True, build_dir=True, additional_files=[], add_func=None):
+    def bundle(self, dest=None, include_manifest=True, build_dir=True, additional_files=[], add_func=None):
         '''
         Create a bundle of the specified package:
 
@@ -584,14 +640,7 @@ class Bundler(object):
             5. Move the bundle from the build dir to the destination
         '''
 
-        def _add_to_archive(zfile, dir):
-            for file in os.listdir(dir):
-                path = os.path.join(dir, file)
-                if os.path.isfile(path):
-                    zfile.write(path, os.path.join(dir, file)[len(tempdir):])
-                elif os.path.isdir(path):
-                    _add_to_archive(zfile, path)
-
+        destination = dest or os.getcwd()
         with TempDir() as tempdir:
             with TempDir() as bundle_dir:
                 ## Step 0: we create the `build` directory
@@ -607,52 +656,7 @@ class Bundler(object):
 
                 ## Step 1: we *recursively* download all required packages
                 #####
-                reqs = list(self.reqs)
-                already_downloaded = set()
-                while reqs:
-                    r = reqs.pop()
-                    if r.name.lower == 'python':
-                        continue
-                    if any(r.name == rq.name for rq in already_downloaded):
-                        logger.debug('debug: Already downloaded: {0}', r)
-                        continue
-                    if any(r == rq for rq in self.exclude):
-                        logger.info('Excluding {0}', r)
-                        continue
-                    logger.indent = 0
-                    logger.info('{0}:', r)
-                    logger.indent = 8
-                    try:
-                        dist = SDist(self._download(build, r))
-                        self.callback(r, dist)
-                    except ConfigParser.MissingSectionHeaderError:
-                        continue
-                    try:
-                        logger.info('Looking for {0} dependencies', r)
-                        logger.indent += 8
-                        found = False
-                        try:
-                            requirements = dist.file('requires.txt')
-                        except KeyError:
-                            requirements = []
-                        for requirement in requirements:
-                            rq = Requirement(requirement)
-                            if rq not in already_downloaded:
-                                logger.info('Found: {0}', requirement)
-                                reqs.append(rq)
-                                found = True
-                        # XXX: Does not work, don't know why!
-                        if not found:
-                            logger.info('None found')
-                    except KeyError:
-                        logger.debug('debug: requires.txt not found for {0}', dist)
-                    try:
-                        as_req = dist.as_req
-                    except KeyError:
-                        as_req = str(r)
-                    already_downloaded.add(Requirement(as_req))
-                logger.indent = 0
-                logger.success('Finished processing dependencies')
+                self._download_all(build)
 
                 ## Step 2: we remove all files in the build directory, so we make sure
                 ## that when we collect packages we collect only dirs
@@ -664,7 +668,7 @@ class Bundler(object):
                 #####
                 logger.info('Adding packages to the bundle')
                 bundle = zipfile.ZipFile(tmp_bundle, mode='w')
-                _add_to_archive(bundle, build)
+                self._add_to_archive(bundle, build, len(tempdir))
 
                 ## Step 4: add the manifest file
                 if include_manifest:
@@ -674,16 +678,16 @@ class Bundler(object):
                 # Additional files to add
                 for path in additional_files:
                     try:
-                        _add_to_archive(bundle, path)
+                        self._add_to_archive(bundle, path, len(tempdir))
                     except (IOError, OSError):
                         logger.debug('debug: Error while adding an additional file: {0}', path)
                 if add_func is not None:
-                    _add_to_archive(bundle, add_func())
+                    self._add_to_archive(bundle, add_func(), len(tempdir))
                 bundle.close()
 
                 ## Last step: move the bundle to the current working directory
-                dest = os.path.join(self.destination, self.bundle_name)
+                dest = os.path.join(destination, self.bundle_name)
                 if os.path.exists(dest):
                     logger.debug('debug: dest already exists, removing it')
                     os.remove(dest)
-                shutil.move(tmp_bundle, self.destination)
+                shutil.move(tmp_bundle, destination)

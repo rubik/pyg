@@ -179,7 +179,7 @@ def run_setup(path, name, global_args=[], args=[], exc=TypeError):
     '''
 
     logger.info('Running setup.py install for {0}', name)
-    if name == 'dreampie':
+    if name == 'dreampie': # little exception to make it works
         ar = global_args + ['install'] + args
     else:
         ar = global_args + ['install', '--single-version-externally-managed',
@@ -235,9 +235,9 @@ def ext(path):
 
     return name_ext(path)[1]
 
-def unpack(path):
+def unpack(path, dest=None):
     '''
-    Unpack the specified archive into the same directory.
+    Unpack the specified archive into the same directory or a specified destination.
     '''
 
     path = os.path.abspath(path)
@@ -250,7 +250,7 @@ def unpack(path):
         arch = tarfile.open(path, mode=mode)
     else:
         logger.error('Unknown extension: {0}', e, exc=TypeError)
-    arch.extractall(d)
+    arch.extractall(dest or d)
 
 
 class FileMapper(collections.defaultdict):
@@ -297,16 +297,17 @@ class TempDir(object):
     def __clean_tempdir():
         to_remove = TempDir.not_removed
         if to_remove:
-            print "Cleaning temporary folders",
+            logger.verbose('Cleaning temporary folders', addn=False)
             for fold in to_remove:
                 if os.path.isdir(fold):
-                    print ".",
+                    logger.verbose('.', addn=False)
                     try:
                         shutil.rmtree(fold)
                     except (OSError, IOError):
-                        print "\bx",
+                        logger.verbose('\bx', addn=False)
             sys.stdout.flush()
-        print ""
+        if logger.level <= logger.VERBOSE:
+            logger.newline()
 
 
 class ChDir(object):
