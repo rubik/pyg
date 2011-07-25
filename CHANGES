@@ -10,16 +10,26 @@ CHANGELOG
 0.8 (in development)
 --------------------
 
-To fix:
+Bugs fixed
+++++++++++
 
-    + #78: Allow installing packages from *dev* version: ``pyg==dev``.
+    Currently none.
+
+Features added
+++++++++++++++
+
     + #79: Allow requirements with multiple version specification: ``pyg==0.4,==0.8``.
     + #80: Add a new method: :meth:`pyg.log.Logger.ask`.
-    + #81: Read :file:`~/.pypirc` file.
     + #82: Allow comments in Pyg's configuration files.
-    + #83: Add support for environment variables like :envvar:`PYG_CONFIG_FILE` or :envvar:`PYG_HOME`.
+    + #83: Added support for environment variables like :envvar:`PYG_CONFIG_FILE` and :envvar:`PYG_HOME`.
+    + #96: Added an ``argv=`` keyword argument to :func:`pyg.main` function.
+
+TODO
+++++
+
+    + #78: Allow installing packages from *dev* version: ``pyg install "pyg==dev"``.
+    + #81: Read :file:`~/.pypirc` file.
     + #95: Add TAB autocompletion for Unix shells.
-    + #96: Add an ``argv=`` keyword argument to :func:`pyg.main` function.
     + #97: Optimize uninstaller file deletion.
 
 0.7.1 (July 25, 2011)
