@@ -20,7 +20,7 @@ Pyg is a Python Package Manager that is meant to be an alternative to *easy_inst
 
 .. note::
 
-    This is Pyg 0.7 documentation. Latest development docs are also available here: http://pyg.readthedocs.org/en/develop/
+    This is Pyg |version| documentation. Latest development docs are also available here: http://pyg.readthedocs.org/en/develop/
 
 .. toctree::
    :maxdepth: 1
