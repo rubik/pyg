@@ -11,3 +11,8 @@ recursive-include docs *
 prune docs/_build
 
 recursive-include tests *
+prune tests/.cache
+
+prune pyg/*.pyc
+prune pyg/vcs/*.pyc
+prune pyg/parser/*.pyc
