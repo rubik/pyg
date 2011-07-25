@@ -498,7 +498,7 @@ class Bundler(object):
 {0}
 '''
 
-    def __init__(self, reqs, bundle_name, exclude=[], dest=None, callback=None, use_develop=False):
+    def __init__(self, reqs, bundle_name, exclude=[], callback=None, use_develop=False):
         self.reqs = reqs
         if not bundle_name.endswith(('.pyb', '.pybundle')):
             bundle_name += '.pyb'
