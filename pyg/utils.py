@@ -15,6 +15,11 @@ import pkg_resources
 from pyg.locations import PYG_LINKS, under_virtualenv
 from pyg.log import logger
 
+try:
+    import zlib
+    COMPRESSION_LEVEL=zipfile.ZIP_DEFLATED
+except ImportError:
+    COMPRESSION_LEVEL=zipfile.ZIP_STORED
 
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 SETUP_PY_TEMPLATE = '''import distutils
@@ -329,6 +334,11 @@ class ChDir(object):
 ## EDIT: Removed TarFile since it caused problems
 
 class ZipFile(zipfile.ZipFile):
+    def __init__(self, file, **kw):
+        if not 'compression' in kw:
+            kw['compression'] = COMPRESSION_LEVEL
+        zipfile.ZipFile.__init__(self, file, **kw)
+
     def __enter__(self):
         return self
 
