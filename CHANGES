@@ -32,6 +32,11 @@ TODO
     + #95: Add TAB autocompletion for Unix shells.
     + #97: Optimize uninstaller file deletion.
 
+0.7.1 (July 25, 2011)
+---------------------
+
++ Fixed a serious bug in the :command:`pack` command.
+
 0.7 (July 16, 2011)
 -------------------
 
