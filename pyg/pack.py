@@ -54,11 +54,7 @@ if (major==2 and minor<3) or (major==2 and minor==3 and releaselevel!='final'):
     print 'Python version 2.3 final or greater is required.'
     print 'Your version is', sys.version
     os._exit(1)
-mods = ('grin-1.2.1', 'argparse-1.2.1')
-modname = 'grin'
-import zipimport #after checking python version
-z = zipimport.zipimporter(sys.argv[1])
-del sys.argv[0:1]
+
 egg_path = os.path.abspath(sys.argv[0])
 ''' + PY_RUN_CODE + '''
 " $0 $@
