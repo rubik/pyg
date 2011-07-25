@@ -112,7 +112,7 @@ For example, here is ``Pyg`` bundle::
     Adding the manifest file
 
 
-You can download the generated example bundle :download:`here <>` (direct link to download).
+You can download the generated example bundle `from here <https://github.com/downloads/rubik/pyg/pyg.pyb>`_ (direct link to download).
 
 .. option:: -r <path>, --req-file <path>
 
@@ -225,7 +225,7 @@ For example, Pyg Pack has the following structure::
 As you can see, there are already some executable files (Pyg looks for them in the packages' :file:`entry_points.txt` file) and you can run them without installing Pyg: everything necessary is in :file:`pyg.egg`.
 Amazing!
 
-If you want to try it, download it :download:`here <>` (direct link to download), unpack it and run the :file:`run_pyg.py` file. You will be able to use Pyg without installing it!
+If you want to try it, download it `from here <https://github.com/downloads/rubik/pyg/pyg.zip>`_ (direct link to download), unpack it and run the :file:`run_pyg.py` file. You will be able to use Pyg without installing it!
 
 .. option:: -e <requirement>, --exclude <requirement>
 
