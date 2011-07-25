@@ -295,11 +295,14 @@ packages = [
 
                 pack = os.path.join(tempdir, self.pack_name)
                 if len(self.entry_points) > 1:
-                    k = logger.ask('Choose the default entry point', choices=self.entry_points.keys())
+                    k = logger.ask('Choose the default entry point:', choices=self.entry_points.keys())
+                elif not self.entry_points:
+                    k = None
                 else:
                     k = self.entry_points.keys()[0]
 
-                zip_strap(bundle, self.entry_points[k], self.modules)
+                if k:
+                    zip_strap(bundle, self.entry_points[k], self.modules)
 
                 eggname = self.req.name + '.egg'
                 folder_name = '{0.name}-{0.version}'.format(self.bundled[self.req.name])
