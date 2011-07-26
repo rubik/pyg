@@ -58,6 +58,14 @@ class AlreadyInstalled(InstallationError):
 #        return self.v < other.v
 
 
+class AlwaysTrue(object):
+    def __eq__(self, other): return True
+    def __ge__(self, other): return True
+    def __gt__(self, other): return True
+    def __le__(self, other): return True
+    def __lt__(self, other): return True
+
+
 class Version(object):
     '''
     This class implements a Version object with comparison methods::
@@ -76,7 +84,10 @@ class Version(object):
 
     def __init__(self, v):
         self._v = v
-        self.v = pkg_resources.parse_version(v)
+        if v is not None:
+            self.v = pkg_resources.parse_version(v)
+        else:
+            self.v = AlwaysTrue()
 
     def __str__(self):
         return str(self._v)

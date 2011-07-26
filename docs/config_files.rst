@@ -2,10 +2,13 @@ Pyg's config files
 ==================
 
 .. versionadded:: 0.4
+.. versionchanged:: 0.8
+    From version 0.8 onwards, Pyg supports a :envvar:`PYG_CONFIG_FILE` environment variable.
 
 Config files allow you to override command-line options, and to save them somewhere.
 During the initialization process, Pyg looks for configurations file, it this order:
 
+    * :envvar:`PYG_CONFIG_FILE`: an environment variable pointing to the config file. This variable can contain multiple paths (separated by a color, ``:``). (Introduced in Pyg 0.8)
     * :file:`./pyg.conf`: a configuration file in the current working directory:
     * :file:`~/pyg.conf`: where ``~`` stands for your :envvar:`HOME` directory;
     * :file:`~/.pyg/pyg.conf`.

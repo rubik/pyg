@@ -5,13 +5,14 @@ import glob
 import shutil
 import tarfile
 import zipfile
+import urllib2
 import tempfile
 import urlparse
 import ConfigParser
 import pkg_resources
 
 from pkgtools.pypi import PyPIJson
-from pkgtools.pkg import SDist, Develop
+from pkgtools.pkg import SDist, Develop, Installed
 
 from pyg.core import *
 from pyg.web import ReqManager, request
@@ -94,13 +95,11 @@ class Installer(object):
             Installer._install_deps(r.reqset, r.name, updater)
             logger.success('{0} installed successfully', r.name)
         except (KeyboardInterrupt, Exception) as e:
-            try:
-                msg = e.args[0]
-            except IndexError:
-                msg = repr(e)
-
+            msg = str(e)
             if isinstance(e, KeyboardInterrupt):
                 logger.warn('Process interrupted...')
+            elif isinstance(e, urllib2.HTTPError):
+                logger.error('HTTP Error: {0}', msg[msg.find('HTTP Error')+11:])
             else:
                 logger.warn('Error: An error occurred during the {0} of {1}: {2}',
                         'upgrading' if self.upgrading else 'installation',
@@ -211,18 +210,16 @@ class Uninstaller(object):
         self.name = packname
         self.yes = yes
 
-    def find_files(self):
+    def _old_find_files(self):
         _un_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
         _un2_re = re.compile(r'{0}(?:(\.py|\.pyc))'.format(self.name), re.I)
         _un3_re = re.compile(r'{0}.*\.so'.format(self.name), re.I)
         _uninstall_re = [_un_re, _un2_re, _un3_re]
-
         to_del = set()
         try:
             dist = pkg_resources.get_distribution(self.name)
         except pkg_resources.DistributionNotFound:
             logger.debug('debug: Distribution not found: {0}', self.name)
-
             ## Create a fake distribution
             ## In Python2.6 we can only use site.USER_SITE
             class FakeDist(object):
@@ -235,13 +232,9 @@ class Uninstaller(object):
                         return (lambda *a: self._orig_o.name + '.egg')
                     return (lambda *a: False)
             dist = FakeDist(self)
-
         pkg_loc = dist.location
-
         glob_folder = False
-
         if pkg_loc in ALL_SITE_PACKAGES:
-
             # try to detect the real package location
             if dist.has_metadata('top_level.txt'):
                 pkg_loc = os.path.join( pkg_loc,
@@ -274,7 +267,6 @@ class Uninstaller(object):
         else: # specific folder (non site-packages)
             if os.path.isdir(pkg_loc):
                 to_del.add(pkg_loc)
-
             # finding package's files into that folder
             if os.path.isdir(pkg_loc):
                 for file in os.listdir(pkg_loc):
@@ -295,7 +287,7 @@ class Uninstaller(object):
                 ## If we are on Windows we have to remove *.bat files too
                 if is_windows():
                     to_del.add(os.path.join(BIN, script) + '.bat')
-
+        
         ## Very important!
         ## We want to remove console scripts too.
         if dist.has_metadata('entry_points.txt'):
@@ -319,13 +311,31 @@ class Uninstaller(object):
                         to_del.add(n + '-script.py')
         return to_del
 
+    def find_files(self):
+        try:
+            files = Installed(self.name).installed_files()
+        except (ValueError, TypeError):
+            return self._old_find_files()
+
+        to_del = files['lib']
+        for name in files['bin']:
+            bin = os.path.join(BIN, name)
+            if not os.path.exists(bin) and bin.startswith('/usr/bin'):
+                bin = os.path.join('/usr/local/bin', name)
+            if os.path.exists(bin):
+                to_del.add(bin)
+            if sys.platform == 'win32' and os.path.exists(bin + '.exe'):
+                to_del.add(bin + '.exe')
+                to_del.add(bin + '.exe.manifest')
+                to_del.add(bin + '-script.py')
+        return to_del
+
     def uninstall(self):
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        to_del = self.find_files()
+        to_del = sorted(self.find_files(), key=lambda i: len(i.split(os.sep)), reverse=True)
         if not to_del:
-            logger.warn('{0}: did not find any files to delete', self.name)
-            raise PygError
+            logger.error('{0}: did not find any files to delete', self.name, exc=PygError)
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
         for d in to_del:
@@ -376,27 +386,22 @@ class Updater(object):
             logger.info('No files to remove found')
             return
 
-        # XXX: tempfile.mktemp is deprecated, but all other functions create
-        # the directory and shutil does not want that.
-        tempdir = tempfile.mktemp()
-        self.removed[package] = {}
-        self.removed[package][tempdir] = []
-        for path in to_del:
-            self.removed[package][tempdir].append(path)
-
-            # We store files-to-delete into a temporary directory:
-            # if something goes wrong during the upgrading we can
-            # restore the original files.
-            p = os.path.join(tempdir, os.path.basename(path))
-            try:
-                shutil.copy2(path, p)
-            # It is a directory
-            except IOError:
-                try:
+        with TempDir(dont_remove=True) as tempdir:
+            self.removed[package] = {}
+            self.removed[package][tempdir] = {}
+            for i, path in enumerate(to_del):
+                self.removed[package][tempdir][i] = path
+    
+                # We store files-to-delete into a temporary directory:
+                # if something goes wrong during the upgrading we can
+                # restore the original files.
+                base = os.path.join(tempdir, str(i))
+                os.mkdir(base)
+                p = os.path.join(base, os.path.basename(path))
+                if os.path.isdir(path):
                     shutil.copytree(path, p)
-                except OSError:
-                    logger.debug('debug: shutil.copytree raised OSError')
-                    continue
+                else:
+                    shutil.copy2(path, p)
         logger.enabled = False
         uninst.uninstall()
         logger.enabled = True
@@ -408,12 +413,12 @@ class Updater(object):
             logger.debug('debug: `{0}` not found in self.removed', package)
             return
         tempdir = package.keys()[0]
-        for path in package[tempdir]:
-            p = os.path.join(tempdir, os.path.basename(path))
+        for i, path in package[tempdir].iteritems():
+            p = os.path.join(tempdir, str(i), os.path.basename(path))
             try:
                 shutil.copy2(p, path)
             ## It is a directory
-            except IOError:
+            except (OSError, IOError):
                 shutil.copytree(p, path)
 
     def _clean(self):

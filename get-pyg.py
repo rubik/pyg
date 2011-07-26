@@ -49,7 +49,7 @@ def call(args, **kwargs):
 def install(pkg, dev=False):
     log('Installing {0}'.format(pkg))
     if dev and pkg == 'pyg':
-        url = 'https://github.com/rubik/pyg/tarball/master'
+        url = 'https://github.com/rubik/pyg/tarball/develop'
     else:
         url = get_url(URL.format(pkg))
     log('Retrieving archive from {0}'.format(url))

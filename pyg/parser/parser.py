@@ -295,6 +295,4 @@ def init_parser(version=None):
     parser.add_commands([install, remove, site, link, unlink, list, pack,
                          search, check, download, update, shell, bundle, help])
     parser.formatter_class = _formatter(parser)
-    if parser.parse_args(sys.argv[1:]).no_colors:
-        args_manager['global']['no_colors'] = True
     return parser

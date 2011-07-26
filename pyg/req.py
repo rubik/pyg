@@ -1,6 +1,7 @@
 import urllib2
 import operator
 import urlparse
+import pkg_resources
 
 from hashlib import md5
 
@@ -31,7 +32,11 @@ class Requirement(object):
 
     def __init__(self, req):
         self.req = req
-        self.split()
+        self._specs = pkg_resources.Requirement.parse(req).specs
+        ## When no operator is specified
+        if not self._specs:
+            self._specs = [(None, None)]
+        self.name, _, _ = self.split(req)
         self.reqset = ReqSet(self)
         self.package_index = args_manager['install']['index_url']
 
@@ -39,36 +44,29 @@ class Requirement(object):
         return 'Requirement({0})'.format(self.req)
 
     def __str__(self):
+        if self.version:
+            return '{0}=={1}'.format(self.name, self.version)
         return str(self.req)
 
     def __eq__(self, other):
         return self.name == other.name and self.match(other.version)
 
-    def split(self):
-        for c in ('==', '>=', '>', '<=', '<'):
-            if c in self.req:
-                self.name, self.op, self.version = map(str.strip, self.req.partition(c))
-                self.version = Version(self.version)
+    @staticmethod
+    def split(chunk):
+        for c in ('==', '>=', '>', '<=', '<', '!='):
+            if c in chunk:
+                name, op, version = map(str.strip, chunk.partition(c))
+                version = Version(version)
                 break
         else:
-            self.name = self.req.split()[0]
-            self.version = None
-            self.op = None
-
-    @staticmethod
-    def find_version(s):
-        v = []
-        for c in s:
-            if c.isdigit() or c == '.':
-                v.append(c)
-            else:
-                break
-        return Version(''.join(v).strip('.')) ## FIXME do we really need .strip() ?
+            name = chunk.split()[0]
+            op = version = None
+        return name, op, version
 
     def match(self, v):
         if v is None:
             return True
-        return self.OPMAP[self.op](v, self.version)
+        return all(self.OPMAP[op](v, Version(version)) for op, version in self._specs)
 
     #def best_match(self, reqs):
     #    matched = {}

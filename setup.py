@@ -19,7 +19,6 @@ for dir, subdirs, files in os.walk(os.path.abspath('.')):
             os.remove(os.path.join(dir, file))
 
 requires = ['setuptools', 'pkgtools>=0.7', 'argh']
-
 if sys.version_info[:2] < (2, 7):
     requires.append('argparse>=1.2.1')
 

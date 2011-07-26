@@ -15,6 +15,11 @@ import pkg_resources
 from pyg.locations import PYG_LINKS, under_virtualenv
 from pyg.log import logger
 
+try:
+    import zlib
+    COMPRESSION_LEVEL=zipfile.ZIP_DEFLATED
+except ImportError:
+    COMPRESSION_LEVEL=zipfile.ZIP_STORED
 
 PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 SETUP_PY_TEMPLATE = '''import distutils
@@ -85,6 +90,20 @@ def is_windows():
     '''Return True when Pyg is running on a Windows system, False otherwise.'''
 
     return platform.system() == 'Windows'
+
+def name_from_name(pkg_name):
+    '''
+    Get the name of a package from its egg name:
+
+        >>> name_from_name('zicbee-mplayer-0.7-py2.7.egg')
+        ('zicbee_mplayer', '-0.7-py2.7.egg')
+    '''
+    name, version = re.compile(r'([.\w\d_-]+)-([\d.]+.*)').match(pkg_name).groups()
+    return "%s-%s"%(name.replace('-', '_') , version.replace('-', '_'))
+
+
+    ## We could use str.split, but regex give us a better control over
+    ## the strings.
 
 def name_from_egg(eggname):
     '''
@@ -329,11 +348,21 @@ class ChDir(object):
 ## EDIT: Removed TarFile since it caused problems
 
 class ZipFile(zipfile.ZipFile):
+    def __init__(self, file, **kw):
+        if not 'compression' in kw:
+            kw['compression'] = COMPRESSION_LEVEL
+        zipfile.ZipFile.__init__(self, file, **kw)
+
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         self.close()
+
+    def add_executable(self, filename, content):
+        zi = zipfile.ZipInfo(filename)
+        zi.external_attr = 0777 << 16L
+        self.writestr(zi, content)
 
 #class TarFile(tarfile.TarFile):
 #    def __enter__(self):

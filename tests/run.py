@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
-import threading
-import pypi_cache_server
+import subprocess
 
-cache = threading.Thread(target=pypi_cache_server.run)
-cache.setDaemon(True)
-cache.start()
+cache_server = subprocess.Popen([sys.executable, 'pypi_cache_server.py'])
 
 try:
     from lettuce.lettuce_cli import main
@@ -14,12 +11,15 @@ except ImportError:
     want_install = raw_input("Lettuce package is not detected,\nauto-install (ONLY WORKS AS ADMIN) ? ") in 'yY'
 else:
     want_install = False
+try:
+    import pyg
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.pardir))
+    import pyg
 
 if want_install:
-    # backup python path & args before changing it
-    sys_path = sys.path
+    # backup python args before changing it
     sys_argv = sys.argv
-    sys.path.insert(0, os.path.abspath(os.path.pardir))
     # now the path is altered, import pyg
     import pyg
     # try to run lettuce's installation or upgrade
@@ -30,10 +30,9 @@ if want_install:
         print("Install failed ! Code:", e)
     else:
         if r:
-            print("Install failed ! Code:", r)
+            print "Install failed ! Code:", r
 
     # restore standard variables
-    sys.path = sys_path
     sys.argv = sys_argv
     from lettuce.lettuce_cli import main
 
@@ -44,4 +43,12 @@ if 'KEEPENV' not in os.environ:
     os.environ['KEEPENV'] = mkdtemp('_test_env', 'pyg_')
 
 # start lettuce !
-sys.exit(main())
+try:
+    r = main()
+except:
+    r = 1
+finally:
+    os.kill(cache_server.pid, 15)
+    print "waiting for http server to shut down"
+    cache_server.wait()
+    sys.exit(r)
