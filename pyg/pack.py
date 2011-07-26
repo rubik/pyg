@@ -204,12 +204,13 @@ packages = [
             return egg_info, tempdir_len
 
     def _gen_eggs(self, source_dir, egg_dir):
-        r = re.compile(r'-py\d\.\d')
-        def unzip_egg(arch_path):
-            arch = os.path.basename(arch_path)
-            eggname = arch[:r.search(arch).start()]
-            with ZipFile(arch_path) as z:
-                z.extractall(os.path.join(egg_dir, eggname))
+        ## Old method
+        #r = re.compile(r'-py\d\.\d')
+        #def unzip_egg(arch_path):
+        #    arch = os.path.basename(arch_path)
+        #    eggname = arch[:r.search(arch).start()]
+        #    with ZipFile(arch_path) as z:
+        #        z.extractall(os.path.join(egg_dir, eggname))
 
         with TempDir() as tempdir:
             for dist in os.listdir(source_dir):
@@ -219,8 +220,10 @@ packages = [
                     print_output(output, 'setup.py bdist_egg')
                     raise PygError('cannot generate egg for {0}'.format(dist))
                 arch = os.path.join(tempdir, os.listdir(tempdir)[0])
-                unzip_egg(arch)
+                with ZipFile(arch) as z:
+                    z.extractall(egg_dir)
                 os.remove(arch)
+        shutil.rmtree(os.path.join(egg_dir, 'EGG-INFO'))
 
     def gen_pack(self, exclude=[], use_develop=False):
         # This is where to download all packages
