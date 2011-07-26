@@ -386,27 +386,22 @@ class Updater(object):
             logger.info('No files to remove found')
             return
 
-        # XXX: tempfile.mktemp is deprecated, but all other functions create
-        # the directory and shutil does not want that.
-        tempdir = tempfile.mktemp()
-        self.removed[package] = {}
-        self.removed[package][tempdir] = []
-        for path in to_del:
-            self.removed[package][tempdir].append(path)
-
-            # We store files-to-delete into a temporary directory:
-            # if something goes wrong during the upgrading we can
-            # restore the original files.
-            p = os.path.join(tempdir, os.path.basename(path))
-            try:
-                shutil.copy2(path, p)
-            # It is a directory
-            except IOError:
-                try:
+        with TempDir(dont_remove=True) as tempdir:
+            self.removed[package] = {}
+            self.removed[package][tempdir] = {}
+            for i, path in enumerate(to_del):
+                self.removed[package][tempdir][i] = path
+    
+                # We store files-to-delete into a temporary directory:
+                # if something goes wrong during the upgrading we can
+                # restore the original files.
+                base = os.path.join(tempdir, str(i))
+                os.mkdir(base)
+                p = os.path.join(base, os.path.basename(path))
+                if os.path.isdir(path):
                     shutil.copytree(path, p)
-                except OSError:
-                    logger.debug('debug: shutil.copytree raised OSError')
-                    continue
+                else:
+                    shutil.copy2(path, p)
         logger.enabled = False
         uninst.uninstall()
         logger.enabled = True
@@ -418,12 +413,12 @@ class Updater(object):
             logger.debug('debug: `{0}` not found in self.removed', package)
             return
         tempdir = package.keys()[0]
-        for path in package[tempdir]:
-            p = os.path.join(tempdir, os.path.basename(path))
+        for i, path in package[tempdir].iteritems():
+            p = os.path.join(tempdir, str(i), os.path.basename(path))
             try:
                 shutil.copy2(p, path)
             ## It is a directory
-            except IOError:
+            except (OSError, IOError):
                 shutil.copytree(p, path)
 
     def _clean(self):

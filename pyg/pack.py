@@ -262,8 +262,9 @@ packages = [
                     logger.fatal('Error: cannot generate egg for {0}', dist)
                     print_output(output, 'setup.py bdist_egg')
                     raise PygError('cannot generate egg for {0}'.format(dist))
-                arch = glob.glob(os.path.join(tempdir, dist) + '*.egg')[0]
+                arch = os.path.join(tempdir, os.listdir(tempdir)[0])
                 unzip_egg(arch)
+                os.remove(arch)
 
     def gen_pack(self, exclude=[], use_develop=False):
         # This is where to download all packages
