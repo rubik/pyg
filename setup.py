@@ -27,6 +27,7 @@ pyg_console_scripts = [
     'pyg = pyg:main',
     'pyg{0}.{1} = pyg:main'.format(*sys.version_info[:2])
 ]
+
 if '--single-exe' in sys.argv:
     del pyg_console_scripts[0]
     sys.argv.remove('--single-exe')
@@ -57,46 +58,36 @@ You can install, remove, bundle, create packs and much more!
 Check it at http://pyg-installer.co.nr
 '''
 
-#class Install(install):
-#
-#    user_options = install.user_options + [('single-exe', False, 'Install only the `pygx.y` program')]
-#
-#    def run(self):
-#        if self.single_exe:
-#            
 
 setup(name='pyg',
-                    version=pyg.__version__,
-                    url='http://pyg-installer.co.nr',
-                    download_url='http://pypi.python.org/pypi/pyg',
-                    license='MIT',
-                    author='Michele Lacchia & Fabien Devaux',
-                    author_email='michelelacchia@gmail.com',
-                    maintainer='Michele Lacchia',
-                    maintainer_email='michelelacchia@gmail.com',
-                    description='Python Package Manager',
-                    long_description=long_desc,
-                    classifiers=[
-                       'Development Status :: 4 - Beta',
-                       'Intended Audience :: Developers',
-                       'License :: OSI Approved :: MIT License',
-                       'Programming Language :: Python :: 2.6',
-                       'Programming Language :: Python :: 2.7',
-                       'Topic :: Software Development :: Build Tools'
-                    ],
-                    platforms='any',
-                    packages=['pyg'],
-                    include_package_data=True,
-                    keywords=['python', 'easy_install', 'pip', 'setuptools', 'package manager', \
-                              'command line', 'CLI'],
-                    install_requires=requires,
-                    provides=['pyg'],
-                    zip_safe=False,
-                    entry_points={
-                       'console_scripts': pyg_console_scripts
-                    },
-                    #cmdclass={
-                    #    'install': Install
-                    #}
+      version=pyg.__version__,
+      url='http://pyg-installer.co.nr',
+      download_url='http://pypi.python.org/pypi/pyg',
+      license='MIT',
+      author='Michele Lacchia & Fabien Devaux',
+      author_email='michelelacchia@gmail.com',
+      maintainer='Michele Lacchia',
+      maintainer_email='michelelacchia@gmail.com',
+      description='Python Package Manager',
+      long_description=long_desc,
+      classifiers=[
+         'Development Status :: 4 - Beta',
+         'Intended Audience :: Developers',
+         'License :: OSI Approved :: MIT License',
+         'Programming Language :: Python :: 2.6',
+         'Programming Language :: Python :: 2.7',
+         'Topic :: Software Development :: Build Tools'
+      ],
+      platforms='any',
+      packages=['pyg'],
+      include_package_data=True,
+      keywords=['python', 'easy_install', 'pip', 'setuptools', 'package manager', \
+                'command line', 'CLI'],
+      install_requires=requires,
+      provides=['pyg'],
+      zip_safe=False,
+      entry_points={
+         'console_scripts': pyg_console_scripts
+    }
 )
 
