@@ -205,12 +205,17 @@ packages = [
 
     def _gen_eggs(self, source_dir, egg_dir):
         ## Old method
-        #r = re.compile(r'-py\d\.\d')
-        #def unzip_egg(arch_path):
-        #    arch = os.path.basename(arch_path)
-        #    eggname = arch[:r.search(arch).start()]
-        #    with ZipFile(arch_path) as z:
-        #        z.extractall(os.path.join(egg_dir, eggname))
+        r = re.compile(r'-py\d\.\d')
+        def sep_egg_info(arch_path):
+            arch = os.path.basename(arch_path)
+            eggname = arch[:r.search(arch).start()]
+            with ZipFile(arch_path) as z:
+                z.extractall(os.path.join(egg_dir, eggname))
+
+        ## New method
+        def no_egg_info(arch_path):
+            with ZipFile(arch_path) as z:
+                z.extractall(egg_dir)
 
         with TempDir() as tempdir:
             for dist in os.listdir(source_dir):
@@ -220,9 +225,9 @@ packages = [
                     print_output(output, 'setup.py bdist_egg')
                     raise PygError('cannot generate egg for {0}'.format(dist))
                 arch = os.path.join(tempdir, os.listdir(tempdir)[0])
-                with ZipFile(arch) as z:
-                    z.extractall(egg_dir)
+                no_egg_info(arch)
                 os.remove(arch)
+        # Comment out this line if you want to use old method (see above)
         shutil.rmtree(os.path.join(egg_dir, 'EGG-INFO'))
 
     def gen_pack(self, exclude=[], use_develop=False):
