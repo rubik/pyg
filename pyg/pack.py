@@ -88,7 +88,7 @@ python = {python_version!r}
 packages = [
   {packages}
 ]
-            """
+"""
     }
 
     def __init__(self, req, bundle_name, dest=None):

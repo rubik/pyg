@@ -46,7 +46,7 @@ def call(args, **kwargs):
             'exit status: ' + str(e.returncode) + '\n')
 
 
-def install(pkg, dev=False):
+def install(pkg, dev=False, single_exe=False):
     log('Installing {0}'.format(pkg))
     if dev and pkg == 'pyg':
         url = 'https://github.com/rubik/pyg/tarball/develop'
@@ -58,14 +58,15 @@ def install(pkg, dev=False):
     path = unpack(path)
     setup_py = os.path.join(path, 'setup.py')
     log('Running setup.py install...')
-    call([sys.executable, setup_py, 'install'], cwd=path)
+    call([sys.executable, setup_py, 'install'] + (['--single-exe'] if single_exe else []),
+        cwd=path)
 
 def main():
     try:
         import setuptools
     except ImportError:
         install('setuptools')
-    install('pyg', '--dev' in sys.argv)
+    install('pyg', '--dev' in sys.argv, '--single-exe' in sys.argv)
     if '--tests' in sys.argv:
         for pkg in ('virtualenv', 'lettuce'):
             try:

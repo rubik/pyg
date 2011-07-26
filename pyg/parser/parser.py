@@ -47,7 +47,7 @@ def init_parser(version=None):
     @arg('-e', '--editable', action='store_true', help='Install a package from an online repository in editable mode')
     @arg('-r', '--req-file', metavar='<path>', action='append', help='Install packages from the specified requirement file')
     @arg('-U', '--upgrade', action='store_true', help='If the package is already installed re-install it again')
-    @arg('-A', '--upgrade-all', action='store_true', help='Install again dependencies too')
+    @arg('-A', '--upgrade-all', action='store_true', help='Like -U, --upgrade, but install again dependencies too')
     @arg('-n', '--no-deps', action='store_true', help='Do not install dependencies')
     @arg('-g', '--ignore', action='store_true', help='Ignore local files or directories')
     @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
