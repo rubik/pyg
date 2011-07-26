@@ -20,8 +20,9 @@ from pyg.utils import TempDir, ZipFile, call_setup, print_output, unpack, name_f
 
 PY_RUN_CODE = '''
 import re
-p_re = re.compile('.*(python\d+[.\d]+[^/]*|lib-\w+|plat-\w+)$')
-sys.path = [os.path.join(egg_path, mod) for mod in {modules!r}] + [x for x in sys.path if p_re.match(x)]
+#p_re = re.compile('.*(python\d+[.\d]+[^/]*|lib-\w+|plat-\w+)$')
+#sys.path = [os.path.join(egg_path, mod) for mod in {modules!r}] + [x for x in sys.path if p_re.match(x)]
+sys.path.insert(0, egg_path)
 
 # run!
 import {mod_name}
