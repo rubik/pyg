@@ -91,6 +91,20 @@ def is_windows():
 
     return platform.system() == 'Windows'
 
+def name_from_name(pkg_name):
+    '''
+    Get the name of a package from its egg name:
+
+        >>> name_from_name('zicbee-mplayer-0.7-py2.7.egg')
+        ('zicbee_mplayer', '-0.7-py2.7.egg')
+    '''
+    name, version = re.compile(r'([.\w\d_-]+)-([\d.]+.*)').match(pkg_name).groups()
+    return "%s-%s"%(name.replace('-', '_') , version.replace('-', '_'))
+
+
+    ## We could use str.split, but regex give us a better control over
+    ## the strings.
+
 def name_from_egg(eggname):
     '''
     Get the name of a package from its egg name:

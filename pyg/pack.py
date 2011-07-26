@@ -15,7 +15,7 @@ from pyg.req import Requirement
 from pyg.web import highest_version
 from pyg.inst import Bundler
 from pyg.core import PygError
-from pyg.utils import TempDir, ZipFile, call_setup, print_output, unpack
+from pyg.utils import TempDir, ZipFile, call_setup, print_output, unpack, name_from_name
 
 
 PY_RUN_CODE = '''
