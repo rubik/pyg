@@ -2,15 +2,14 @@ import os
 import cmd
 import difflib
 
-from pyg.parser.parser import init_parser
+from pyg.parser.parser import COMMANDS, init_parser
 from pyg.core import PygError, AlreadyInstalled
 
 
 __all__ = ['PygShell']
 
 
-SUPPORTED_COMMANDS = ['install', 'remove', 'list', 'freeze', 'link', 'unlink',
-                      'search', 'download', 'check', 'update', 'bundle', 'pack']
+SUPPORTED_COMMANDS = COMMANDS - set(['shell', 'help'])
 ADDITIONAL_COMMANDS = ['cd', 'pwd', 'ls']
 HELP = '''Supported commands:
 ===================

@@ -5,6 +5,9 @@ used as a library.
 '''
 
 ITERABLE_T = (list, tuple)
+COMMANDS = set(['install', 'remove', 'bundle', 'pack', 'download', 'update',
+                'search', 'list', 'site', 'check', 'link', 'unlink', 'shell',
+                'help'])
 
 def load_options():
     import os.path
@@ -292,7 +295,6 @@ def init_parser(version=None):
 
         return
 
-    parser.add_commands([install, remove, site, link, unlink, list, pack,
-                         search, check, download, update, shell, bundle, help])
+    parser.add_commands([locals()[cmd] for cmd in COMMANDS])
     parser.formatter_class = _formatter(parser)
     return parser
