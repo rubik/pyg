@@ -1,6 +1,6 @@
 Feature: Be able to get some help
 
-Scenario: Global help
+Scenario Outline: Global help
     Given I use "standard-2.7" environment
 
     Given I execute pyg <opt>
@@ -15,16 +15,14 @@ Scenario: Global help
         | help      |
         | --help    |
 
-Scenario: Specific help
+Scenario Outline: Specific help
     Given I use "standard-2.7" environment
-
     Given I execute pyg <cmd> <opt>
     Then one line matches usage:
     Then one line matches optional arguments:
     Then the return code is 0
 
     Examples:
-
         | cmd      | opt       |
         | install  | -h        |
         | install  | --help    |
@@ -40,3 +38,14 @@ Scenario: Specific help
         | remove   | --help    |
         | download | --help    |
         | bundle   | --help    |
+
+Scenario Outline: Version
+    Given I use "standard-2.7" environment
+    Given I execute pyg <cmd>
+    Then one line matches 0.8a
+    Then the return code is 0
+
+    Examples
+        | cmd       |
+        | -v        |
+        | --version |
