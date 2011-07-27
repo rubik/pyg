@@ -83,10 +83,7 @@ class Requirement(object):
     #    return matched[max(matched)] ## OR matched[sorted(matched.keys(), reverse=True)[0]]?
 
     def _install_from_links(self, package_index):
-        ## Monkey-patch for pyg.inst.Updater:
-        ## it does not know the real index url!
         logger.info('Looking for links on {0}', package_index)
-
         try:
             links = get_links(self, package_index)
             if not links:
@@ -98,7 +95,7 @@ class Requirement(object):
             filename = urlparse.urlparse(url).path.split('/')[-1]
             logger.info('Found: {0}', filename)
             try:
-                self._download_and_install(url, filename, self.name)
+                self._download_and_install(url, filename, self.name, ext(filename))
             except Exception as e:
                 logger.error('Error: {0}', e)
                 continue

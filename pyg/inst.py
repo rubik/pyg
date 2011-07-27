@@ -447,17 +447,14 @@ class Updater(object):
                 Installer.from_url(release['url'])
                 break
             except Exception as e:
-                try:
-                    msg = e.args[0]
-                except IndexError:
-                    msg = repr(e)
-                logger.error('Error: An error occurred while installing {0}: {1}', package_name, msg)
+                logger.error('Error: An error occurred while installing {0}: {1}', package_name, e)
                 logger.info('Trying another file...')
                 logger.indent -= 4
         else:
             logger.warn('Error: Did not find any installable release on PyPI for {0}', package_name)
             try:
-                Requirement('{0}=={1}'.format(package_name, version))._install_from_links(args_manager['install']['packages_url'])
+                r = Requirement('{0}=={1}'.format(package_name, version))
+                r._install_from_links(args_manager['install']['packages_url'])
             except Exception as e:
                 logger.fatal('Error: {0}', e, exc=InstallationError)
                 logger.info('Restoring uninstalled files')
