@@ -81,7 +81,7 @@ class Installer(object):
                 updater.restore_files(rs.comes_from.name)
             logger.error("{0}'s dependencies installation failed", rs.comes_from.name, exc=InstallationError)
         else:
-            logger.success('Finished installing dependencies for {0}', rs.comes_from.name)
+            logger.success('Finished installing dependencies for {0}', rs.comes_from)
 
     def install(self):
         try:
@@ -99,7 +99,7 @@ class Installer(object):
             if isinstance(e, KeyboardInterrupt):
                 logger.warn('Process interrupted...')
             elif isinstance(e, urllib2.HTTPError):
-                logger.error('HTTP Error: {0}', msg[msg.find('HTTP Error')+11:])
+                logger.error('HTTP Error: {0}', msg[msg.find('HTTP Error') + 11:])
             else:
                 logger.warn('Error: An error occurred during the {0} of {1}: {2}',
                         'upgrading' if self.upgrading else 'installation',
@@ -150,7 +150,7 @@ class Installer(object):
     @staticmethod
     def from_file(filepath, packname=None):
         packname = packname or os.path.basename(filepath).split('-')[0]
-        reqset = ReqSet(packname)
+        reqset = ReqSet(Requirement(packname))
 
         e = ext(filepath)
         path = os.path.abspath(filepath)
@@ -176,7 +176,7 @@ class Installer(object):
     @staticmethod
     def from_dir(path, name=None):
         name = name or os.path.basename(path)
-        reqset = ReqSet(name)
+        reqset = ReqSet(Requirement(name))
         try:
             with TempDir() as tempdir:
                 logger.info('Installing {0}', name)
