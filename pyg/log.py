@@ -174,7 +174,7 @@ class Logger(object):
             ## We can pass to logger.log any object: it must have at least
             ## a __repr__ or a __str__ method.
             msg = str(msg)
-            if msg.startswith('\r'):
+            if msg.startswith('\r') or self.last_msg.startswith('\r'):
                 ## We have to clear the line in case this message is longer than
                 ## the previous
 
