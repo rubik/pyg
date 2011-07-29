@@ -375,7 +375,8 @@ class Updater(object):
         if not skip:
             logger.debug('Loading list of installed packages... ', addn=False)
             self.working_set = list(installed_distributions())
-            logger.info('{0} packages loaded', len(self.working_set))
+            self.set_len = len(self.working_set)
+            logger.info('{0} packages loaded', self.set_len)
         self.removed = {}
         self.yes = args_manager['update']['yes']
 
@@ -468,7 +469,8 @@ class Updater(object):
         '''
 
         logger.info('Searching for updates')
-        for dist in self.working_set:
+        for i, dist in enumerate(self.working_set):
+            logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
             package = dist.project_name
             version = Version(dist.version)
             logger.verbose('Found: {0}=={1}', package, version)
