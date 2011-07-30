@@ -7,7 +7,8 @@ used as a library.
 ITERABLE_T = (list, tuple)
 COMMANDS = set(['install', 'remove', 'bundle', 'pack', 'download', 'update',
                 'search', 'list', 'site', 'check', 'link', 'unlink', 'shell',
-                'help'])
+                'completion', 'help'])
+
 
 def load_options():
     import os.path
@@ -286,6 +287,10 @@ def init_parser(version=None):
             args_manager['pack']['use_develop'] = True
         exclude, use_develop = args_manager['pack']['exclude'], args_manager['pack']['use_develop']
         return opts.pack_func(args.package, args.packname, exclude, use_develop)
+
+    @arg('-f', '--file', metavar='<path>', help='Write code for completion into the specified file. Default to %(default)r')
+    def completion(args):
+        return opts.completion_func(COMMANDS, args.file)
 
     @command
     def help():

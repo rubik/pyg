@@ -12,7 +12,7 @@ from setuptools.package_index import PackageIndex
 from pkgtools.pypi import PyPIXmlRpc, PyPIJson, real_name
 
 from pyg.core import Version, args_manager
-from pyg.utils import FileMapper, name, ext, right_egg, version_egg, is_windows
+from pyg.utils import name, ext, right_egg, version_egg, is_windows
 from pyg.log import logger
 
 

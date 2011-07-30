@@ -13,7 +13,7 @@ from pyg.freeze import freeze, list_releases, site_info
 from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
 from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
-from pyg.utils import TempDir, is_installed, link, unlink, unpack
+from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_subprocess
 from pyg.web import ReqManager
 
 
@@ -147,15 +147,15 @@ def check_func(name, info=False):
 def site_func(count, no_info, file):
     f = freeze()
     if count:
-        sys.stdout.write(str(len(f)) + '\n')
+        logger.info(str(len(f)))
         return
-    f = '\n'.join(f) + '\n'
+    f = '\n'.join(f)
     if not no_info:
         f = site_info() + f
     if file:
         with open(os.path.abspath(file), 'w') as req_file:
             req_file.write(f)
-    return sys.stdout.write(f)
+    return logger.info(f)
 
 def list_func(name):
     res = []
@@ -164,7 +164,7 @@ def list_func(name):
             res.append(v + '\tinstalled')
         else:
             res.append(v)
-    return sys.stdout.write('\n'.join(res) + '\n')
+    return logger.info('\n'.join(res))
 
 def search_func(query, exact, show_all_version):
     def _pypi_order(item):
@@ -214,7 +214,7 @@ def search_func(query, exact, show_all_version):
 
     results = sorted(results, key=_pkgresources_order)
     output = '\n'.join('{0}  {1}{2} - {3}'.format(name, dec, version, summary) for name, dec, version, summary in results)
-    return sys.stdout.write(output + '\n')
+    return logger.info(output)
 
 def download_func(args):
     pref = None
@@ -264,6 +264,39 @@ def pack_func(package, packname, exclude, use_develop):
     dest, packname = os.path.dirname(packname), os.path.basename(packname)
     exclude = [Requirement(r) for r in (exclude or [])]
     Packer(Requirement(package), packname, dest).gen_pack(exclude, use_develop)
+
+def completion_func(commands, file):
+    code = '''_pyg()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts=%r
+    COMPREPLY=($(compgen -W "${opts}" -- "${cur}"))
+}
+
+complete -o default -F _pyg pyg'''
+
+    code %= ' '.join(commands)
+
+    if not file:
+        return logger.info(code)
+
+    dir = os.path.dirname(file)
+    # permissions test
+    try:
+        path = os.path.join(dir, 'pyg-test')
+        with open(path, 'w') as f:
+            f.write('pyg test')
+        os.remove(path)
+    except IOError:
+        logger.fatal('Pyg cannot write files into {0}.\nTry to run it with root privileges.', dir, exc=PygError)
+
+    with open(file, 'a') as f:
+        f.write('\n{0}\n'.format(code))
+    print file
+    call_subprocess(['source', file])
 
 def shell_func():
     check_and_exit()
