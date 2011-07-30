@@ -179,7 +179,7 @@ class Logger(object):
                 ## the previous
 
                 std.write('\r' + ' ' * len(self.last_msg))
-                msg = '\r' + ' ' * self.indent + msg[1:].format(*a)
+                msg = '\r' + ' ' * self.indent + msg.lstrip('\r').format(*a)
             else:
                 try:
                     msg = ' ' * self.indent + msg.format(*a)
