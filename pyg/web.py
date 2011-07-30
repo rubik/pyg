@@ -5,6 +5,7 @@ import urllib
 import urllib2
 import urlparse
 import cStringIO
+import collections
 import pkg_resources
 
 from setuptools.package_index import PackageIndex
@@ -204,9 +205,11 @@ class ReqManager(object):
         return found
 
     def files(self):
-        files = FileMapper(self.pref)
+        files = collections.defaultdict(list)
         for release in self.find():
-            files[release[-1]].append(release[:-1])
+            e = release[-1]
+            if e in self.pref:
+                files[e].append(release[:-1])
         return files
 
     def download(self, dest):

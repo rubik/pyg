@@ -272,23 +272,6 @@ def unpack(path, dest=None):
     arch.extractall(dest or d)
 
 
-class FileMapper(collections.defaultdict):
-    '''
-    Container for pyg.web.ReqManager, which needs it to hold files preferences.
-    '''
-
-    def __init__(self, pref):
-        self.pref = pref
-        super(FileMapper, self).__init__(list)
-
-    def __missing__(self, key):
-        if key in self.pref:
-            if key not in self:
-                self[key] = self.default_factory()
-            return self[key]
-        return self.default_factory()
-
-
 class TempDir(object):
 
     not_removed = set()
@@ -340,6 +323,26 @@ class ChDir(object):
 
     def __exit__(self, *args):
         os.chdir(self.cwd)
+
+
+## No more used. Now pyg.web.ReqManager.files() uses directly
+# collections.defaultdict
+#
+#class FileMapper(collections.defaultdict):
+#    '''
+#    Container for pyg.web.ReqManager, which needs it to hold files preferences.
+#    '''
+#
+#    def __init__(self, pref):
+#        self.pref = pref
+#        super(FileMapper, self).__init__(list)
+#
+#    def __missing__(self, key):
+#        if key in self.pref:
+#            if key not in self:
+#                self[key] = self.default_factory()
+#            return self[key]
+#        return self.default_factory()
 
 
 ## ZipFile subclass for Python < 2.7

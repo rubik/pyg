@@ -252,10 +252,15 @@ class Uninstaller(object):
                 '-'.join(_base_name[:-n if n else None]) + '.egg-info'
             )
             if os.path.exists(egg_info_dir):
-                for file in os.listdir(egg_info_dir):
-                    if any(u_re.match(file) for u_re in _uninstall_re):
-                        to_del.add(os.path.join(egg_info_dir, file))
-                to_del.add(egg_info_dir)
+                try:
+                    for file in os.listdir(egg_info_dir):
+                        if any(u_re.match(file) for u_re in _uninstall_re):
+                            to_del.add(os.path.join(egg_info_dir, file))
+                    to_del.add(egg_info_dir)
+                # not a directory, like bzr-version.egg-info
+                except OSError:
+                    logger.debug('debug: not a directory: {0}', egg_info_dir)
+                    continue
                 break
 
         if glob_folder:
