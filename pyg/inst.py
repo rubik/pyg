@@ -95,6 +95,8 @@ class Installer(object):
             Installer._install_deps(r.reqset, r.name, updater)
             logger.success('{0} installed successfully', r.name)
         except (KeyboardInterrupt, Exception) as e:
+            if logger.level == logger.DEBUG:
+                raise
             msg = str(e)
             if isinstance(e, KeyboardInterrupt):
                 logger.warn('Process interrupted...')
