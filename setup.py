@@ -50,7 +50,7 @@ Pyg supports almost all package filetypes:
  * .pyb (an abbreviation for .pybundle)
 
 Pyg can remove all packages, even those installed with pure-distutils install (``python setup.py install``).
-If you want, you can try it without installing it. Just download the Pyg Pack from http://pyg.readthedocs.org/en/latest/_downloads/pyg1.zip, unzip it and run it:
+If you want, you can try it without installing it. Just download the Pyg Pack from https://github.com/downloads/rubik/pyg/pyg.zip, unzip it and run it:
 
     $ python run_pyg.py --help
 
