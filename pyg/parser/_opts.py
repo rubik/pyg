@@ -295,8 +295,7 @@ complete -o default -F _pyg pyg'''
 
     with open(file, 'a') as f:
         f.write('\n{0}\n'.format(code))
-    print file
-    call_subprocess(['source', file])
+    os.system('source %s' % (file))
 
 def shell_func():
     check_and_exit()

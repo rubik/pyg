@@ -216,7 +216,9 @@ class Dir(object):
 
         if self.reqset is not None:
             logger.info('Running setup.py egg_info for {0}', self.name)
-            call_setup(self.path, ['egg_info', '--egg-base', self.tempdir])
+            code, output = call_setup(self.path, ['egg_info'])
+            if code != 0:
+                return print_output(output, 'setup.py egg_info')
             try:
                 dist = DirTools(glob.glob(os.path.join(self.path, '*egg-info'))[0])
             except (IndexError, ValueError):

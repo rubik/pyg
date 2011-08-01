@@ -181,7 +181,9 @@ def call_setup(path, a):
 
     code = SETUP_PY_TEMPLATE.format(os.path.join(path, 'setup.py'))
     args =  [sys.executable, '-c', code] + a
-    if under_virtualenv():
+    # we add the --install-header option under virtualenv only if
+    # we are installing
+    if under_virtualenv() and 'install' in args:
         logger.debug('debug: virtualenv detected')
         headers = os.path.join(sys.prefix, 'include', 'site', 'python' + PYTHON_VERSION)
         args += ['--install-headers', headers]
