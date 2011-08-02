@@ -18,12 +18,13 @@ class VCS(object):
 
         ## Check command line programs existence (git, hg, bzr, etc.) to avoid
         ## strange errors.
-        #try:
-        #    subprocess.check_call([self.cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #except (OSError, subprocess.CalledProcessError) as e:
-        #    if not (self.cmd == 'git' and e.returncode == 256):
-        #        logger.fatal('Error: {0} command not found. Please make sure you ' \
-        #            'have installed required vcs', self.cmd, exc=PygError)
+        try:
+            subprocess.check_call([self.cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except (OSError, subprocess.CalledProcessError) as e:
+            # git returns 1 when it displays help
+            if not (self.cmd == 'git' and e.returncode == 1):
+                logger.fatal('Error: {0!r} command not found. Please make sure you ' \
+                    'have installed required vcs', self.cmd, exc=PygError)
 
     def __repr__(self):
         return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__,
