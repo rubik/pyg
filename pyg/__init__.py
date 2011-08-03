@@ -11,7 +11,7 @@ def main(argv=None):
         __import__('pyg')
     except ImportError:
         sys.path.insert(0, '..')
-    from pyg.parser.parser import init_parser, load_options
+    from pyg.parser.parser import init_parser, load_options, COMMANDS
     from pyg.core import PygError, InstallationError, AlreadyInstalled, args_manager
     from pyg.log import logger
 
@@ -20,7 +20,14 @@ def main(argv=None):
             logger.info(__version__)
             sys.exit(0)
         parser = init_parser(__version__)
-        args = parser.parse_args(argv or sys.argv[1:])
+        argv = argv or sys.argv[1:]
+        if argv[0] not in COMMANDS:
+            _proposals = [c for c in COMMANDS if c.startswith(argv[0])]
+            if len(_proposals) == 1:
+                argv[0] = _proposals[0]
+            elif len(_proposals):
+                logger.exit('Ambiguous command, "{0}" could be {1}'.format(argv[0], ' or '.join(_proposals)))
+        args = parser.parse_args(argv)
         if args.verbose:
             logger.level = logger.VERBOSE
         if args.debug:
