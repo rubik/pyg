@@ -290,6 +290,9 @@ def init_parser(version=None):
 
     @arg('-f', '--file', metavar='<path>', help='Write code for completion into the specified file. Default to %(default)r')
     def completion(args):
+        '''
+        Generate bash code for Pyg completion
+        '''
         return opts.completion_func(COMMANDS, args.file)
 
     @command

@@ -16,6 +16,9 @@ def main(argv=None):
     from pyg.log import logger
 
     try:
+        if len(sys.argv) == 2 and sys.argv[-1] in ('-v', '--version'):
+            logger.info(__version__)
+            sys.exit(0)
         parser = init_parser(__version__)
         args = parser.parse_args(argv or sys.argv[1:])
         if args.verbose:

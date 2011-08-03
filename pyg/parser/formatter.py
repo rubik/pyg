@@ -89,7 +89,6 @@ def _formatter(parser):
     class PygHelpFormatter(argparse.HelpFormatter):
 
         _argh_parser = None
-        _text = set()
 
         def _get_commands(self):
             commands = {}
@@ -109,9 +108,6 @@ def _formatter(parser):
             return 'usage: pyg [-h] [-v] [-d] [--verbose] [--no-colors] [command] args\n' \
                    'or: pyg command -h\n' \
                    'or: pyg command --help'
-
-        def add_text(self, t):
-            self._text.add(t)
 
         def _format_args(self):
             args = []
@@ -158,8 +154,6 @@ def _formatter(parser):
             return '\t' + '\n\t'.join(sorted(args, key=lambda line: -len(line.split('\n\t\t')[0]))) + '\n'
 
         def format_help(self):
-            if len(self._text) == 1:
-                return str(list(self._text)[0]) + '\n'
             return TEMPLATE.format(
                 self._format_usage(),
                 self._format_args()
