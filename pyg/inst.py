@@ -531,8 +531,7 @@ class Bundler(object):
             except (ValueError, AttributeError):
                 logger.error('Cannot find a local distribution for {0}', req.name, exc=PygError)
             else:
-                # XXX: Add a `location` attribute in pkgtools' next release
-                location = os.path.abspath(dist._arg_name)
+                location = os.path.abspath(dist.location)
                 path = os.path.dirname(location)
                 if not req.match(Version(dist.version)):
                     logger.error('Found {0}, but it does not match the requirement', path, exc=PygError)
@@ -589,17 +588,14 @@ class Bundler(object):
             logger.indent = 0
             logger.info('{0}:', r)
             logger.indent = 8
-            try:
-                dist = SDist(self._download(dir, r))
-                self.callback(r, dist)
-            except ConfigParser.MissingSectionHeaderError:
-                continue
+            dist = SDist(self._download(dir, r))
+            self.callback(r, dist)
             try:
                 logger.info('Looking for {0} dependencies', r)
                 logger.indent += 8
                 found = False
                 try:
-                    requirements = dist.file('requires.txt')
+                    requirements = dist.requires['install']
                 except KeyError:
                     requirements = []
                 for requirement in requirements:

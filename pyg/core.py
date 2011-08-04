@@ -190,7 +190,7 @@ class Egg(object):
             logger.info('Scripts not installed')
         logger.info('Looking for requirements...')
         try:
-            for req in dist.file('requires.txt'):
+            for req in dist.requires['install']:
                 self.reqset.add(req)
         except KeyError:
             logger.debug('requires.txt not found')
@@ -225,14 +225,14 @@ class Dir(object):
                 pass
             else:
                 try:
-                    for r in dist.file('requires.txt'):
+                    for r in dist.requires['install']:
                         self.reqset.add(r)
                 except (KeyError, ConfigParser.MissingSectionHeaderError):
                     logger.debug('debug: requires.txt not found')
                 #try:
                 #    for r in dist.file('dependency_links.txt'):
                 #        self.reqset.add(r)
-                #except (KeyError, ConfigParser.MissingSectionHeaderError):
+                #except KeyError:
                 #    logger.debug('debug: dependency_links.txt not found')
         args = []
         if args_manager['install']['install_dir'] != INSTALL_DIR:
