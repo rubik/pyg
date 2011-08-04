@@ -6,7 +6,7 @@ used as a library.
 
 ITERABLE_T = (list, tuple)
 COMMANDS = set(['install', 'remove', 'bundle', 'pack', 'download', 'update',
-                'search', 'list', 'site', 'check', 'link', 'unlink', 'shell',
+                'search', 'list', 'freeze', 'check', 'link', 'unlink', 'shell',
                 'completion', 'help'])
 
 
@@ -133,7 +133,7 @@ def init_parser(version=None):
     @arg('-c', '--count', action='store_true', help='Only returns requirements count')
     @arg('-n', '--no-info', action='store_true', help='Do not add site information')
     @arg('-f', '--file', metavar='<path>', help='Writes requirements into the specified file')
-    def site(args):
+    def freeze(args):
         '''
         Show installed packages and some site information
         '''
