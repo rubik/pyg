@@ -2,17 +2,24 @@ __version__ = '0.8a'
 
 
 def _suggest_cmd(argv):
+    import difflib
     from pyg.log import logger
     from pyg.parser.parser import COMMANDS
 
     if not argv:
         argv.append('--help')
         return
-    _proposals = [c for c in COMMANDS if c.startswith(argv[0])]
+    cmd = argv[0]
+    _proposals = [c for c in COMMANDS if c.startswith(cmd)]
     if len(_proposals) == 1:
         argv[0] = _proposals[0]
     elif len(_proposals):
-        logger.exit('Ambiguous command, "{0}" could be {1}'.format(argv[0], ' or '.join(_proposals)))
+        logger.exit('Ambiguous command, {0!r} could be one of:\n\t{1}'.format(cmd,
+                                                                            '\n\t'.join(_proposals))
+                    )
+    else:
+        close = '\n\t'.join(difflib.get_close_matches(cmd, COMMANDS, cutoff=0.3))
+        logger.exit('{0!r} is not a Pyg command.\nDid you mean one of these?\n\t{1}'.format(cmd, close))
 
 def main(argv=None):
     import sys
