@@ -19,7 +19,22 @@ def _suggest_cmd(argv):
                     )
     else:
         close = '\n\t'.join(difflib.get_close_matches(cmd, COMMANDS, cutoff=0.3))
-        logger.exit('{0!r} is not a Pyg command.\nDid you mean one of these?\n\t{1}'.format(cmd, close))
+        logger.exit('{0!r} is not a Pyg command.\n\nDid you mean one of these?\n\t{1}'.format(cmd, close))
+
+def _clean_argv(argv):
+    from pyg.log import logger
+
+    precmd = argv[:2]
+    if '-d' in precmd or '--debug' in precmd:
+        logger.level = logger.DEBUG
+        try:
+            argv.remove('-d')
+        except ValueError:
+            argv.remove('--debug')
+    elif '--verbose' in precmd:
+        logger.level = logger.VERBOSE
+        argv.remove('--verbose')
+
 
 def main(argv=None):
     import sys
@@ -42,12 +57,11 @@ def main(argv=None):
             sys.exit(0)
         parser = init_parser(__version__)
         argv = argv or sys.argv[1:]
+        # we have to remove -d, --debug and --verbose to make
+        # _suggest_cmd work
+        _clean_argv(argv)
         _suggest_cmd(argv)
         args = parser.parse_args(argv)
-        if args.verbose:
-            logger.level = logger.VERBOSE
-        if args.debug:
-            logger.level = logger.DEBUG
         load_options()
         if args.no_colors or args_manager['global']['no_colors']:
             logger.disable_colors()
