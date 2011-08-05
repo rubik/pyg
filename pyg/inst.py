@@ -316,6 +316,12 @@ class Uninstaller(object):
                         to_del.add(n + '.exe')
                         to_del.add(n + '.exe.manifest')
                         to_del.add(n + '-script.py')
+
+        ## Last check to ensure we don't remove site directories
+        for path in copy.copy(to_del):
+            if path in ALL_SITE_PACKAGES:
+                to_del.remove(path)
+
         return to_del
 
     def find_files(self):
