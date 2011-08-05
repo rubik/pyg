@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import copy
 import glob
 import shutil
 import tarfile
