@@ -110,16 +110,16 @@ Scenario Outline: Install misc packages (with operators)
 Scenario Otline: Install packages from VCS
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
-    When I execute pyg install <prefix>+<url>#egg=<egg>
+    When I execute pyg install <url>
     Then the return code is 0
 
     Examples:
-        | prefix | url                                           | egg      |
-        | git    | git@github.com:rubik/pkgtools.git             | pkgtools |
-        | git    | https://github.com/fdev31/zicbee.git          | zicbee   |
-        | hg     | https://rubik@bitbucket.org/neithere/argh     | argh     |
-        | hg     | https://rubik@bitbucket.org/birkenfeld/sphinx | sphinx   |
-        | bzr    | lp:wadllib                                    | wadllib  |
+        | url                                                         |
+        | git+git@github.com:rubik/pkgtools.git#egg=pkgtools          |
+        | git+https://github.com/fdev31/zicbee.git#egg=zicbee         |
+        | hg+https://rubik@bitbucket.org/neithere/argh#egg=argh       |
+        | hg+https://rubik@bitbucket.org/birkenfeld/sphinx#egg=sphinx |
+        | bzr+lp:wadllib#egg=wadllib                                  |
 
 Scenario Outline: Install misc packages (with multiple versions)
     Given I use "standard-2.7" environment

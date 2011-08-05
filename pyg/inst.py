@@ -321,7 +321,7 @@ class Uninstaller(object):
     def find_files(self):
         try:
             files = Installed(self.name).installed_files()
-        except (ValueError, TypeError):
+        except:
             return self._old_find_files()
 
         to_del = files['lib']
