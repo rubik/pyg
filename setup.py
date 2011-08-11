@@ -19,7 +19,7 @@ for dir, subdirs, files in os.walk(os.path.abspath('.')):
         if file.endswith('.pyc'):
             os.remove(os.path.join(dir, file))
 
-requires = ['setuptools', 'pkgtools>=0.7', 'argh']
+requires = ['setuptools', 'pkgtools>=0.7.1', 'argh']
 if sys.version_info[:2] < (2, 7):
     requires.append('argparse>=1.2.1')
 
