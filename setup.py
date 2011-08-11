@@ -61,7 +61,7 @@ Check it at http://pyg-installer.co.nr
 
 setup(name='pyg',
       version=pyg.__version__,
-      url='http://pyg-installer.co.nr',
+      url='http://pyg.readthedocs.org/',
       download_url='http://pypi.python.org/pypi/pyg',
       license='MIT',
       author='Michele Lacchia & Fabien Devaux',

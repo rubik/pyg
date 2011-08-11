@@ -108,7 +108,7 @@ packages = [
 
     def _bundle_callback(self, req, sdist):
         sdist._name, sdist._version = req.name, req.version
-        self.bundled[sdist.name] = sdist
+        self.bundled[sdist.name.replace('-', '_')] = sdist
 
     def _fill_metadata(self):
         content = self.EGG_FILES['spec/depend']
@@ -137,8 +137,7 @@ packages = [
             return {}
 
     def _mk_egg_info(self):
-        ## This function should return the EGG-INFO path
-
+        ## This function returns the EGG-INFO path
         logger.info('Generating EGG-INFO...')
         with TempDir(dont_remove=True) as tempdir:
             egg_info = os.path.join(tempdir, 'EGG-INFO')
@@ -221,7 +220,11 @@ packages = [
                 z.extractall(egg_dir)
 
         with TempDir() as tempdir:
-            for dist in os.listdir(source_dir):
+            dist_dir = os.listdir(source_dir)
+            dist_no = float(len(dist_dir))
+            # start progress
+            logger.info('\rGenerating eggs...', addn=False)
+            for i, dist in enumerate(dist_dir):
                 code, output = call_setup(os.path.join(source_dir, dist), ['bdist_egg', '-d', tempdir])
                 if code != 0:
                     logger.fatal('Error: cannot generate egg for {0}', dist)
@@ -230,7 +233,11 @@ packages = [
                 arch = os.path.join(tempdir, os.listdir(tempdir)[0])
                 no_egg_info(arch)
                 os.remove(arch)
+                logger.info('\rGenerating eggs... [{0} - {1:.1%}]', dist, i / dist_no, addn=False)
+            # complete the progress
+            logger.info('\rGenerating eggs... 100%')
         # Comment out this line if you want to use old method (see above)
+        # You should use the new one, though
         shutil.rmtree(os.path.join(egg_dir, 'EGG-INFO'))
 
     def gen_pack(self, exclude=[], use_develop=False):
@@ -252,8 +259,10 @@ packages = [
                 with ZipFile(bundle, mode='w') as egg:
                     # Create a new directory to store unpacked eggs
                     with TempDir() as egg_dir:
+                        # generate eggs (through distributions' setups)
                         self._gen_eggs(tempdir, egg_dir)
                         b._add_to_archive(egg, egg_dir, len(egg_dir))
+                        # generate egg-info (merging)
                         egg_info, tl = self._mk_egg_info()
                         b._add_to_archive(egg, egg_info, tl)
 
