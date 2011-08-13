@@ -7,7 +7,6 @@ import shutil
 import tarfile
 import zipfile
 import urllib2
-import tempfile
 import urlparse
 import ConfigParser
 import pkg_resources

@@ -6,16 +6,14 @@ Inspired by zicbee-workshop's manage.py
 import re
 import os
 import sys
-import glob
 import shutil
 import platform
 
 from pyg.log import logger
-from pyg.req import Requirement
 from pyg.web import highest_version
 from pyg.inst import Bundler
 from pyg.core import PygError
-from pyg.utils import TempDir, ZipFile, call_setup, print_output, unpack, name_from_name
+from pyg.utils import TempDir, ZipFile, call_setup, print_output
 
 
 PY_RUN_CODE = '''#!/usr/bin/env python

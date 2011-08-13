@@ -1,6 +1,5 @@
 import re
 import os
-import sys
 import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
@@ -12,8 +11,8 @@ from pyg.pack import Packer
 from pyg.freeze import freeze, list_releases, site_info
 from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
-from pyg.locations import PYG_LINKS, INSTALL_DIR, USER_SITE
-from pyg.utils import TempDir, is_installed, link, unlink, unpack, call_subprocess
+from pyg.locations import PYG_LINKS
+from pyg.utils import TempDir, is_installed, link, unlink, unpack
 from pyg.web import ReqManager
 
 

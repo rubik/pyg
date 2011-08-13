@@ -18,22 +18,17 @@ except ImportError:
     import pyg
 
 if want_install:
-    # backup python args before changing it
-    sys_argv = sys.argv
     # now the path is altered, import pyg
     import pyg
     # try to run lettuce's installation or upgrade
     try:
-        sys.argv = ['pyg', 'install', '-A', 'lettuce']
-        r = pyg.main()
+        r = pyg.main(['install', '-A', 'lettuce'])
     except (Exception, SystemExit) as e:
         print("Install failed ! Code:", e)
     else:
         if r:
             print "Install failed ! Code:", r
 
-    # restore standard variables
-    sys.argv = sys_argv
     from lettuce.lettuce_cli import main
 
 # go to that file's folder and set KEEPENV if not set

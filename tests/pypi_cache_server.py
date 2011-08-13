@@ -7,9 +7,7 @@ import os
 import httplib
 import urlparse
 import logging
-import datetime
 import locale
-import types
 import json
 import hashlib
 import webob

@@ -9,7 +9,6 @@ except ImportError:
     use_setuptools()
 
 from setuptools import setup
-from setuptools.command.install import install
 
 
 # Remove *.pyc files, since setuptools doesn't do that (even with the

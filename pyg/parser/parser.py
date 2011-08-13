@@ -29,7 +29,6 @@ def load_options():
                 break
 
 def init_parser(version=None):
-    import sys
     import os
     import _opts as opts
     from pyg.locations import INSTALL_DIR, USER_SITE

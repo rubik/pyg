@@ -1,6 +1,5 @@
 import sys
 import distutils
-import pkg_resources
 
 from pyg import __version__
 from pyg.req import Requirement

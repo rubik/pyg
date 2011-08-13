@@ -8,7 +8,6 @@ import zipfile
 import platform
 import tempfile
 import subprocess
-import collections
 import pkg_resources
 
 

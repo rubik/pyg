@@ -5,7 +5,7 @@ import logging
 __all__ = ['logger']
 
 try:
-    from colorama import init, Fore, Back, Style
+    from colorama import init, Fore, Style
     init(autoreset=False)
     colors = {
         'good'   : Fore.GREEN,
