@@ -136,12 +136,14 @@ packages = [
         except KeyError:
             return {}
 
-    def _mk_egg_info(self):
+    def _mk_egg_info(self, egg_info_dir):
         ## This function returns the EGG-INFO path
         logger.info('Generating EGG-INFO...')
         with TempDir(dont_remove=True) as tempdir:
             egg_info = os.path.join(tempdir, 'EGG-INFO')
-            os.mkdir(egg_info)
+            # copy egg-info from egg_info_dir to spec/
+            shutil.copytree(egg_info_dir, os.path.join(egg_info, 'spec'))
+
             self._fill_metadata()
             for mfile, data in self.EGG_FILES.iteritems():
                 deps = dict((name, self._safe_readlines(dist, mfile)) for name, dist in self.bundled.iteritems())
@@ -183,8 +185,10 @@ packages = [
                 if '/' in mfile:
                     # Make it platform-indipendent
                     parts = mfile.split('/')
-                    mfile = os.path.join(*mfile.split('/'))
-                    os.makedirs(os.path.join(egg_info, *parts[:-1]))
+                    mfile = os.path.join(*parts)
+                    path = os.path.join(egg_info, *parts[:-1])
+                    if not os.path.exists(path):
+                        os.makedirs(path)
                 with open(os.path.join(egg_info, mfile), 'w') as f:
                     # FIXME: this is a bit ugly
                     if mfile == 'entry_points.txt':
@@ -200,12 +204,12 @@ packages = [
                             self.entry_points[cmd] = code
                     f.write(content)
 
-                # this is for Bundler._add_to_archive: it needs the temporary
-                # directory length
-                tempdir_len = len(tempdir)
+            # this is for Bundler._add_to_archive: it needs the temporary
+            # directory length
+            tempdir_len = len(tempdir)
             return egg_info, tempdir_len
 
-    def _gen_eggs(self, source_dir, egg_dir):
+    def _gen_eggs(self, source_dir, egg_dir, egg_info_dir):
         ## Old method
         r = re.compile(r'-py\d\.\d')
         def sep_egg_info(arch_path):
@@ -234,11 +238,10 @@ packages = [
                 no_egg_info(arch)
                 os.remove(arch)
                 logger.info('\rGenerating eggs... [{0} - {1:.1%}]', dist, i / dist_no, addn=False)
+                # copy metadata file to egg_info_dir location
+                shutil.move(os.path.join(egg_dir, 'EGG-INFO'), os.path.join(egg_info_dir, dist))
             # complete the progress
             logger.info('\rGenerating eggs... 100%')
-        # Comment out this line if you want to use old method (see above)
-        # You should use the new one, though
-        shutil.rmtree(os.path.join(egg_dir, 'EGG-INFO'))
 
     def gen_pack(self, exclude=[], use_develop=False):
         # This is where to download all packages
@@ -259,12 +262,14 @@ packages = [
                 with ZipFile(bundle, mode='w') as egg:
                     # Create a new directory to store unpacked eggs
                     with TempDir() as egg_dir:
-                        # generate eggs (through distributions' setups)
-                        self._gen_eggs(tempdir, egg_dir)
-                        b._add_to_archive(egg, egg_dir, len(egg_dir))
-                        # generate egg-info (merging)
-                        egg_info, tl = self._mk_egg_info()
-                        b._add_to_archive(egg, egg_info, tl)
+                        # where to store egg-info
+                        with TempDir() as egg_info_dir:
+                            # generate eggs (through distributions' setups)
+                            self._gen_eggs(tempdir, egg_dir, egg_info_dir)
+                            b._add_to_archive(egg, egg_dir, len(egg_dir))
+                            # generate egg-info (merging)
+                            egg_info, tl = self._mk_egg_info(egg_info_dir)
+                            b._add_to_archive(egg, egg_info, tl)
 
                 pack = os.path.join(tempdir, self.pack_name)
                 eggname = self.req.name + '.egg'

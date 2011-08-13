@@ -294,7 +294,7 @@ class TempDir(object):
                 shutil.rmtree(self.tempdir)
             ## Experimental (remember to remove before releasing)
             except Exception as e:
-                print 'Ahah: ', e
+                logger.verbose('Error: cannot remove temporary directory {0}: {1}', self.tempdir, e)
 
     @staticmethod
     @atexit.register
