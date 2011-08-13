@@ -19,7 +19,7 @@ from pyg.core import *
 from pyg.web import ReqManager, request
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
-from pyg.utils import TempDir, File, name, ext, is_installed, is_windows, \
+from pyg.utils import TempDir, ZipFile, File, name, ext, is_installed, is_windows, \
     unpack, call_setup, print_output, installed_distributions
 from pyg.log import logger
 from pyg.parser.parser import init_parser
@@ -624,15 +624,6 @@ class Bundler(object):
         logger.success('Finished processing dependencies')
 
     @staticmethod
-    def _add_to_archive(zfile, dir, tempdir_len):
-        for file in os.listdir(dir):
-            path = os.path.join(dir, file)
-            if os.path.isfile(path):
-                zfile.write(path, os.path.join(dir, file)[tempdir_len:])
-            elif os.path.isdir(path):
-                Bundler._add_to_archive(zfile, path, tempdir_len)
-
-    @staticmethod
     def _clean(dir):
         '''
         Clean the `dir` directory: it removes all top-level files, leaving only sub-directories.
@@ -681,8 +672,8 @@ class Bundler(object):
                 ## in a single file (zipped)
                 #####
                 logger.info('Adding packages to the bundle')
-                bundle = zipfile.ZipFile(tmp_bundle, mode='w')
-                self._add_to_archive(bundle, build, len(tempdir))
+                bundle = ZipFile(tmp_bundle, mode='w')
+                bundle.add_to_archive(build, len(tempdir))
 
                 ## Step 4: add the manifest file
                 if include_manifest:
@@ -692,11 +683,11 @@ class Bundler(object):
                 # Additional files to add
                 for path in additional_files:
                     try:
-                        self._add_to_archive(bundle, path, len(tempdir))
+                        bundle.add_to_archive(path, len(tempdir))
                     except (IOError, OSError):
                         logger.debug('debug: Error while adding an additional file: {0}', path)
                 if add_func is not None:
-                    self._add_to_archive(bundle, add_func(), len(tempdir))
+                    bundle.add_to_archive(add_func(), len(tempdir))
                 bundle.close()
 
                 ## Last step: move the bundle to the current working directory

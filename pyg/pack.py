@@ -204,7 +204,7 @@ packages = [
                             self.entry_points[cmd] = code
                     f.write(content)
 
-            # this is for Bundler._add_to_archive: it needs the temporary
+            # this is for utils.ZipFile.add_to_archive: it needs the temporary
             # directory length
             tempdir_len = len(tempdir)
             return egg_info, tempdir_len
@@ -266,10 +266,10 @@ packages = [
                         with TempDir() as egg_info_dir:
                             # generate eggs (through distributions' setups)
                             self._gen_eggs(tempdir, egg_dir, egg_info_dir)
-                            b._add_to_archive(egg, egg_dir, len(egg_dir))
+                            egg.add_to_archive(egg_dir, len(egg_dir))
                             # generate egg-info (merging)
                             egg_info, tl = self._mk_egg_info(egg_info_dir)
-                            b._add_to_archive(egg, egg_info, tl)
+                            egg.add_to_archive(egg_info, tl)
 
                 pack = os.path.join(tempdir, self.pack_name)
                 eggname = self.req.name + '.egg'

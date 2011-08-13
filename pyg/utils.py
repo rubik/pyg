@@ -353,10 +353,10 @@ class ChDir(object):
 ## EDIT: Removed TarFile since it caused problems
 
 class ZipFile(zipfile.ZipFile):
-    def __init__(self, file, **kw):
-        if not 'compression' in kw:
-            kw['compression'] = COMPRESSION_LEVEL
-        zipfile.ZipFile.__init__(self, file, **kw)
+    def __init__(self, file, *args, **kwargs):
+        if not 'compression' in kwargs:
+            kwargs['compression'] = COMPRESSION_LEVEL
+        zipfile.ZipFile.__init__(self, file, *args, **kwargs)
 
     def __enter__(self):
         return self
@@ -368,6 +368,14 @@ class ZipFile(zipfile.ZipFile):
         zi = zipfile.ZipInfo(filename)
         zi.external_attr = 0777 << 16L
         self.writestr(zi, content)
+
+    def add_to_archive(self, dir, tempdir_len):
+        for file in os.listdir(dir):
+            path = os.path.join(dir, file)
+            if os.path.isfile(path):
+                self.write(path, path[tempdir_len:])
+            elif os.path.isdir(path):
+                self.add_to_archive(path, tempdir_len)
 
 #class TarFile(tarfile.TarFile):
 #    def __enter__(self):
