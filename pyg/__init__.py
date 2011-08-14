@@ -9,6 +9,8 @@ def _suggest_cmd(argv):
     if not argv:
         argv.append('--help')
         return
+    if argv[0] in ('-h', '--help'):
+        argv[0] = 'help'
     cmd = argv[0]
     _proposals = [c for c in COMMANDS if c.startswith(cmd)]
     if len(_proposals) == 1:
@@ -23,8 +25,12 @@ def _suggest_cmd(argv):
 
 def _clean_argv(argv):
     from pyg.log import logger
+    from pyg.core import args_manager
 
     precmd = argv[:2]
+    if '--no-colors' in precmd or args_manager['global']['no_colors']:
+        logger.disable_colors()
+        argv.remove('--no-colors')
     if '-d' in precmd or '--debug' in precmd:
         logger.level = logger.DEBUG
         try:
@@ -63,8 +69,6 @@ def main(argv=None):
         _suggest_cmd(argv)
         args = parser.parse_args(argv)
         load_options()
-        if args.no_colors or args_manager['global']['no_colors']:
-            logger.disable_colors()
         parser.dispatch(argv=argv)
     except (PygError, InstallationError, ValueError) as e:
         sys.exit(1)
