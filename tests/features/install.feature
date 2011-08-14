@@ -107,7 +107,7 @@ Scenario Outline: Install misc packages (with operators)
         | lk>=1          |
 
 
-Scenario Otline: Install packages from VCS
+Scenario Outline: Install packages from VCS
     Given I use "standard-2.7" environment
     Given I use "tmp_install" temporary folder
     When I execute pyg install <url>
