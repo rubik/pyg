@@ -350,6 +350,7 @@ class ArgsManager(object):
         'remove': {
             'yes': False,
             'info': False,
+            'local': False,
         },
         'site': {
             'count': False,

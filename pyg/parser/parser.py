@@ -101,6 +101,7 @@ def init_parser(version=None):
     @arg('packname', nargs='+')
     @arg('-r', '--req-file', metavar='<path>', help='Uninstall all the packages listed in the given requirement file')
     @arg('-y', '--yes', action='store_true', help='Do not ask confirmation of uninstall deletions')
+    @arg('-l', '--local', action='store_true', help='Add to files to delete local files too.')
     @arg('-i', '--info', action='store_true', help='Only list files to delete')
     def remove(args):
         '''
@@ -111,8 +112,11 @@ def init_parser(version=None):
             args_manager['remove']['yes'] = True
         if args.info:
             args_manager['remove']['info'] = True
+        if args.local:
+            args_manager['remove']['local'] = True
         opts.remove_func(args.packname, args.req_file,
-                         args_manager['remove']['yes'], args_manager['remove']['info'])
+                         args_manager['remove']['yes'], args_manager['remove']['info'],
+                         args_manager['remove']['local'])
 
     @arg('packname', nargs=1)
     @arg('-i', '--index-url', nargs=1, default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')

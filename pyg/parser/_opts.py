@@ -1,5 +1,6 @@
 import re
 import os
+import functools
 import pkg_resources
 
 from pkgtools.pypi import PyPIXmlRpc
@@ -92,11 +93,12 @@ def install_func(packname, req_file, editable, ignore):
         for package in packname:
             _install_package_from_name(package, ignore)
 
-def remove_func(packname, req_file, yes, info):
+def remove_func(packname, req_file, yes, info, local):
+    uninstaller = functools.partial(Uninstaller, yes=yes, local=local)
     if info:
         for p in packname:
             logger.info('{0}:', p)
-            files = Uninstaller(p).find_files()
+            files = uninstaller(p).find_files()
             logger.indent = 8
             for path in files:
                 logger.info(path)
@@ -105,17 +107,17 @@ def remove_func(packname, req_file, yes, info):
     check_and_exit()
     ## Little Easter egg...
     if len(packname) == 1 and packname[0] == 'yourself':
-        return Uninstaller('pyg', yes).uninstall()
+        return uninstaller('pyg').uninstall()
     if req_file:
         with open(os.path.abspath(req_file)) as f:
             for line in f:
                 try:
-                    Uninstaller(line.strip(), yes).uninstall()
+                    uninstaller(line.strip()).uninstall()
                 except PygError:
                     continue
     for p in packname:
         try:
-            Uninstaller(p, yes).uninstall()
+            uninstaller(p).uninstall()
         except PygError:
             continue
 

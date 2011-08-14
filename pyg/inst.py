@@ -208,9 +208,10 @@ class Installer(object):
 
 
 class Uninstaller(object):
-    def __init__(self, packname, yes=False):
+    def __init__(self, packname, yes=False, local=False):
         self.name = packname
         self.yes = yes
+        self.local = local
 
     def _old_find_files(self):
         _un_re = re.compile(r'{0}(-(\d\.?)+(\-py\d\.\d)?\.(egg|egg\-info))?$'.format(self.name), re.I)
@@ -324,6 +325,16 @@ class Uninstaller(object):
 
         return to_del
 
+    # this decorator filters out local paths
+    # added to avoid code duplication into find_files()
+    def _filter_locals(meth):
+        def wrapper(self):
+            to_del = meth(self)
+            local = set(path for path in to_del if not path.startswith(tuple(ALL_SITE_PACKAGES)))
+            return to_del.difference(local), local
+        return wrapper
+
+    @_filter_locals
     def find_files(self):
         try:
             files = Installed(self.name).installed_files()
@@ -344,16 +355,35 @@ class Uninstaller(object):
         return to_del
 
     def uninstall(self):
+        def sort_paths(p):
+            return set(sorted(p, key=lambda i: len(i.split(os.sep)), reverse=True))
+
         path_re = re.compile(r'\./{0}-[\d\w\.]+-py\d\.\d.egg'.format(self.name), re.I)
         path_re2 = re.compile(r'\.{0}'.format(self.name), re.I)
-        to_del = sorted(self.find_files(), key=lambda i: len(i.split(os.sep)), reverse=True)
+        to_del, local = map(sort_paths, self.find_files())
         if not to_del:
-            logger.error('{0}: did not find any files to delete', self.name, exc=PygError)
+            if local and not self.local:
+                logger.info('Local files (use -l, --local to delete):')
+                logger.indent += 8
+                for d in local:
+                    logger.info(d)
+                logger.indent -= 8
+                return
+            else:
+                logger.error('{0}: did not find any files to delete', self.name, exc=PygError)
+
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
-        for d in to_del:
+        for d in to_del.union(local if self.local else ()):
             logger.info(d)
+        if not self.local and local:
+            logger.indent -= 8
+            logger.info('Local files (use -l, --local to delete):')
+            logger.indent += 8
+            for d in local:
+                logger.info(d)
         logger.indent -= 8
+
         do_it = logger.ask('Proceed', bool=('remove files', 'cancel'), dont_ask=self.yes)
         if do_it:
             for d in to_del:
@@ -395,7 +425,7 @@ class Updater(object):
 
     def remove_files(self, package):
         uninst = Uninstaller(package, yes=True)
-        to_del = uninst.find_files()
+        to_del = uninst.find_files()[0]
         if not to_del:
             logger.info('No files to remove found')
             return
