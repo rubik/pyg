@@ -330,7 +330,7 @@ class Uninstaller(object):
     def _filter_locals(meth):
         def wrapper(self):
             to_del = meth(self)
-            local = set(path for path in to_del if not path.startswith(tuple(ALL_SITE_PACKAGES)))
+            local = set(path for path in to_del if not path.startswith(tuple(ALL_SITE_PACKAGES) + (BIN,)))
             return to_del.difference(local), local
         return wrapper
 

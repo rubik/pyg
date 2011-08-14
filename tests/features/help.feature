@@ -44,7 +44,6 @@ Scenario Outline: Version
     Given I execute pyg <cmd>
     Then one line matches 0.8a
     Then the return code is 0
-
     Examples
         | cmd       |
         | -v        |
