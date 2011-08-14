@@ -15,7 +15,7 @@ from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import SDist, Develop, Installed
 
 from pyg.core import *
-from pyg.web import ReqManager, request
+from pyg.web import ReqManager, request, download
 from pyg.req import Requirement
 from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
 from pyg.utils import TempDir, ZipFile, File, name, ext, is_installed, is_windows, \
@@ -201,7 +201,7 @@ class Installer(object):
             if '#egg=' in url:
                 url, packname = url.split('#egg=')
             path = os.path.join(tempdir, packname)
-            logger.info('Installing {0} from {1}', packname, url)
+            download(url, 'Downloading {0}'.format(packname), False)
             with open(path, 'w') as f:
                 f.write(request(url))
             Installer.from_file(path, packname)
@@ -529,7 +529,10 @@ class Updater(object):
             txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package, new_version, dist.version)
             u = logger.ask(txt, bool=('upgrade version', 'keep working version'), dont_ask=self.yes)
             if u:
-                self.upgrade(package, json, new_version)
+                try:
+                    self.upgrade(package, json, new_version)
+                except Exception as e:
+                    logger.error('Unexpected error occured: {0}', e)
             else:
                 logger.info('{0} has not been upgraded', package)
         self._clean()

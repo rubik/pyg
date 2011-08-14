@@ -74,6 +74,8 @@ def main(argv=None):
         logger.exit('HTTPError: {0}'.format(e.msg))
     except urllib2.URLError as e:
         logger.exit('urllib error: {0}'.format(e.reason if hasattr(e, 'reason') else e.msg))
+    except KeyboardInterrupt:
+        logger.exit('Process interrupted...')
     except Exception as e:
         if logger.level == logger.DEBUG:
             raise

@@ -86,7 +86,7 @@ def format_time(seconds):
         return '{0:02d}m {1:02d}s remaining'.format(*map(int, [minutes, seconds]))
     return '{0:02d}s remaining'.format(int(seconds))
 
-def download(url, msg):
+def download(url, msg, add_remaining=True):
     def hook(blocks, block_size, total_size):
         '''
         Callback function for `urllib.urlretrieve` that is called when connection is
@@ -124,8 +124,12 @@ def download(url, msg):
             ## When we finish the download we want this string to hide
             remaining = ''
 
-        logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded), \
-                    convert_bytes(total_size), format_time(remaining), addn=False)
+        if add_remaining:
+            logger.info('\r{0} [{1:.0%} - {2} / {3}] {4}', msg, ratio, convert_bytes(downloaded),
+                        convert_bytes(total_size), format_time(remaining), addn=False)
+        else:
+            logger.info('\r{0} [{1:.0%} - {2} / {3}]', msg, ratio, convert_bytes(downloaded),
+                        convert_bytes(total_size), addn=False)
 
     if is_windows():
         ## On Windows time.clock should be more precise.
