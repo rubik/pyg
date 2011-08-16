@@ -68,7 +68,7 @@ def _gen_executable(req_name, code):
 
 class Packer(object):
 
-    EMPTY, INI, CAT, SCAT, MERGE = range(5)
+    EMPTY, INI, CAT, SCAT, MERGE, PACKAGES = range(6)
     REQ = 42
 
     EGG_FILES = {
@@ -79,6 +79,7 @@ class Packer(object):
         'requires.txt': EMPTY,
         'SOURCES.txt': SCAT,
         'top_level.txt': SCAT,
+        'packages.txt': PACKAGES,
         'spec/depend': """metadata_version = '1.1'
 name = {req!r}
 version = {req_version!r}
@@ -108,6 +109,11 @@ packages = [
         sdist._name, sdist._version = req.name, req.version
         self.bundled[sdist.name.replace('-', '_')] = sdist
 
+    def packages(self, spaces=True, commas=True):
+        s = '  ' if spaces else ''
+        c = ',' if commas else ''
+        return (c + '\n' + s).join('{0.name} {0.version}'.format(dist) for dist in self.bundled.values())
+
     def _fill_metadata(self):
         content = self.EGG_FILES['spec/depend']
         req_version = self.req.version
@@ -125,7 +131,7 @@ packages = [
             arch=platform.machine(),
             platform=sys.platform,
             python_version='.'.join(map(str, sys.version_info[:2])),
-            packages=',\n  '.join('{0.name} {0.version}'.format(dist) for dist in self.bundled.values())
+            packages=self.packages()
         )
 
     def _safe_readlines(self, dist, filename):
@@ -147,6 +153,8 @@ packages = [
                 deps = dict((name, self._safe_readlines(dist, mfile)) for name, dist in self.bundled.iteritems())
                 if data == self.EMPTY:
                     content = ''
+                elif data == self.PACKAGES:
+                    content = self.packages(False, False)
                 elif data == self.INI:
                     ini_file = {}
                     for dep, content in deps.iteritems():

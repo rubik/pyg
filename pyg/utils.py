@@ -129,33 +129,6 @@ def version_egg(eggname):
     eggv = re.compile(r'py(\d\.\d)')
     return eggv.search(eggname).group(1)
 
-def link(path):
-    path = os.path.abspath(path)
-    if not os.path.exists(path):
-        logger.error('{0} does not exist', path)
-    if not os.path.exists(PYG_LINKS):
-        if not os.path.exists(os.path.dirname(PYG_LINKS)):
-            os.makedirs(os.path.dirname(PYG_LINKS))
-        open(PYG_LINKS, 'w').close()
-    path = os.path.abspath(path)
-    logger.info('Linking {0} in {1}...', path, PYG_LINKS)
-    if path in open(PYG_LINKS, 'r').read():
-        logger.warn('{0} is already linked, exiting now...', path)
-    with open(PYG_LINKS, 'a') as f:
-        f.write(path)
-        f.write('\n')
-
-def unlink(path):
-    path = os.path.abspath(path)
-    with open(PYG_LINKS) as f:
-        lines = f.readlines()
-    with open(PYG_LINKS, 'w') as f:
-        for line in lines:
-            if line.strip() == path:
-                logger.info('Removing {0} from {1}...', path, PYG_LINKS)
-                continue
-            f.write(line)
-
 def call_subprocess(args, cwd=None):
     '''
     Call subprocess with the given argument and return the tuple

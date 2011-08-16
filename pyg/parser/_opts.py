@@ -12,8 +12,7 @@ from pyg.pack import Packer
 from pyg.freeze import freeze, list_releases, site_info
 from pyg.core import PygError, Version, args_manager
 from pyg.inst import Installer, Uninstaller, Updater, Bundler
-from pyg.locations import PYG_LINKS
-from pyg.utils import TempDir, is_installed, link, unlink, unpack
+from pyg.utils import TempDir, is_installed, unpack
 from pyg.web import ReqManager
 
 
@@ -120,18 +119,6 @@ def remove_func(packname, req_file, yes, info, local):
             uninstaller(p).uninstall()
         except PygError:
             continue
-
-def link_func(path):
-    return link(path)
-
-def unlink_func(path, all):
-    if all:
-        try:
-            os.remove(PYG_LINKS)
-        except OSError:
-            pass
-        return
-    return unlink(path)
 
 def check_func(name, info=False):
     INFO = '{0.project_name} - {0.version}\nInstalled in {0.location}'

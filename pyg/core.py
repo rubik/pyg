@@ -357,9 +357,6 @@ class ArgsManager(object):
             'no_info': False,
             'file': None
         },
-        'unlink': {
-            'all': True
-        },
         'download': {
             'unpack': False,
             'download_dir': '.',

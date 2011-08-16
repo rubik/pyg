@@ -6,8 +6,7 @@ used as a library.
 
 ITERABLE_T = (list, tuple)
 COMMANDS = set(['install', 'remove', 'bundle', 'pack', 'download', 'update',
-                'search', 'list', 'site', 'check', 'link', 'unlink', 'shell',
-                'completion', 'help'])
+                'search', 'list', 'site', 'check', 'shell', 'completion', 'help'])
 
 
 def load_options():
@@ -150,25 +149,6 @@ def init_parser(version=None):
         count, no_info, file = args_manager['site']['count'], \
             args_manager['site']['no_info'], args_manager['site']['file']
         opts.site_func(count, no_info, file)
-
-    @command
-    def link(path):
-        '''
-        Add a directory to PYTHONPATH
-        '''
-
-        opts.link_func(path)
-
-    @arg('path', nargs='?')
-    @arg('-a', '--all', action='store_true', help='Remove all links')
-    def unlink(args):
-        '''
-        Remove a previously added directory (with link) from PYTHONPATH
-        '''
-
-        if args.all:
-            args_manager['unlink']['all'] = True
-        opts.unlink_func(args)
 
     @arg('query', nargs='+')
     @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
