@@ -154,7 +154,7 @@ def list_func(name):
             res.append(v)
     return logger.info('\n'.join(res))
 
-def search_func(query, exact, show_all_version):
+def search_func(query, exact, show_all_version, max_num):
     def _pypi_order(item):
         # this is the old implementation, that looks buggy (try on "sphinx")
         return item['_pypi_ordering']
@@ -185,7 +185,7 @@ def search_func(query, exact, show_all_version):
         except pkg_resources.DistributionNotFound:
             _installed = None
         except Exception:
-            logger.warn("WARN: Can't get package data for %r"%name)
+            logger.warn('WARN: Cannot get package data for {0!r}', name)
             _installed = None
         if exact:
             if pattern.match(name) is None:
@@ -201,6 +201,7 @@ def search_func(query, exact, show_all_version):
             results.append((name, dec, version[0], version[1]))
 
     results = sorted(results, key=_pkgresources_order)
+    results = results[:max_num or len(results)]
     output = '\n'.join('{0}  {1}{2} - {3}'.format(name, dec, version, summary) for name, dec, version, summary in results)
     return logger.info(output)
 
