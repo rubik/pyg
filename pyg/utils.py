@@ -97,7 +97,7 @@ def name_from_name(pkg_name):
         >>> name_from_name('zicbee-mplayer-0.7-py2.7.egg')
         ('zicbee_mplayer', '-0.7-py2.7.egg')
     '''
-    name, version = re.compile(r'([.\w\d_-]+)-([\d.]+.*)').match(pkg_name).groups()
+    name, version = re.compile(r'([.\w\d_-]+)-([\d\w.]+.*)').match(pkg_name).groups()
     return "%s-%s"%(name.replace('-', '_') , version.replace('-', '_'))
 
 

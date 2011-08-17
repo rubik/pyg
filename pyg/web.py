@@ -35,7 +35,7 @@ def get_versions(req):
     `req` should be a Requirement object (from pyg.core).
     '''
 
-    _version_re = r'{0}-(\d[\d\w.-]*).*'
+    _version_re = r'{0}-([\d\w.-]*).*'
     name = req.name
     pypi = PyPIXmlRpc()
     versions = map(Version, pypi.package_releases(name, True))
@@ -189,7 +189,7 @@ class ReqManager(object):
             ## A bit hacky but there is no solution because some packages
             ## are in the form {package_name}-{version}-{something_else}-{?pyx.y}.{ext}
             ## and we cannot predict where is the version in that mess.
-            _version_re = re.compile(r'\d[\.\d\w]*')
+            _version_re = re.compile(r'[\d\w.]*')
             parts = name(filename).split('-')
             for part in parts:
                 match = _version_re.search(part)
