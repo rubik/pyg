@@ -21,7 +21,7 @@ __all__ = ['PREFERENCES', 'ReqManager', 'get_versions', 'get_links', \
 
 
 ## This constant holds files priority
-PREFERENCES = ('.egg', '.tar.gz', '.tar.bz2', '.zip')
+PREFERENCES = ('.tar.gz', '.tar.bz2', '.zip', '.egg')
 if is_windows():
     PREFERENCES = ('.exe', '.msi') + PREFERENCES
 
