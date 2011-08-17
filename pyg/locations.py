@@ -24,12 +24,17 @@ if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
     INSTALL_DIR = None
     system = platform.system()
     if system == 'Linux':
-        tmp = '{0}/local/lib/python{1}.{2}/'.format(sys.prefix, *sys.version_info[:2])
-        d, s = os.path.join(tmp, 'dist-packages'), os.path.join(tmp, 'site-packages')
-        if os.path.exists(d):
-            INSTALL_DIR = d
-        elif os.path.exists(s):
-            INSTALL_DIR = s
+        tmp = ['{0}/lib/python{1}.{2}/'.format(sys.prefix, *sys.version_info[:2])]
+        if not under_virtualenv():
+            tmp.append('{0}/local/lib/python{1}.{2}/'.format(sys.prefix, *sys.version_info[:2]))
+        for dir in tmp:
+            d, s = map(os.path.join, (dir, dir), ('dist-packages', 'site-packages'))
+            if os.path.exists(d):
+                INSTALL_DIR = d
+                break
+            elif os.path.exists(s):
+                INSTALL_DIR = s
+                break
     elif system == 'Windows':
         tmp = os.path.join(sys.prefix, 'site-packages')
         if os.path.exists(tmp):
