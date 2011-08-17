@@ -11,13 +11,15 @@ __all__ = ['under_virtualenv', 'INSTALL_DIR', 'USER_SITE', 'ALL_SITE_PACKAGES',
 def under_virtualenv():
     return hasattr(sys, 'real_prefix')
 
+INSTALL_DIR = None
 if hasattr(site, 'getsitepackages'):
     INSTALL_DIR = site.getsitepackages()[0]
     USER_SITE = site.getusersitepackages()
     ALL_SITE_PACKAGES = site.getsitepackages() + [USER_SITE]
-else:
-    # XXX: WORKAROUND for older python versions and some broken virtualenvs
-    ## we have to guess site packages location...
+
+# XXX: WORKAROUND for older python versions and some broken virtualenvs
+## we have to guess site packages location...
+if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
     USER_SITE = site.USER_SITE
     INSTALL_DIR = None
     system = platform.system()
