@@ -36,6 +36,10 @@ class Requirement(object):
         ## When no operator is specified
         if not self._specs:
             self._specs = [(None, None)]
+            self.is_dev = None
+        else:
+            self.is_dev = any('dev' in v for op, v in self._specs)
+        # version and op will be set after a call to ReqManager is made
         self.name, _, _ = self.split(req)
         self.reqset = ReqSet(self)
         self.package_index = args_manager['install']['index_url']

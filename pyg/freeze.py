@@ -5,7 +5,7 @@ from pyg import __version__
 from pyg.req import Requirement
 from pyg.web import get_versions
 from pyg.utils import is_installed, installed_distributions
-from pyg.locations import under_virtualenv, ALL_SITE_PACKAGES
+from pyg.locations import under_virtualenv, ALL_SITE_PACKAGES, BIN
 
 
 __all__ = ['freeze', 'list_releases', 'site_info']
@@ -42,6 +42,7 @@ def site_info():
 # Pyg version: {pyg_version!r}
 # Inside a virtualenv: {in_env}
 # Site-Packages: {all_site!r}
+# Bin: {bin!r}
 
 '''
 
@@ -52,5 +53,6 @@ def site_info():
         prefix=sys.prefix,
         pyg_version=__version__,
         in_env=under_virtualenv(),
-        all_site=', '.join(ALL_SITE_PACKAGES)
+        all_site=', '.join(ALL_SITE_PACKAGES),
+        bin=BIN
     )

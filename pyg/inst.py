@@ -4,10 +4,12 @@ import sys
 import copy
 import glob
 import shutil
+import atexit
 import tarfile
 import zipfile
 import urllib2
 import urlparse
+import functools
 import ConfigParser
 import pkg_resources
 
@@ -17,7 +19,7 @@ from pkgtools.pkg import SDist, Develop, Installed
 from pyg.core import *
 from pyg.web import ReqManager, request, download
 from pyg.req import Requirement
-from pyg.locations import EASY_INSTALL, USER_SITE, BIN, ALL_SITE_PACKAGES
+from pyg.locations import EASY_INSTALL, USER_SITE, BIN, BIN2, ALL_SITE_PACKAGES
 from pyg.utils import TempDir, ZipFile, File, name, ext, is_installed, is_windows, \
     unpack, call_setup, print_output, installed_distributions
 from pyg.log import logger
@@ -86,7 +88,7 @@ class Installer(object):
     def install(self):
         try:
             r = Requirement(self.req)
-            updater = Updater(skip=True)
+            updater = FileManager()
             if self.upgrading:
                 updater.remove_files(self.req)
             r.install()
@@ -330,7 +332,8 @@ class Uninstaller(object):
     def _filter_locals(meth):
         def wrapper(self):
             to_del = meth(self)
-            local = set(path for path in to_del if not path.startswith(tuple(ALL_SITE_PACKAGES) + (BIN,)))
+            bin = (BIN,) if BIN2 is None else (BIN, BIN2)
+            local = set(path for path in to_del if not path.startswith(tuple(ALL_SITE_PACKAGES) + bin))
             return to_del.difference(local), local
         return wrapper
 
@@ -408,24 +411,16 @@ class Uninstaller(object):
            logger.info('{0} has not been uninstalled', self.name)
 
 
-class Updater(object):
-    def __init__(self, skip=False):
+class FileManager(object):
 
-        ## You should use skip=True when you want to upgrade a single package.
-        ## Just do:
-        ##>>> u = Updater(skip=True)
-        ##>>> u.upgrade(package_name, json, version)
-        if not skip:
-            logger.debug('Loading list of installed packages... ', addn=False)
-            self.working_set = list(installed_distributions())
-            self.set_len = len(self.working_set)
-            logger.info('{0} packages loaded', self.set_len)
-        self.removed = {}
-        self.yes = args_manager['update']['yes']
+    removed = {}
+
+    def __init__(self):
+        self.uninst = functools.partial(Uninstaller, yes=True)
 
     def remove_files(self, package):
-        uninst = Uninstaller(package, yes=True)
-        to_del = uninst.find_files()[0]
+        uninstaller = self.uninst(package)
+        to_del = uninstaller.find_files()[0]
         if not to_del:
             logger.info('No files to remove found')
             return
@@ -447,7 +442,7 @@ class Updater(object):
                 else:
                     shutil.copy2(path, p)
         logger.enabled = False
-        uninst.uninstall()
+        uninstaller.uninstall()
         logger.enabled = True
 
     def restore_files(self, package):
@@ -465,14 +460,26 @@ class Updater(object):
             except (OSError, IOError):
                 shutil.copytree(p, path)
 
-    def _clean(self):
+    @staticmethod
+    @atexit.register
+    def _clean():
         logger.debug('debug: Removing temporary directories')
-        for package, dirs in self.removed.iteritems():
+        for package, dirs in FileManager.removed.iteritems():
+            logger.debug('debug: {0}', package)
             try:
                 shutil.rmtree(dirs.keys()[0])
             except shutil.Error:
                 logger.debug('debug: Error while removing {0}', dirs.keys()[0])
                 continue
+
+
+class Updater(object):
+    def __init__(self):
+        logger.info('Loading list of installed packages... ', addn=False)
+        self.working_set = list(installed_distributions())
+        self.set_len = len(self.working_set)
+        logger.info('{0} packages loaded', self.set_len)
+        self.yes = args_manager['update']['yes']
 
     def upgrade(self, package_name, json, version):
         '''

@@ -81,6 +81,7 @@ if not os.path.exists(EASY_INSTALL):
 
 PYG_LINKS = os.path.join(USER_SITE, 'pyg-links.pth')
 
+BIN2 = None
 if platform.system() == 'Windows':
     BIN = os.path.join(sys.prefix, 'Scripts')
     if not os.path.exists(BIN):
@@ -90,6 +91,9 @@ else:
     ## Forcing to use /usr/local/bin on standard Mac OS X
     if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
         BIN = '/usr/local/bin'
+    local_bin = os.path.join(sys.prefix, 'local', 'bin')
+    if 'local' not in os.path.split(BIN) and os.path.exists(local_bin):
+        BIN2 = local_bin
 
 
 ## If we are running on a Unix system and we are in a SUDO session the `SUDO_UID`

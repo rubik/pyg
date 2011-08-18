@@ -35,6 +35,8 @@ def get_versions(req):
     `req` should be a Requirement object (from pyg.core).
     '''
 
+    if req.is_dev:
+        return iter((Version('dev'),))
     _version_re = r'{0}-([\d\w.-]*).*'
     name = req.name
     pypi = PyPIXmlRpc()
@@ -177,7 +179,7 @@ class ReqManager(object):
                     pref.append(p)
         self.pref = pref
 
-    def find(self):
+    def _setuptools_find(self):
         def _get_all(url):
             match = self._pkg_re.search(url)
             if match is None:
@@ -196,24 +198,30 @@ class ReqManager(object):
                 if match is not None:
                     return match.group()
 
-        found = list(self.package_manager.find())
-        if not found:
-            logger.warn('Warning: did not find any files on PyPI')
-            for link in get_links(self.name, args_manager['install']['packages_url']):
-                package_name = _remove_query(link).split('/')[-1]
-                version = _get_version(package_name)
-                e = ext(package_name)
-                if package_name is None or version is None:
-                    package_name, version, e = _get_all(link)
-                found.append((version, package_name, None, link, e))
+        logger.warn('Warning: did not find any files on PyPI')
+        found = []
+        for link in get_links(str(self.req), args_manager['install']['packages_url']):
+            package_name = _remove_query(link).split('/')[-1]
+            version = _get_version(package_name)
+            e = ext(package_name)
+            if package_name is None or version is None:
+                package_name, version, e = _get_all(link)
+            found.append((version, package_name, None, link, e))
         return found
+
+    def find(self):
+        if self.req.is_dev:
+            links = get_links(str(self.req))
+            return [('dev', self.req.name, None, link, ext(link)) for link in links]
+        return list(self.package_manager.find()) or self._setuptools_find()
 
     def files(self):
         files = collections.defaultdict(list)
         for release in self.find():
             e = release[-1]
-            if e in self.pref:
-                files[e].append(release[:-1])
+            if e not in self.pref:
+                logger.debug('debug: Skipping {0}, unknown extension', release[-2])
+            files[e].append(release[:-1])
         return files
 
     def download(self, dest):
