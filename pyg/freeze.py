@@ -47,7 +47,7 @@ def site_info():
 '''
 
     return template.format(
-        py_version=sys.version,
+        py_version=sys.version.replace('\n', ''),
         py_version_info='.'.join(str(v) for v in sys.version_info),
         platform=distutils.util.get_platform(),
         prefix=sys.prefix,

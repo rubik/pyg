@@ -51,7 +51,7 @@ if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
         ## Under virtualenv USER_SITE is the same as INSTALL_DIR
         USER_SITE = INSTALL_DIR
         ALL_SITE_PACKAGES = [INSTALL_DIR]
-        local_site = os.path.join(sys.prefix, 'local', 'lib'
+        local_site = os.path.join(sys.prefix, 'local', 'lib',
                                   'python{0}.{1}'.format(*PY_VERSION_INFO),
                                   os.path.basename(INSTALL_DIR)
                                   )
