@@ -377,7 +377,8 @@ class Uninstaller(object):
 
         logger.info('Uninstalling {0}', self.name)
         logger.indent += 8
-        for d in to_del.union(local if self.local else ()):
+        to_del = to_del.union(local if self.local else ())
+        for d in to_del:
             logger.info(d)
         if not self.local and local:
             logger.indent -= 8
@@ -406,6 +407,12 @@ class Uninstaller(object):
                     if path_re.match(line) or path_re2.match(line):
                         continue
                     f.write(line)
+            # remove empty directories
+            # FIXME: Is this dangerous?
+            #dirs = set(d for d in map(os.path.dirname, to_del) if not os.listdir(d))
+            #for d in dirs:
+            #    logger.debug('debug: removing {0}', d)
+            #    shutil.rmtree(d)
             logger.success('{0} uninstalled succesfully', self.name)
         else:
            logger.info('{0} has not been uninstalled', self.name)
