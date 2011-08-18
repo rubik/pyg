@@ -11,7 +11,7 @@ import subprocess
 import pkg_resources
 
 
-from pyg.locations import PYG_LINKS, under_virtualenv
+from pyg.locations import PYG_LINKS, PYTHON_VERSION, under_virtualenv
 from pyg.log import logger
 
 try:
@@ -20,7 +20,6 @@ try:
 except ImportError:
     COMPRESSION_LEVEL=zipfile.ZIP_STORED
 
-PYTHON_VERSION = '.'.join(map(str, sys.version_info[:2]))
 SETUP_PY_TEMPLATE = '''import distutils
 from setuptools import setup
 from setuptools.command.install import install as setuptools_install

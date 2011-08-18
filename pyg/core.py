@@ -166,7 +166,7 @@ class Egg(object):
         logger.info('Installing {0} egg file', self.packname)
         with ZipFile(self.fobj) as z:
             z.extractall(eggpath)
-        logger.info('Adding egg file to sys.path')
+        logger.verbose('Adding egg file to sys.path')
         with open(EASY_INSTALL) as f: ## TODO: Fix the opening mode to read and write simultaneously
             lines = f.readlines()
         with open(EASY_INSTALL, 'w') as f:
@@ -189,7 +189,7 @@ class Egg(object):
                     os.chmod(target, 0755)
         else:
             logger.info('Scripts not installed')
-        logger.info('Looking for requirements...')
+        logger.info('Looking for dependencies...')
         try:
             for req in dist.requires['install']:
                 self.reqset.add(req)

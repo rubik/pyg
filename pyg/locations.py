@@ -5,11 +5,15 @@ import platform
 
 
 __all__ = ['under_virtualenv', 'INSTALL_DIR', 'USER_SITE', 'ALL_SITE_PACKAGES',
-           'EASY_INSTALL', 'PYG_LINKS', 'BIN', 'HOME', 'PYG_HOME', 'CFG_FILES']
+           'EASY_INSTALL', 'PYG_LINKS', 'BIN', 'HOME', 'PYG_HOME', 'CFG_FILES',
+           'PYTHON_VERSION']
 
 
 def under_virtualenv():
     return hasattr(sys, 'real_prefix')
+
+PY_VERSION_INFO = sys.version_info[:2]
+PYTHON_VERSION = ''.join(map(str, PY_VERSION_INFO))
 
 INSTALL_DIR = None
 if hasattr(site, 'getsitepackages'):
@@ -24,9 +28,9 @@ if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
     INSTALL_DIR = None
     system = platform.system()
     if system == 'Linux':
-        tmp = ['{0}/lib/python{1}.{2}/'.format(sys.prefix, *sys.version_info[:2])]
+        tmp = ['{0}/lib/python{1}.{2}/'.format(sys.prefix, *PY_VERSION_INFO)]
         if not under_virtualenv():
-            tmp.append('{0}/local/lib/python{1}.{2}/'.format(sys.prefix, *sys.version_info[:2]))
+            tmp.append('{0}/local/lib/python{1}.{2}/'.format(sys.prefix, *PY_VERSION_INFO))
         for dir in tmp:
             d, s = map(os.path.join, (dir, dir), ('dist-packages', 'site-packages'))
             if os.path.exists(d):
@@ -44,7 +48,15 @@ if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
         INSTALL_DIR = get_python_lib(True)
 
     if under_virtualenv():
+        ## Under virtualenv USER_SITE is the same as INSTALL_DIR
+        USER_SITE = INSTALL_DIR
         ALL_SITE_PACKAGES = [INSTALL_DIR]
+        local_site = os.path.join(sys.prefix, 'local', 'lib'
+                                  'python{0}.{1}'.format(*PY_VERSION_INFO),
+                                  os.path.basename(INSTALL_DIR)
+                                  )
+        if 'local' not in INSTALL_DIR.split(os.sep) and os.path.exists(local_site):
+            ALL_SITE_PACKAGES.append(local_site)
     else:
         ALL_SITE_PACKAGES = [INSTALL_DIR, USER_SITE]
 
@@ -63,9 +75,6 @@ if INSTALL_DIR is None or not os.path.exists(INSTALL_DIR):
     #    from distutils.sysconfig import get_python_lib
     #    INSTALL_DIR = get_python_lib()
 
-## Under virtualenv USER_SITE is the same as INSTALL_DIR
-if under_virtualenv():
-    USER_SITE = INSTALL_DIR
 
 EASY_INSTALL = os.path.join(INSTALL_DIR, 'easy-install.pth')
 if not os.path.exists(EASY_INSTALL):
@@ -92,7 +101,7 @@ else:
     if sys.platform[:6] == 'darwin' and sys.prefix[:16] == '/System/Library/':
         BIN = '/usr/local/bin'
     local_bin = os.path.join(sys.prefix, 'local', 'bin')
-    if 'local' not in os.path.split(BIN) and os.path.exists(local_bin):
+    if 'local' not in BIN.split(os.sep) and os.path.exists(local_bin):
         BIN2 = local_bin
 
 
