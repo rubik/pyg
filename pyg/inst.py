@@ -473,13 +473,15 @@ class FileManager(object):
                 continue
 
 
-class Updater(object):
+class Updater(FileManager):
     def __init__(self):
         logger.info('Loading list of installed packages... ', addn=False)
         self.working_set = list(installed_distributions())
         self.set_len = len(self.working_set)
         logger.info('{0} packages loaded', self.set_len)
         self.yes = args_manager['update']['yes']
+        self.is_installing = False
+        super(Updater, self).__init__()
 
     def upgrade(self, package_name, json, version):
         '''
@@ -512,13 +514,13 @@ class Updater(object):
                 self.restore_files(package_name)
         logger.indent = 0
 
-    def update(self):
+    def look_for_updates(self):
         '''
         Searches for updates for every package in the WorkingSet.
-        Then calls :meth:`~pyg.inst.Updater.upgrade`.
         '''
 
         logger.info('Searching for updates')
+        pile = []
         for i, dist in enumerate(self.working_set):
             logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
             package = dist.project_name
@@ -532,8 +534,18 @@ class Updater(object):
                 continue
             if version >= new_version:
                 continue
+            pile.append((package, version, new_version, json.items()))
+        return pile
 
-            txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package, new_version, dist.version)
+    def update(self):
+        '''
+        Calls :meth:`~pyg.inst.Updater.look_for_updates and the upgrade every package.`
+        '''
+
+        for package, version, new_version, json in self.look_for_updates():
+            txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package,
+                                                                                      new_version,
+                                                                                      version)
             u = logger.ask(txt, bool=('upgrade version', 'keep working version'), dont_ask=self.yes)
             if u:
                 try:
