@@ -7,7 +7,9 @@ import shutil
 import tempfile
 import itertools
 from glob import glob
-from subprocess import Popen, PIPE, call
+from subprocess import Popen, PIPE, call, check_call
+# FIXME: Can we do this?
+from pyg.utils import check_output, CalledProcessError # for Python 2.6
 
 USE_PROXY = False
 
@@ -203,6 +205,18 @@ def the_return_code_is(step, given_code):
          world.last_cmd, out, err)
         raise AssertionError('Invalid code, got %s, expected %s\n%s' % (
          code, given_code, out_desc))
+
+@step('(?P<pkg>pyg_testsource|pyg_testegg) is installed and works properly')
+def is_installed_and_works_properly(step, pkg):
+    bin = os.path.join(world.env_path, 'bin')
+    try:
+        python_bin = os.path.join(bin, 'python')
+        check_call([python_bin, '-c', 'import {0};assert {0}.PKG_TYPE=={0!r}'.format(pkg)])
+    except CalledProcessError:
+        raise AssertionError('Cannot import %s, package not installed correctly' % (pkg))
+    # test command line output
+    output = check_output([os.path.join(bin, pkg)])
+    assert output == 'Pyg test', 'Expected %s, got %s' % (pkg, output)
 
 @step('(?P<num>\d+|many|all|one|a single|no)\s*(?P<what>\w+)?\s*lines? matche?s?\s+(?P<expression>.*)')
 def x_line_matches(step, num, expression, what):

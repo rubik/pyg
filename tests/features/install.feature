@@ -132,6 +132,18 @@ Scenario Outline: Install misc packages (with multiple versions)
         | pkgtools>=0.4,!=0.5,<0.6.3 |
         | zicbee>0.7,!=0.8,<1        |
 
+Scenario Outline: Install pyg_testsource and pyg_testegg packages
+    Given I use "standard-2.7" environment
+    Given I use "tmp_install" temporary folder
+    When I execute pyg install <pkg>
+    Then the return code is 0
+    Then <pkg> is installed and works properly
+
+    Examples:
+        | pkg            |
+        | pyg_testsource |
+        | pyg_testegg    |
+
 
 #Scenario: Install a dev package [not supported yet, see #78]
 #    Given I use "standard-2.7" environment
