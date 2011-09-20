@@ -227,6 +227,7 @@ class ReqManager(object):
     def download(self, dest):
         dest = os.path.abspath(dest)
         files = self.files()
+        downloaded = []
 
         ## We need a placeholder because of the nested for loops
         success = False
@@ -263,10 +264,13 @@ class ReqManager(object):
                 except (IOError, OSError):
                     logger.debug('debug: Error while writing data')
                     continue
+                downloaded.append({'url': url, 'hash': hash})
                 logger.success('{0} downloaded successfully', self.name)
                 success = True
             self.downloaded_name = name
             self.downloaded_version = v
+
+        return downloaded
 
 
 class PygPackageIndex(PackageIndex):

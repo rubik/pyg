@@ -359,6 +359,7 @@ class ArgsManager(object):
         },
         'download': {
             'unpack': False,
+            'md5': False,
             'download_dir': '.',
             'prefer': None
         },
