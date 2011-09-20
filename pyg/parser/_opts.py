@@ -213,9 +213,13 @@ def download_func(args):
     dest = args_manager['download']['download_dir']
     unpk = args_manager['download']['unpack']
     downloader = ReqManager(Requirement(name), pref)
-    downloads = downloader.download(dest)
+    if args_manager['download']['dry']:
+        res = downloader.download(None)
+    else:
+        res = downloader.download(dest)
+
     if args_manager['download']['md5']:
-        for dl in downloads:
+        for dl in res:
             logger.info('%(url)s md5: %(hash)s'%dl)
     if downloader.downloaded_name is None:
         logger.fatal('Error: Did not find any files for {0}', name, exc=PygError)

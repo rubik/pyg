@@ -225,7 +225,9 @@ class ReqManager(object):
         return files
 
     def download(self, dest):
-        dest = os.path.abspath(dest)
+        """ you can set dest to None, it will executed a try run """
+        if dest:
+            dest = os.path.abspath(dest)
         files = self.files()
         downloaded = []
 
@@ -244,26 +246,27 @@ class ReqManager(object):
                 if p == '.egg' and not right_egg(name):
                     logger.info('Found egg file for another Python version: {0}. Continue searching...',                               version_egg(name))
                     continue
-                try:
-                    data = download(url, 'Retrieving data for {0}'.format(self.name)).getvalue()
-                except (urllib2.URLError, urllib2.HTTPError) as e:
-                    logger.debug('urllib2 error: {0}', e.args)
-                    continue
-                if not data:
-                    logger.debug('debug: Request failed')
-                    continue
-                if not os.path.exists(dest):
-                    os.makedirs(dest)
-                try:
-                    # Fix for packages with no version in the name
-                    if '-' not in name:
-                        name = '{0}-{1}{2}'.format(name, v, p)
-                    logger.info('Writing data into {0}', name)
-                    with open(os.path.join(dest, name), 'w') as f:
-                        f.write(data)
-                except (IOError, OSError):
-                    logger.debug('debug: Error while writing data')
-                    continue
+                if dest:
+                    try:
+                        data = download(url, 'Retrieving data for {0}'.format(self.name)).getvalue()
+                    except (urllib2.URLError, urllib2.HTTPError) as e:
+                        logger.debug('urllib2 error: {0}', e.args)
+                        continue
+                    if not data:
+                        logger.debug('debug: Request failed')
+                        continue
+                    if not os.path.exists(dest):
+                        os.makedirs(dest)
+                    try:
+                        # Fix for packages with no version in the name
+                        if '-' not in name:
+                            name = '{0}-{1}{2}'.format(name, v, p)
+                        logger.info('Writing data into {0}', name)
+                        with open(os.path.join(dest, name), 'w') as f:
+                            f.write(data)
+                    except (IOError, OSError):
+                        logger.debug('debug: Error while writing data')
+                        continue
                 downloaded.append({'url': url, 'hash': hash})
                 logger.success('{0} downloaded successfully', self.name)
                 success = True

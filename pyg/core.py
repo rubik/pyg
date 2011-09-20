@@ -360,6 +360,7 @@ class ArgsManager(object):
         'download': {
             'unpack': False,
             'md5': False,
+            'dry': False,
             'download_dir': '.',
             'prefer': None
         },

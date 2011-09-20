@@ -180,9 +180,10 @@ def init_parser(version=None):
     @arg('packname')
     @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
     @arg('-u', '--unpack', action='store_true', help='Once downloaded, unpack the package')
-    @arg('-d', '--download-dir', default='.', metavar='<path>', help='The destination directory')
+    @arg('-d', '--download-dir', default=os.path.curdir, metavar='<path>', help='The destination directory')
     @arg('-p', '--prefer', metavar='<ext>', help='The preferred file type for the download')
     @arg('-m', '--md5',action='store_true',  help='Show md5 sum & link after download')
+    @arg('-n', '--dry',action='store_true',  help='Dry run, just display informations')
     def download(args):
         '''
         Download a package
@@ -200,6 +201,8 @@ def init_parser(version=None):
             args_manager['download']['prefer'] = args.prefer
         args_manager['download']['unpack'] = bool(args.unpack)
         args_manager['download']['md5'] = bool(args.md5)
+        if args.dry:
+            args_manager['download']['download_dir'] = None
         opts.download_func(args)
 
     @arg('-i', '--index-url', default='http://pypi.python.org', metavar='<url>', help='Base URL of Python Package Index (default to %(default)s)')
