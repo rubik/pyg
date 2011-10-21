@@ -12,6 +12,7 @@ import urlparse
 import functools
 import ConfigParser
 import pkg_resources
+import multiprocessing, Queue
 
 from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import SDist, Develop, Installed
@@ -487,7 +488,6 @@ class Updater(FileManager):
         self.set_len = len(self.working_set)
         logger.info('{0} packages loaded', self.set_len)
         self.yes = args_manager['update']['yes']
-        self.is_installing = False
         super(Updater, self).__init__()
 
     def upgrade(self, package_name, json, version):
@@ -521,28 +521,36 @@ class Updater(FileManager):
                 self.restore_files(package_name)
         logger.indent = 0
 
+    def check_one(self, package, version, container):
+        try:
+            json = PyPIJson(package).retrieve()
+            new_version = Version(json['info']['version'])
+        except Exception as e:
+            logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
+            return
+        if new_version > version:
+            container.append((package, version, new_version, json))
+
     def look_for_updates(self):
         '''
         Searches for updates for every package in the WorkingSet.
         '''
 
         logger.info('Searching for updates')
-        pile = []
-        for i, dist in enumerate(self.working_set):
-            logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
-            package = dist.project_name
-            version = Version(dist.version)
-            logger.verbose('Found: {0}=={1}', package, version)
-            try:
-                json = PyPIJson(package).retrieve()
-                new_version = Version(json['info']['version'])
-            except Exception as e:
-                logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
-                continue
-            if version >= new_version:
-                continue
-            pile.append((package, version, new_version, json.items()))
-        return pile
+        processes = []
+        packages = []
+        try:
+            for i, dist in enumerate(self.working_set):
+                logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
+                package = dist.project_name
+                version = Version(dist.version)
+                process = multiprocessing.Process(target=self.check_one, args=(package, version, packages))
+                processes.append(process)
+                process.start()
+        finally:
+            for process in processes:
+                process.terminate()
+        return iter(packages)
 
     def update(self):
         '''
@@ -555,10 +563,7 @@ class Updater(FileManager):
                                                                                       version)
             u = logger.ask(txt, bool=('upgrade version', 'keep working version'), dont_ask=self.yes)
             if u:
-                try:
-                    self.upgrade(package, json, new_version)
-                except Exception as e:
-                    logger.error('Unexpected error occured: {0}', e)
+                self.upgrade(package, json, new_version)
             else:
                 logger.info('{0} has not been upgraded', package)
         self._clean()

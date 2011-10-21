@@ -29,7 +29,6 @@ Scenario Outline: Specific help
         | search   | --help    |
         | list     | --help    |
         | update   | --help    |
-        | link     | --help    |
         | shell    | --help    |
         | help     | --help    |
         | check    | --help    |
