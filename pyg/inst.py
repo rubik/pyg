@@ -529,7 +529,8 @@ class Updater(FileManager):
             logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
             return
         if new_version > version:
-            container.append((package, version, new_version, json))
+            print container
+            container.put((package, version, new_version, json))
 
     def look_for_updates(self):
         '''
@@ -538,7 +539,7 @@ class Updater(FileManager):
 
         logger.info('Searching for updates')
         processes = []
-        packages = []
+        packages = Queue.Queue()
         try:
             for i, dist in enumerate(self.working_set):
                 logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
@@ -550,14 +551,19 @@ class Updater(FileManager):
         finally:
             for process in processes:
                 process.terminate()
-        return iter(packages)
+        return packages
 
     def update(self):
         '''
         Calls :meth:`~pyg.inst.Updater.look_for_updates and the upgrade every package.`
         '''
 
-        for package, version, new_version, json in self.look_for_updates():
+        packages = self.look_for_updates()
+        while True:
+            try:
+                package, version, new_version, json = packages.get(False)
+            except Queue.Empty:
+                break
             txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package,
                                                                                       new_version,
                                                                                       version)
