@@ -12,7 +12,7 @@ import urlparse
 import functools
 import ConfigParser
 import pkg_resources
-import multiprocessing, Queue
+import multiprocessing
 
 from pkgtools.pypi import PyPIJson
 from pkgtools.pkg import SDist, Develop, Installed
@@ -27,26 +27,14 @@ from pyg.log import logger
 from pyg.parser.parser import init_parser
 
 
-__all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
+__all__ = ['QSIZE', 'Installer', 'Uninstaller', 'Updater', 'Bundler']
 
 
-## Unfortunately multiprocessing does not allow us to make this a method,
-## since the pickle module cannot pickle instancemethod objects, so we have to
-## keep it global
+# Unfortunately multiprocessing does not allow Values to be inside of a class,
+# so we have to keep it global...
 
-def check_one(args):
-    res, total, package, version = args
-    i = res.qsize()
-    logger.info('\r[{0:.1%} - {1}, {2} / {3}]',
-        i / float(total), package, i, total, addn=False)
-    try:
-        json = PyPIJson(package).retrieve()
-        new_version = Version(json['info']['version'])
-    except Exception as e:
-        logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
-        return
-    if new_version > version:
-        res.put_nowait((package, version, new_version, json))
+# To keep track of the checked packages
+QSIZE = multiprocessing.Value('i', 1)
 
 
 class Installer(object):
@@ -540,25 +528,38 @@ class Updater(FileManager):
                 self.restore_files(package_name)
         logger.indent = 0
 
+    def check_one(self, args):
+        package, version = args
+        i = QSIZE.value
+        logger.info('\r[{0:.1%} - {1}, {2} / {3}]',
+            i / float(self.set_len), package, i, self.set_len, addn=False)
+        QSIZE.value += 1
+        try:
+            json = PyPIJson(package).retrieve()
+            new_version = Version(json['info']['version'])
+        except Exception as e:
+            logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
+            return None
+        if new_version > version:
+            return (package, version, new_version, json)
+        return None
+
     def update(self):
         '''
         Calls :meth:`~pyg.inst.Updater.look_for_updates and the upgrade every package.`
         '''
 
         logger.info('Searching for updates')
-        manager = multiprocessing.Manager()
-        packages = manager.Queue()
-        data = ((packages, self.set_len, dist.project_name, Version(dist.version)) \
-            for dist in self.working_set)
+        QSIZE.value = 1
+        data = ((dist.project_name, Version(dist.version)) for dist in self.working_set)
         pool = multiprocessing.Pool(processes=10)
-        pool.map(check_one, data)
+        packages = pool.map(self.check_one, data)
         pool.close()
         pool.join()
-        while True:
-            try:
-                package, version, new_version, json = packages.get_nowait()
-            except Queue.Empty:
-                break
+        for data in packages:
+            if data is None:
+                continue
+            package, version, new_version, json = data
             txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package,
                                                                                       new_version,
                                                                                       version)
