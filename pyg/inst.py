@@ -30,6 +30,25 @@ from pyg.parser.parser import init_parser
 __all__ = ['Installer', 'Uninstaller', 'Updater', 'Bundler']
 
 
+## Unfortunately multiprocessing does not allow us to make this a method,
+## since the pickle module cannot pickle instancemethod objects, so we have to
+## keep it global
+
+def check_one(args):
+    res, total, package, version = args
+    i = res.qsize()
+    logger.info('\r[{0:.1%} - {1}, {2} / {3}]',
+        i / float(total), package, i, total, addn=False)
+    try:
+        json = PyPIJson(package).retrieve()
+        new_version = Version(json['info']['version'])
+    except Exception as e:
+        logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
+        return
+    if new_version > version:
+        res.put_nowait((package, version, new_version, json))
+
+
 class Installer(object):
     def __init__(self, req):
         self.upgrading = False
@@ -521,47 +540,23 @@ class Updater(FileManager):
                 self.restore_files(package_name)
         logger.indent = 0
 
-    def check_one(self, package, version, container):
-        try:
-            json = PyPIJson(package).retrieve()
-            new_version = Version(json['info']['version'])
-        except Exception as e:
-            logger.error('Error: Failed to fetch data for {0} ({1})', package, e)
-            return
-        if new_version > version:
-            print container
-            container.put((package, version, new_version, json))
-
-    def look_for_updates(self):
-        '''
-        Searches for updates for every package in the WorkingSet.
-        '''
-
-        logger.info('Searching for updates')
-        processes = []
-        packages = Queue.Queue()
-        try:
-            for i, dist in enumerate(self.working_set):
-                logger.info('\r[{0:.1%} - {1} / {2}]', i / float(self.set_len), i, self.set_len, addn=False)
-                package = dist.project_name
-                version = Version(dist.version)
-                process = multiprocessing.Process(target=self.check_one, args=(package, version, packages))
-                processes.append(process)
-                process.start()
-        finally:
-            for process in processes:
-                process.terminate()
-        return packages
-
     def update(self):
         '''
         Calls :meth:`~pyg.inst.Updater.look_for_updates and the upgrade every package.`
         '''
 
-        packages = self.look_for_updates()
+        logger.info('Searching for updates')
+        manager = multiprocessing.Manager()
+        packages = manager.Queue()
+        data = ((packages, self.set_len, dist.project_name, Version(dist.version)) \
+            for dist in self.working_set)
+        pool = multiprocessing.Pool(processes=10)
+        pool.map(check_one, data)
+        pool.close()
+        pool.join()
         while True:
             try:
-                package, version, new_version, json = packages.get(False)
+                package, version, new_version, json = packages.get_nowait()
             except Queue.Empty:
                 break
             txt = 'A new release is avaiable for {0}: {1!s} (old {2}), update'.format(package,
