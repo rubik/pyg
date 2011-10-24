@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 
@@ -28,6 +29,65 @@ except ImportError:
         'warn'   : '',
         'reset'  : '',
     }
+
+
+def get_console_width():
+    """
+    Return width of available window area. Autodetection works for
+    Windows and POSIX platforms. Returns 80 for others
+
+       Code from http://bitbucket.org/techtonik/python-wget
+    """
+
+    if os.name == 'nt':
+        STD_INPUT_HANDLE  = -10
+        STD_OUTPUT_HANDLE = -11
+        STD_ERROR_HANDLE  = -12
+
+        # get console handle
+        from ctypes import windll, Structure, byref
+        try:
+            from ctypes.wintypes import SHORT, WORD, DWORD
+        except ImportError:
+            # workaround for missing types in Python 2.5
+            from ctypes import (
+                c_short as SHORT, c_ushort as WORD, c_ulong as DWORD)
+        console_handle = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+
+        # CONSOLE_SCREEN_BUFFER_INFO Structure
+        class COORD(Structure):
+            _fields_ = [("X", SHORT), ("Y", SHORT)]
+
+        class SMALL_RECT(Structure):
+            _fields_ = [("Left", SHORT), ("Top", SHORT),
+                        ("Right", SHORT), ("Bottom", SHORT)]
+
+        class CONSOLE_SCREEN_BUFFER_INFO(Structure):
+            _fields_ = [("dwSize", COORD),
+                        ("dwCursorPosition", COORD),
+                        ("wAttributes", WORD),
+                        ("srWindow", SMALL_RECT),
+                        ("dwMaximumWindowSize", DWORD)]
+
+        sbi = CONSOLE_SCREEN_BUFFER_INFO()
+        ret = windll.kernel32.GetConsoleScreenBufferInfo(console_handle, byref(sbi))
+        if ret == 0:
+            return 0
+        return sbi.srWindow.Right+1
+
+    elif os.name == 'posix':
+        from fcntl import ioctl
+        from termios import TIOCGWINSZ
+        from array import array
+
+        winsize = array("H", [0] * 4)
+        try:
+            ioctl(sys.stdout.fileno(), TIOCGWINSZ, winsize)
+        except IOError:
+            pass
+        return (winsize[1], winsize[0])[0]
+
+    return 80
 
 
 class Logger(object):
@@ -67,7 +127,6 @@ class Logger(object):
         return self._stack[-1]
 
     def ask(self, message=None, bool=None, choices=None, dont_ask=False):
-
         if bool is not None:
             if bool in (True, False) or (isinstance(bool, (list, tuple)) and len(bool) == 1):
                 if bool == False:
@@ -178,7 +237,7 @@ class Logger(object):
                 ## We have to clear the line in case this message is longer than
                 ## the previous
 
-                std.write('\r' + ' ' * len(self.last_msg))
+                std.write('\r' + ' ' * get_console_width())
                 msg = '\r' + ' ' * self.indent + msg.lstrip('\r').format(*a)
             else:
                 try:
