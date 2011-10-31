@@ -483,7 +483,7 @@ class FileManager(object):
             logger.debug('debug: {0}', package)
             try:
                 shutil.rmtree(dirs.keys()[0])
-            except shutil.Error:
+            except (shutil.Error, OSError):
                 logger.debug('debug: Error while removing {0}', dirs.keys()[0])
                 continue
 
