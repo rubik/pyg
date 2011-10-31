@@ -552,7 +552,7 @@ class Updater(FileManager):
         logger.info('Searching for updates')
         QSIZE.value = 1
         data = ((dist.project_name, Version(dist.version)) for dist in self.working_set)
-        pool = multiprocessing.Pool(processes=10)
+        pool = multiprocessing.Pool(processes=multiprocessing.cpu_count() + 1)
         packages = pool.map(self.check_one, data)
         pool.close()
         pool.join()
