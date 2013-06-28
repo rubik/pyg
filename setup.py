@@ -31,31 +31,8 @@ if '--single-exe' in sys.argv:
     del pyg_console_scripts[0]
     sys.argv.remove('--single-exe')
 
-long_desc = '''Pyg
-===
-
-Pyg is a Python package manager that is meant to be an alternative to easy_install and Pip.
-It can download, install, remove packages and more.
-Pyg supports almost all package filetypes:
-
- * .tar.gz
- * .tgz
- * .tar.bz2
- * .zip
- * .egg
- * .exe
- * .msi
- * .pybundle
- * .pyb (an abbreviation for .pybundle)
-
-Pyg can remove all packages, even those installed with pure-distutils install (``python setup.py install``).
-If you want, you can try it without installing it. Just download the Pyg Pack from https://github.com/downloads/rubik/pyg/pyg.zip, unzip it and run it:
-
-    $ python run_pyg.py --help
-
-You can install, remove, bundle, create packs and much more!
-Check it at http://pyg-installer.co.nr
-'''
+with open('README.rst') as f:
+    long_desc = f.read()
 
 
 setup(name='pyg',

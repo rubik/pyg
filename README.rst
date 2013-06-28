@@ -1,3 +1,15 @@
+WARNING - Important notice
+==========================
+
+This project is now **DEAD**.
+It was born with the intent to provide a better (IMHO) alternative to Pip.
+Since now Pip has got a lot of great improvements, this is not needed anymore.
+
+So the advice here is to use Pip instead. Pyg has not been maintained for over
+2 years now. It may well be broken in many places. The code is old and would
+need a refactoring, but there is not need anymore.
+
+
 Pyg
 ===
 
